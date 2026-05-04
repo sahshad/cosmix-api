@@ -13,8 +13,12 @@ type UpdateProfileDTO struct {
 }
 
 type UserProfileResponse struct {
+	User UserResponse `json:"user"`
+}
+
+type UserResponse struct {
 	ID          uint       `json:"id"`
-	UserID      uint       `json:"user_id"`
+	AuthUserID  uint       `json:"auth_user_id"`
 	FirstName   string     `json:"first_name"`
 	LastName    string     `json:"last_name"`
 	Username    *string    `json:"username"`
@@ -28,8 +32,8 @@ type UserProfileResponse struct {
 
 type UserCreatedFromDTO struct {
 	AuthUserID uint
-	Email string
-	FirstName string
-	LastName string
-	CreatedAt time.Time
+	Email      string
+	FirstName  string
+	LastName   string
+	CreatedAt  time.Time
 }

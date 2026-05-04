@@ -20,3 +20,19 @@ type UserUpdatedFromDTO struct {
 	Email      string
 	UpdatedAt  time.Time
 }
+
+type UpdateUserPasswordDTO struct {
+	UserID      uint   `json:"user_id" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=6"`
+}
+
+type LoginResponseDTO struct {
+	AccessToken  string       `json:"access_token"`
+	RefreshToken string       `json:"refresh_token"`
+	AuthUser     *AuthUserDTO `json:"auth_user"`
+}
+
+type RefreshResponseDTO struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}

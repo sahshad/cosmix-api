@@ -36,7 +36,9 @@ func (ctrl *FollowController) Follow(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.Follow(uint(followerID), uint(followingID)); err != nil {
+	ctx := c.Request.Context()
+	
+	if err := ctrl.service.Follow(ctx, uint(followerID), uint(followingID)); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -64,7 +66,9 @@ func (ctrl *FollowController) Unfollow(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.Unfollow(uint(followerID), uint(followingID)); err != nil {
+	ctx := c.Request.Context()
+	
+	if err := ctrl.service.Unfollow(ctx, uint(followerID), uint(followingID)); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -80,7 +84,9 @@ func (ctrl *FollowController) GetFollowers(c *gin.Context) {
 		return
 	}
 
-	followers, err := ctrl.service.GetFollowers(uint(id))
+	ctx := c.Request.Context()
+
+	followers, err := ctrl.service.GetFollowers(ctx, uint(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -97,7 +103,9 @@ func (ctrl *FollowController) GetFollowing(c *gin.Context) {
 		return
 	}
 
-	following, err := ctrl.service.GetFollowing(uint(id))
+	ctx := c.Request.Context()
+
+	following, err := ctrl.service.GetFollowing(ctx, uint(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

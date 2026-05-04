@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
-	"user-service/internal/dto"
+	// "user-service/internal/dto"
 	"user-service/internal/services"
 
 	authEvents "cosmix-events/auth"
@@ -55,7 +55,7 @@ func ConsumeUserCreated(ch *amqp.Channel, userProfileService services.UserProfil
 			var event authEvents.UserCreated
 			json.Unmarshal(msg.Body, &event)
 
-			userCreatedEvent := dto.UserCreatedFromDTO{
+			userCreatedEvent := authEvents.UserCreated{
 				AuthUserID: event.AuthUserID,
 				Email:      event.Email,
 				FirstName:  event.FirstName,

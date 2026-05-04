@@ -1,16 +1,17 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"user-service/internal/models"
 	"user-service/internal/repositories"
 )
 
 type FollowServiceInterface interface {
-	Follow(followerID uint, followingID uint) error
-	Unfollow(followerID uint, followingID uint) error
-	GetFollowers(userID uint) ([]uint, error)
-	GetFollowing(userID uint) ([]uint, error)
+	Follow(ctx context.Context, followerID uint, followingID uint) error
+	Unfollow(ctx context.Context, followerID uint, followingID uint) error
+	GetFollowers(ctx context.Context, userID uint) ([]uint, error)
+	GetFollowing(ctx context.Context, userID uint) ([]uint, error)
 }
 
 type FollowService struct {
@@ -23,12 +24,12 @@ func NewFollowService(repo repositories.FollowRepositoryInterface) FollowService
 	}
 }
 
-func (svc *FollowService) Follow(followerID, followingID uint) error {
+func (svc *FollowService) Follow(ctx context.Context, followerID, followingID uint) error {
 	if followerID == followingID {
 		return errors.New("cannot follow yourself")
 	}
 
-	isFollowing, err := svc.repo.IsFollowing(followerID, followingID)
+	isFollowing, err := svc.repo.IsFollowing(ctx, followerID, followingID)
 	if err != nil {
 		return err
 	}
@@ -40,17 +41,17 @@ func (svc *FollowService) Follow(followerID, followingID uint) error {
 		FollowerID:  followerID,
 		FollowingID: followingID,
 	}
-	return svc.repo.Create(follow)
+	return svc.repo.Create(ctx, follow)
 }
 
-func (svc *FollowService) Unfollow(followerID, followingID uint) error {
-	return svc.repo.Delete(followerID, followingID)
+func (svc *FollowService) Unfollow(ctx context.Context, followerID, followingID uint) error {
+	return svc.repo.Delete(ctx, followerID, followingID)
 }
 
-func (svc *FollowService) GetFollowers(userID uint) ([]uint, error) {
-	return svc.repo.GetFollowers(userID)
+func (svc *FollowService) GetFollowers(ctx context.Context, userID uint) ([]uint, error) {
+	return svc.repo.GetFollowers(ctx, userID)
 }
 
-func (svc *FollowService) GetFollowing(userID uint) ([]uint, error) {
-	return svc.repo.GetFollowing(userID)
+func (svc *FollowService) GetFollowing(ctx context.Context, userID uint) ([]uint, error) {
+	return svc.repo.GetFollowing(ctx, userID)
 }

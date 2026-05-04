@@ -6,7 +6,6 @@ import (
 
 	"user-service/internal/app"
 	"user-service/internal/database"
-	// "user-service/internal/events/rabbitmq"
 	"user-service/internal/messaging"
 	"user-service/internal/routes"
 
@@ -16,9 +15,7 @@ import (
 
 func main() {
 	// Load environment variables
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using environment variables")
-	}
+	godotenv.Load()
 
 	// Gin mode
 	if os.Getenv("GIN_MODE") == "release" {
@@ -27,14 +24,7 @@ func main() {
 
 	// Configuration
 	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8081"
-	}
-
 	rabbitURL := os.Getenv("RABBITMQ_URL")
-	if rabbitURL == "" {
-		rabbitURL = "amqp://guest:guest@rabbitmq:5672/"
-	}
 
 	// Database
 	db, err := database.ConnectDB()

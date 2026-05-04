@@ -1,20 +1,19 @@
 package controllers
 
 import (
-	"net/http"
-	"strconv"
 
+	authEvents "cosmix-events/auth"
 	"user-service/internal/dto"
 	"user-service/internal/messaging/publisher"
-	authEvents "cosmix-events/auth"
 	"user-service/internal/services"
+	"user-service/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	ampqp "github.com/rabbitmq/amqp091-go"
 )
 
 type UserProfileController struct {
-	service    services.UserProfileServiceInterface
+	service  services.UserProfileServiceInterface
 	rabbitCh *ampqp.Channel
 }
 
@@ -22,80 +21,67 @@ func NewUserProfileController(service services.UserProfileServiceInterface, rabb
 	return &UserProfileController{service: service, rabbitCh: rabbitCh}
 }
 
-func (ctrl *UserProfileController) HealthCheck(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "user service is ok"})
+func (ctrl *UserProfileController) HealthCheck(c *gin.Context) (interface{}, error) {
+	return map[string]string{"message": "user service is ok"}, nil
 }
 
-func (ctrl *UserProfileController) GetMe(c *gin.Context) {
-	ctrl.GetMyProfile(c)
+func (ctrl *UserProfileController) GetMe(c *gin.Context) (interface{}, error) {
+	return ctrl.GetMyProfile(c)
 }
 
-func (ctrl *UserProfileController) GetMyProfile(c *gin.Context) {
-	userIDStr := c.GetHeader("X-User-Id")
-	if userIDStr == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
-		return
-	}
-
-	userID, err := strconv.ParseUint(userIDStr, 10, 32)
+func (ctrl *UserProfileController) GetMyProfile(c *gin.Context) (interface{}, error) {
+	userID, err := utils.ParseUserIDHeader(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
-		return
+		return nil, err
 	}
 
-	profile, err := ctrl.service.GetProfile(uint(userID))
+	ctx := c.Request.Context()
+
+	profile, err := ctrl.service.GetProfile(ctx, uint(userID))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
-	c.JSON(http.StatusOK, profile)
+	return profile, nil
 }
 
-func (ctrl *UserProfileController) GetProfileByID(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+func (ctrl *UserProfileController) GetProfileByID(c *gin.Context) (interface{}, error) {
+
+	id, err := utils.ParseParamID(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
-		return
+		return nil, err
 	}
 
-	profile, err := ctrl.service.GetProfileByID(uint(id))
+	ctx := c.Request.Context()
+
+	profile, err := ctrl.service.GetProfileByID(ctx, uint(id))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
-	c.JSON(http.StatusOK, profile)
+	return profile, nil
 }
 
-func (ctrl *UserProfileController) UpdateMe(c *gin.Context) {
-	ctrl.UpdateMyProfile(c)
+func (ctrl *UserProfileController) UpdateMe(c *gin.Context) (interface{}, error){
+	return ctrl.UpdateMyProfile(c)
 }
 
-func (ctrl *UserProfileController) UpdateMyProfile(c *gin.Context) {
-	userIDStr := c.GetHeader("X-User-Id")
-	if userIDStr == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
-		return
-	}
-
-	userID, err := strconv.ParseUint(userIDStr, 10, 32)
+func (ctrl *UserProfileController) UpdateMyProfile(c *gin.Context) (interface{}, error){
+	userID, err := utils.ParseUserIDHeader(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
-		return
+		return nil, err
 	}
 
 	var input dto.UpdateProfileDTO
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
-	profile, err := ctrl.service.UpdateProfile(uint(userID), input)
+	ctx := c.Request.Context()
+
+	profile, err := ctrl.service.UpdateProfile(ctx, uint(userID), input)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
 	if input.Email != nil {
@@ -103,21 +89,22 @@ func (ctrl *UserProfileController) UpdateMyProfile(c *gin.Context) {
 			EventVersion: "v1",
 			AuthUserID:   uint(userID),
 			Email:        *input.Email,
-			UpdatedAt:    *profile.UpdatedAt,
+			UpdatedAt:    *profile.User.UpdatedAt,
 		})
 	}
 
-	c.JSON(http.StatusOK, profile)
+	return profile, nil
 }
 
-func (ctrl *UserProfileController) GetByUsername(c *gin.Context) {
+func (ctrl *UserProfileController) GetByUsername(c *gin.Context) (interface{}, error){
 	username := c.Param("username")
 
-	profile, err := ctrl.service.GetProfileByUsername(username)
+	ctx := c.Request.Context()
+
+	profile, err := ctrl.service.GetProfileByUsername(ctx, username)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
-	c.JSON(http.StatusOK, profile)
+	return profile, nil
 }

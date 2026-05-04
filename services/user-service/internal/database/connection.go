@@ -39,7 +39,16 @@ func ConnectDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	if err := AutoMigrateTables(db); err != nil {
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := sqlDB.Ping(); err != nil {
+		return nil, err
+	}
+
+	if err := RunMigrations(sqlDB); err != nil {
 		log.Printf("auto migrate error: %v", err)
 	}
 

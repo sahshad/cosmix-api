@@ -60,7 +60,7 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./infrastructure/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - cosmix-net
 
@@ -74,7 +74,7 @@ services:
     ports:
       - "5050:80"
     volumes:
-      - ./pgadmin/servers.json:/pgadmin4/servers.json
+      - ./infrastructure/pgadmin/servers.json:/pgadmin4/servers.json
     depends_on:
       - db
     networks:

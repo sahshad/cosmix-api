@@ -2,6 +2,7 @@ package routes
 
 import (
 	"user-service/internal/app"
+	"user-service/internal/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,12 +10,15 @@ import (
 func RegisterRoutes(router *gin.Engine, container *app.Container) {
 	api := router.Group("/")
 
-	api.GET("/health", container.UserProfileController.HealthCheck)
-	api.GET("/me", container.UserProfileController.GetMe)
-	api.PUT("/me", container.UserProfileController.UpdateMe)
-	api.GET("/username/:username", container.UserProfileController.GetByUsername)
-	api.POST("/:id/follow", container.FollowController.Follow)
-	api.DELETE("/:id/unfollow", container.FollowController.Unfollow)
-	api.GET("/:id/followers", container.FollowController.GetFollowers)
-	api.GET("/:id/following", container.FollowController.GetFollowing)
+	userProfileController := container.UserProfileController
+	followController := container.FollowController
+
+	api.GET("/health", middlewares.ErrorHandler(userProfileController.HealthCheck))
+	api.GET("/me", middlewares.ErrorHandler(userProfileController.GetMe))
+	api.PUT("/me", middlewares.ErrorHandler(userProfileController.UpdateMe))
+	api.GET("/username/:username", middlewares.ErrorHandler(userProfileController.GetByUsername))
+	api.POST("/:id/follow", followController.Follow)
+	api.DELETE("/:id/unfollow", followController.Unfollow)
+	api.GET("/:id/followers", followController.GetFollowers)
+	api.GET("/:id/following", followController.GetFollowing)
 }

@@ -23,7 +23,11 @@ type Container struct {
 func NewContainer(db *gorm.DB, rabbit *messaging.Rabbit) *Container {
 
 	userRepo := repositories.NewUserRepository(db)
-	authService := services.NewAuthService(userRepo)
+	sessionRepo := repositories.NewAuthSessionRepository(db)
+
+	sessionService := services.NewAuthSessionService(sessionRepo)
+	authService := services.NewAuthService(userRepo, sessionService)
+
 	authController := controllers.NewAuthController(authService, rabbit.Channel)
 
 	return &Container{

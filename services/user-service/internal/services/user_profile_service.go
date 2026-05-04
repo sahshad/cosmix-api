@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+	authEvents "cosmix-events/auth"
 	"errors"
 	"time"
 	"user-service/internal/dto"
@@ -9,12 +11,12 @@ import (
 )
 
 type UserProfileServiceInterface interface {
-	GetProfile(userID uint) (*dto.UserProfileResponse, error)
-	GetProfileByID(id uint) (*dto.UserProfileResponse, error)
-	GetProfileByUsername(username string) (*dto.UserProfileResponse, error)
-	UpdateProfile(userID uint, input dto.UpdateProfileDTO) (*dto.UserProfileResponse, error)
-	CreateProfile(profile *models.UserProfile) error
-	CreateFromAuthEvent(event dto.UserCreatedFromDTO) error
+	GetProfile(ctx context.Context, userID uint) (*dto.UserProfileResponse, error)
+	GetProfileByID(ctx context.Context, id uint) (*dto.UserProfileResponse, error)
+	GetProfileByUsername(ctx context.Context, username string) (*dto.UserProfileResponse, error)
+	UpdateProfile(ctx context.Context, userID uint, input dto.UpdateProfileDTO) (*dto.UserProfileResponse, error)
+	CreateProfile(ctx context.Context, profile *models.UserProfile) error
+	CreateFromAuthEvent(event authEvents.UserCreated) error
 }
 
 type UserProfileService struct {
@@ -27,24 +29,24 @@ func NewUserProfileService(repo repositories.UserProfileRepositoryInterface) Use
 	}
 }
 
-func (svc *UserProfileService) GetProfile(userID uint) (*dto.UserProfileResponse, error) {
-	profile, err := svc.repo.FindByUserID(userID)
+func (svc *UserProfileService) GetProfile(ctx context.Context, userID uint) (*dto.UserProfileResponse, error) {
+	profile, err := svc.repo.FindByUserID(ctx, userID)
 	if err != nil {
 		return nil, errors.New("profile not found")
 	}
 	return svc.toResponse(profile), nil
 }
 
-func (svc *UserProfileService) GetProfileByID(id uint) (*dto.UserProfileResponse, error) {
-	profile, err := svc.repo.FindByID(id)
+func (svc *UserProfileService) GetProfileByID(ctx context.Context, id uint) (*dto.UserProfileResponse, error) {
+	profile, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("profile not found")
 	}
 	return svc.toResponse(profile), nil
 }
 
-func (svc *UserProfileService) UpdateProfile(userID uint, input dto.UpdateProfileDTO) (*dto.UserProfileResponse, error) {
-	profile, err := svc.repo.FindByUserID(userID)
+func (svc *UserProfileService) UpdateProfile(ctx context.Context, userID uint, input dto.UpdateProfileDTO) (*dto.UserProfileResponse, error) {
+	profile, err := svc.repo.FindByUserID(ctx, userID)
 	if err != nil {
 		return nil, errors.New("profile not found")
 	}
@@ -72,30 +74,31 @@ func (svc *UserProfileService) UpdateProfile(userID uint, input dto.UpdateProfil
 		profile.Bio = input.Bio
 	}
 
-	if err := svc.repo.Update(profile); err != nil {
+	if err := svc.repo.Update(ctx, profile); err != nil {
 		return nil, err
 	}
 
 	return svc.toResponse(profile), nil
 }
 
-func (svc *UserProfileService) CreateProfile(profile *models.UserProfile) error {
-	return svc.repo.Create(profile)
+func (svc *UserProfileService) CreateProfile(ctx context.Context, profile *models.UserProfile) error {
+	return svc.repo.Create(ctx, profile)
 }
 
-func (svc *UserProfileService) CreateFromAuthEvent(event dto.UserCreatedFromDTO) error {
+func (svc *UserProfileService) CreateFromAuthEvent(event authEvents.UserCreated) error {
+	ctx := context.Background()
 	profile := &models.UserProfile{
-		UserID:    event.AuthUserID,
-		Email:     event.Email,
-		FirstName: event.FirstName,
-		LastName:  event.LastName,
-		CreatedAt: event.CreatedAt,
+		AuthUserID: event.AuthUserID,
+		Email:      event.Email,
+		FirstName:  event.FirstName,
+		LastName:   event.LastName,
+		CreatedAt:  event.CreatedAt,
 	}
-	return svc.repo.Create(profile)
+	return svc.repo.Create(ctx, profile)
 }
 
-func (svc *UserProfileService) GetProfileByUsername(username string) (*dto.UserProfileResponse, error) {
-	profile, err := svc.repo.FindByUsername(username)
+func (svc *UserProfileService) GetProfileByUsername(ctx context.Context, username string) (*dto.UserProfileResponse, error) {
+	profile, err := svc.repo.FindByUsername(ctx, username)
 	if err != nil {
 		return nil, errors.New("profile not found")
 	}
@@ -104,15 +107,17 @@ func (svc *UserProfileService) GetProfileByUsername(username string) (*dto.UserP
 
 func (svc *UserProfileService) toResponse(profile *models.UserProfile) *dto.UserProfileResponse {
 	return &dto.UserProfileResponse{
-		ID:          profile.ID,
-		UserID:      profile.UserID,
-		FirstName:   profile.FirstName,
-		LastName:    profile.LastName,
-		Username:    profile.Username,
-		DateOfBirth: profile.DateOfBirth,
-		AvatarURL:   profile.AvatarURL,
-		Bio:         profile.Bio,
-		CreatedAt:   profile.CreatedAt,
-		UpdatedAt:   profile.UpdatedAt,
+		User: dto.UserResponse{
+			ID:          profile.ID,
+			AuthUserID:  profile.AuthUserID,
+			FirstName:   profile.FirstName,
+			LastName:    profile.LastName,
+			Username:    profile.Username,
+			DateOfBirth: profile.DateOfBirth,
+			AvatarURL:   profile.AvatarURL,
+			Bio:         profile.Bio,
+			CreatedAt:   profile.CreatedAt,
+			UpdatedAt:   profile.UpdatedAt,
+		},
 	}
 }
