@@ -1,28 +1,37 @@
 import express from "express"
 import helmet from "helmet"
 import cors from "cors"
+import morgan from "morgan"
 
-import { rateLimiter } from "./middlewares/rateLimit.middleware"
+import { apiRateLimiter, authRateLimiter, userRateLimiter } from "./middlewares/rateLimit.middleware"
 import { errorHandler } from "./middlewares/error.middleware"
 
 import { authRoutes } from "./routes/auth.routes"
 import { healthRoutes } from "./routes/health.routes"
 import { userRoutes } from "./routes/user.routes"
+import { assignRequestID } from "./middlewares/requestId.middleware"
 
 export const app = express()
+
+app.use(assignRequestID)
+app.use(express.json({ limit: "10kb" }))
+app.use(express.urlencoded({ extended: true, limit: "10kb" }))
+
+morgan.token("id", (req: any) => req.headers["x-request-id"])
+morgan.format("custom", ":id :method :url :status :response-time ms - :res[content-length]")
+app.use(morgan("custom"))
 
 app.use(helmet())
 app.use(cors({
     origin: "http://localhost:3000",
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     exposedHeaders: ["Content-Length", "Content-Type", "Authorization", "X-Requested-With"],
 }))
-app.use(rateLimiter)
 
-app.use("/api/health", healthRoutes)
-app.use("/api/auth", authRoutes)
-app.use("/api/user", userRoutes)
+app.use("/api/health", apiRateLimiter, healthRoutes)
+app.use("/api/auth", authRateLimiter, authRoutes)
+app.use("/api/user", userRateLimiter, userRoutes)
 
 app.use(errorHandler)
