@@ -16,7 +16,7 @@ type UserProfileServiceInterface interface {
 	GetProfileByUsername(ctx context.Context, username string) (*dto.UserProfileResponse, error)
 	UpdateProfile(ctx context.Context, userID uint, input dto.UpdateProfileDTO) (*dto.UserProfileResponse, error)
 	CreateProfile(ctx context.Context, profile *models.UserProfile) error
-	CreateFromAuthEvent(event authEvents.UserCreated) error
+	CreateFromAuthEvent(event authEvents.AuthUserRegistered) error
 }
 
 type UserProfileService struct {
@@ -85,7 +85,7 @@ func (svc *UserProfileService) CreateProfile(ctx context.Context, profile *model
 	return svc.repo.Create(ctx, profile)
 }
 
-func (svc *UserProfileService) CreateFromAuthEvent(event authEvents.UserCreated) error {
+func (svc *UserProfileService) CreateFromAuthEvent(event authEvents.AuthUserRegistered) error {
 	ctx := context.Background()
 	profile := &models.UserProfile{
 		AuthUserID: event.AuthUserID,

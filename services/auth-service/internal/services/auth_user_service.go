@@ -20,7 +20,6 @@ type AuthServiceInterface interface {
 	Login(ctx context.Context, input dto.LoginDTO) (*dto.LoginResponseDTO, error)
 	Refresh(ctx context.Context, refreshToken string) (*dto.RefreshResponseDTO, error)
 	GetByID(ctx context.Context, id uint) (*models.AuthUser, error)
-	UpdateFromAuthEvent(event dto.UserUpdatedFromDTO) error
 	UpdateUserPassword(ctx context.Context, userID uint, newPassword string) error
 }
 
@@ -153,18 +152,6 @@ func (svc *AuthService) GetByID(ctx context.Context, id uint) (*models.AuthUser,
 		return nil, err
 	}
 	return user, nil
-}
-
-func (svc *AuthService) UpdateFromAuthEvent(event dto.UserUpdatedFromDTO) error {
-	ctx := context.Background()
-	user, err := svc.userRepo.FindByID(ctx, event.AuthUserID)
-	if err != nil {
-		return err
-	}
-
-	user.Email = event.Email
-	user.UpdatedAt = &event.UpdatedAt
-	return svc.userRepo.Update(ctx, user)
 }
 
 func (svc *AuthService) UpdateUserPassword(ctx context.Context, userID uint, newPassword string) error {

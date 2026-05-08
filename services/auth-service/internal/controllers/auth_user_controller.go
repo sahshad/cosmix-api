@@ -4,8 +4,8 @@ import (
 	"os"
 	"time"
 
-	"auth-service/internal/dto"
 	"auth-service/internal/apperrors"
+	"auth-service/internal/dto"
 	publisher "auth-service/internal/messaging/publisher"
 	"auth-service/internal/services"
 
@@ -43,8 +43,8 @@ func (ctrl *AuthController) Register(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Publish user created event
-	publisher.PublishUserCreated(ctrl.rabbitCh, authEvents.UserCreated{
+	// Publish user registered event
+	publisher.PublishAuthUserRegistered(ctrl.rabbitCh, authEvents.AuthUserRegistered{
 		EventVersion: "v1",
 		AuthUserID:   user.ID,
 		Email:        user.Email,

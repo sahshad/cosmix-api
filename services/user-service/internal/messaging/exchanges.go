@@ -1,13 +1,16 @@
 package messaging
 
-import amqp "github.com/rabbitmq/amqp091-go"
+import (
+	"cosmix-events/rabbitmq"
+	amqp "github.com/rabbitmq/amqp091-go"
+)
 
 func DeclareExchanges(ch *amqp.Channel) error {
 
-	// Auth owns this exchange
+	// Exchange
 	if err := ch.ExchangeDeclare(
-		"auth.events",
-		"topic",
+		rabbitmq.ExchangeEvents,
+		rabbitmq.ExchangeType,
 		true,
 		false,
 		false,
@@ -17,10 +20,10 @@ func DeclareExchanges(ch *amqp.Channel) error {
 		return err
 	}
 
-	// Optional DLX
+	// DLX
 	if err := ch.ExchangeDeclare(
-		"auth.events.dlx",
-		"topic",
+		rabbitmq.ExchangeDLX,
+		rabbitmq.ExchangeType,
 		true,
 		false,
 		false,

@@ -2,9 +2,9 @@ package controllers
 
 import (
 
-	authEvents "cosmix-events/auth"
+	// authEvents "cosmix-events/auth"
 	"user-service/internal/dto"
-	"user-service/internal/messaging/publisher"
+	// "user-service/internal/messaging/publisher"
 	"user-service/internal/services"
 	"user-service/internal/utils"
 
@@ -84,14 +84,14 @@ func (ctrl *UserProfileController) UpdateMyProfile(c *gin.Context) (interface{},
 		return nil, err
 	}
 
-	if input.Email != nil {
-		publisher.PublishUserUpdated(ctrl.rabbitCh, authEvents.UserUpdated{
-			EventVersion: "v1",
-			AuthUserID:   uint(userID),
-			Email:        *input.Email,
-			UpdatedAt:    *profile.User.UpdatedAt,
-		})
-	}
+	// if input.Email != nil {
+	// 	publisher.PublishUserUpdated(ctrl.rabbitCh, authEvents.UserUpdated{
+	// 		EventVersion: "v1",
+	// 		AuthUserID:   uint(userID),
+	// 		Email:        *input.Email,
+	// 		UpdatedAt:    *profile.User.UpdatedAt,
+	// 	})
+	// }
 
 	return profile, nil
 }

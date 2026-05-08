@@ -40,6 +40,19 @@ services:
     networks:
       - cosmix-net
 
+  notification-service:
+    build:
+      context: .
+      dockerfile: ./services/notification-service/Dockerfile
+    container_name: notification-service
+    env_file:
+      - ./services/notification-service/.env
+    depends_on:
+      - db
+      - rabbitmq
+    networks:
+      - cosmix-net
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: cosmix-rabbitmq

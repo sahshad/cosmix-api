@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"log"
 
-	// "user-service/internal/dto"
 	"user-service/internal/services"
 
 	authEvents "cosmix-events/auth"
+	"cosmix-events/rabbitmq"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func ConsumeUserCreated(ch *amqp.Channel, userProfileService services.UserProfileServiceInterface) {
+func RegisterAuthUserRegisteredConsumer(ch *amqp.Channel, userProfileService services.UserProfileServiceInterface) {
 
 	q, err := ch.QueueDeclare(
-		"user.created",
+		rabbitmq.UserAuthUserRegistered,
 		true,
 		false,
 		false,
@@ -28,8 +28,8 @@ func ConsumeUserCreated(ch *amqp.Channel, userProfileService services.UserProfil
 
 	if err := ch.QueueBind(
 		q.Name,
-		"user.created",
-		"auth.events",
+		rabbitmq.AuthUserRegistered,
+		rabbitmq.ExchangeEvents,
 		false,
 		nil,
 	); err != nil {
@@ -52,10 +52,10 @@ func ConsumeUserCreated(ch *amqp.Channel, userProfileService services.UserProfil
 
 	go func() {
 		for msg := range msgs {
-			var event authEvents.UserCreated
+			var event authEvents.AuthUserRegistered
 			json.Unmarshal(msg.Body, &event)
 
-			userCreatedEvent := authEvents.UserCreated{
+			userCreatedEvent := authEvents.AuthUserRegistered{
 				AuthUserID: event.AuthUserID,
 				Email:      event.Email,
 				FirstName:  event.FirstName,

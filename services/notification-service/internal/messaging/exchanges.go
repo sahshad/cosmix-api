@@ -5,6 +5,7 @@ import (
 	"cosmix-events/rabbitmq"
 )
 
+
 func DeclareExchanges(ch *amqp.Channel) error {
 
 	// Exchange
@@ -20,7 +21,7 @@ func DeclareExchanges(ch *amqp.Channel) error {
 		return err
 	}
 
-	// DLX
+	//  DLX
 	if err := ch.ExchangeDeclare(
 		rabbitmq.ExchangeDLX,
 		rabbitmq.ExchangeType,
