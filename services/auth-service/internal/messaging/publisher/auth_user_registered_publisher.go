@@ -6,8 +6,8 @@ import (
 	"log"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	authEvents "cosmix-events/auth"
-	"cosmix-events/rabbitmq"
+	authEvents "cosmix/shared/events/auth"
+	"cosmix/shared/core/rabbitmq"
 )
 
 func PublishAuthUserRegistered(ch *amqp.Channel, event authEvents.AuthUserRegistered) {

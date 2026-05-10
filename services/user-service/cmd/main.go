@@ -7,7 +7,7 @@ import (
 
 	"user-service/internal/app"
 	"user-service/internal/database"
-	"user-service/internal/messaging"
+	"cosmix/shared/core/rabbitmq"
 	"user-service/internal/middlewares"
 	"user-service/internal/routes"
 
@@ -33,7 +33,7 @@ func main() {
 		log.Fatalf("db connect failed: %v", err)
 	}
 
-	rabbitChannel := messaging.Connect(rabbitURL)
+	rabbitChannel := rabbitmq.Connect(rabbitURL)
 	if rabbitChannel == nil {
 		log.Println("RabbitMQ unavailable, running without consumer")
 	}

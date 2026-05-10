@@ -4,12 +4,12 @@ import (
 	"os"
 	"time"
 
-	"auth-service/internal/apperrors"
 	"auth-service/internal/dto"
 	publisher "auth-service/internal/messaging/publisher"
 	"auth-service/internal/services"
+	apperrors "cosmix/shared/core/errors"
 
-	authEvents "cosmix-events/auth"
+	authEvents "cosmix/shared/events/auth"
 
 	"github.com/gin-gonic/gin"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -45,7 +45,7 @@ func (ctrl *AuthController) Register(c *gin.Context) (interface{}, error) {
 	}
 	// Publish user registered event
 	publisher.PublishAuthUserRegistered(ctrl.rabbitCh, authEvents.AuthUserRegistered{
-		EventVersion: "v1",
+		EventVersion: authEvents.EventVersionOne,
 		AuthUserID:   user.ID,
 		Email:        user.Email,
 		FirstName:    registerDTO.FirstName,

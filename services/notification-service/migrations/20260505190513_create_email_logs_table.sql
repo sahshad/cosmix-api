@@ -12,8 +12,7 @@ CREATE TABLE email_logs (
     error_message TEXT NULL,
     sent_at TIMESTAMPTZ NULL,
     failed_at TIMESTAMPTZ NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NULL
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_email_logs_user_id ON email_logs(user_id);

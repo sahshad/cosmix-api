@@ -3,13 +3,14 @@ import helmet from "helmet"
 import cors from "cors"
 import morgan from "morgan"
 
-import { apiRateLimiter, authRateLimiter, userRateLimiter } from "./middlewares/rateLimit.middleware"
+import { apiRateLimiter, authRateLimiter, notificationRateLimiter, userRateLimiter } from "./middlewares/rateLimit.middleware"
 import { errorHandler } from "./middlewares/error.middleware"
 
 import { authRoutes } from "./routes/auth.routes"
 import { healthRoutes } from "./routes/health.routes"
 import { userRoutes } from "./routes/user.routes"
 import { assignRequestID } from "./middlewares/requestId.middleware"
+import { notificationRoutes } from "./routes/notification.routes"
 
 export const app = express()
 
@@ -33,5 +34,6 @@ app.use(cors({
 app.use("/api/health", apiRateLimiter, healthRoutes)
 app.use("/api/auth", authRateLimiter, authRoutes)
 app.use("/api/user", userRateLimiter, userRoutes)
+app.use("/api/notification", notificationRateLimiter, notificationRoutes)
 
 app.use(errorHandler)

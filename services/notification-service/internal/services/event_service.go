@@ -1,7 +1,7 @@
 package services
 
 import (
-	authEvents "cosmix-events/auth"
+	authEvents "cosmix/shared/events/auth"
 	"notification-service/internal/models"
 )
 

@@ -1,9 +1,8 @@
 package controllers
 
 import (
-	"net/http"
-	"strconv"
 	"user-service/internal/services"
+	"cosmix/shared/core/httpx"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,100 +15,76 @@ func NewFollowController(service services.FollowServiceInterface) *FollowControl
 	return &FollowController{service: service}
 }
 
-func (ctrl *FollowController) Follow(c *gin.Context) {
-	userIDStr := c.GetHeader("X-User-Id")
-	if userIDStr == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
-		return
+func (ctrl *FollowController) Follow(c *gin.Context) (interface{}, error) {
+	followerID, err := httpx.ParseUserIDHeader(c)
+	if err != nil {
+		return nil, err
 	}
 
-	followerID, err := strconv.ParseUint(userIDStr, 10, 32)
+	followingID, err := httpx.ParseParamID(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
-		return
-	}
-
-	followingIDStr := c.Param("id")
-	followingID, err := strconv.ParseUint(followingIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
-		return
+		return nil, err
 	}
 
 	ctx := c.Request.Context()
 	
-	if err := ctrl.service.Follow(ctx, uint(followerID), uint(followingID)); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	err = ctrl.service.Follow(ctx, uint(followerID), uint(followingID))
+	if err != nil {
+		return nil, err
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "followed successfully"})
+	return gin.H{"message": "followed successfully"}, nil
 }
 
-func (ctrl *FollowController) Unfollow(c *gin.Context) {
-	userIDStr := c.GetHeader("X-User-Id")
-	if userIDStr == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
-		return
+func (ctrl *FollowController) Unfollow(c *gin.Context) (interface{}, error) {
+	followerID, err := httpx.ParseUserIDHeader(c)
+	if err != nil {
+		return nil, err
 	}
 
-	followerID, err := strconv.ParseUint(userIDStr, 10, 32)
+	followingID, err := httpx.ParseParamID(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
-		return
-	}
-
-	followingIDStr := c.Param("id")
-	followingID, err := strconv.ParseUint(followingIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
-		return
+		return nil, err
 	}
 
 	ctx := c.Request.Context()
 	
-	if err := ctrl.service.Unfollow(ctx, uint(followerID), uint(followingID)); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	err = ctrl.service.Unfollow(ctx, uint(followerID), uint(followingID))
+	if err != nil {
+		return nil, err
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "unfollowed successfully"})
+	return gin.H{"message": "unfollowed successfully"}, nil
 }
 
-func (ctrl *FollowController) GetFollowers(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+func (ctrl *FollowController) GetFollowers(c *gin.Context) (interface{}, error) {
+	id, err := httpx.ParseParamID(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
-		return
+		return nil, err
 	}
 
 	ctx := c.Request.Context()
 
 	followers, err := ctrl.service.GetFollowers(ctx, uint(id))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
-	c.JSON(http.StatusOK, gin.H{"followers": followers})
+	return followers, nil
 }
 
-func (ctrl *FollowController) GetFollowing(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+func (ctrl *FollowController) GetFollowing(c *gin.Context) (interface{}, error) {
+	id, err := httpx.ParseParamID(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
-		return
+		return nil, err
 	}
 
 	ctx := c.Request.Context()
 
 	following, err := ctrl.service.GetFollowing(ctx, uint(id))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
-	c.JSON(http.StatusOK, gin.H{"following": following})
+	return following, nil
 }

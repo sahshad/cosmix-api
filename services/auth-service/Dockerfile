@@ -10,8 +10,8 @@ RUN apk add --no-cache git
 # Copy go.mod and go.sum
 COPY services/auth-service/go.* ./
 
-# Copy cosmix-events for messaging
-COPY cosmix-events /cosmix-events
+# Copy shared for messaging
+COPY shared /shared
 
 # Download dependencies
 RUN go mod download

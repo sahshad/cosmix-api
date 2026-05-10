@@ -26,3 +26,9 @@ export const userRateLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
   max: 100,
 })
+
+export const notificationRateLimiter = rateLimit({
+  ...commonOptions,
+  windowMs: 1 * 60 * 1000,
+  max: 100,
+})

@@ -2,7 +2,7 @@ package app
 
 import (
 	"user-service/internal/controllers"
-	"user-service/internal/messaging"
+	"cosmix/shared/core/rabbitmq"
 	"user-service/internal/repositories"
 	"user-service/internal/services"
 
@@ -11,7 +11,7 @@ import (
 
 type Container struct {
 	DB     *gorm.DB
-	Rabbit *messaging.Rabbit
+	Rabbit *rabbitmq.Rabbit
 
 	// Controllers
 	UserProfileController *controllers.UserProfileController
@@ -22,7 +22,7 @@ type Container struct {
 	FollowService      services.FollowServiceInterface
 }
 
-func NewContainer(db *gorm.DB, rabbit *messaging.Rabbit) *Container {
+func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 
 	userProfileRepo := repositories.NewUserProfileRepository(db)
 	userProfileService := services.NewUserProfileService(userProfileRepo)

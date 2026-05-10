@@ -6,7 +6,7 @@ RUN apk add --no-cache git
 
 COPY services/notification-service/go.* ./
 
-COPY cosmix-events /cosmix-events
+COPY shared /shared
 
 RUN go mod download
 

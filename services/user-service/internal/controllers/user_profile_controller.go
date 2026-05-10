@@ -2,11 +2,9 @@ package controllers
 
 import (
 
-	// authEvents "cosmix-events/auth"
 	"user-service/internal/dto"
-	// "user-service/internal/messaging/publisher"
 	"user-service/internal/services"
-	"user-service/internal/utils"
+	"cosmix/shared/core/httpx"
 
 	"github.com/gin-gonic/gin"
 	ampqp "github.com/rabbitmq/amqp091-go"
@@ -30,7 +28,7 @@ func (ctrl *UserProfileController) GetMe(c *gin.Context) (interface{}, error) {
 }
 
 func (ctrl *UserProfileController) GetMyProfile(c *gin.Context) (interface{}, error) {
-	userID, err := utils.ParseUserIDHeader(c)
+	userID, err := httpx.ParseUserIDHeader(c)
 	if err != nil {
 		return nil, err
 	}
@@ -46,8 +44,7 @@ func (ctrl *UserProfileController) GetMyProfile(c *gin.Context) (interface{}, er
 }
 
 func (ctrl *UserProfileController) GetProfileByID(c *gin.Context) (interface{}, error) {
-
-	id, err := utils.ParseParamID(c, "id")
+	id, err := httpx.ParseParamID(c, "id")
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +64,7 @@ func (ctrl *UserProfileController) UpdateMe(c *gin.Context) (interface{}, error)
 }
 
 func (ctrl *UserProfileController) UpdateMyProfile(c *gin.Context) (interface{}, error){
-	userID, err := utils.ParseUserIDHeader(c)
+	userID, err := httpx.ParseUserIDHeader(c)
 	if err != nil {
 		return nil, err
 	}
@@ -84,20 +81,14 @@ func (ctrl *UserProfileController) UpdateMyProfile(c *gin.Context) (interface{},
 		return nil, err
 	}
 
-	// if input.Email != nil {
-	// 	publisher.PublishUserUpdated(ctrl.rabbitCh, authEvents.UserUpdated{
-	// 		EventVersion: "v1",
-	// 		AuthUserID:   uint(userID),
-	// 		Email:        *input.Email,
-	// 		UpdatedAt:    *profile.User.UpdatedAt,
-	// 	})
-	// }
-
 	return profile, nil
 }
 
 func (ctrl *UserProfileController) GetByUsername(c *gin.Context) (interface{}, error){
-	username := c.Param("username")
+	username, err := httpx.ParseQueryString(c, "username")
+	if err != nil {
+		return nil, err
+	}
 
 	ctx := c.Request.Context()
 

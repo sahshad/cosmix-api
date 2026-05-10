@@ -7,9 +7,10 @@ import (
 
 	"auth-service/internal/app"
 	"auth-service/internal/database"
-	"auth-service/internal/messaging"
-	"auth-service/internal/middlewares"
+	// "auth-service/internal/messaging"
+	"cosmix/shared/core/rabbitmq"
 	"auth-service/internal/routes"
+	"cosmix/shared/core/middleware"
 
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
@@ -33,7 +34,7 @@ func main() {
 		log.Fatalf("db connect failed: %v", err)
 	}
 
-	rabbit := messaging.Connect(rabbitURL)
+	rabbit := rabbitmq.Connect(rabbitURL)
 	if rabbit == nil {
 		log.Println("RabbitMQ unavailable, events will not be published")
 	}
@@ -43,7 +44,7 @@ func main() {
 	logger, _ := zap.NewProduction()
 	router := gin.New()
 
-	router.Use(middlewares.RequestIDMiddleware())
+	router.Use(middleware.RequestIDMiddleware())
 	router.Use(ginzap.GinzapWithConfig(logger, &ginzap.Config{
 		TimeFormat: time.RFC3339,
 		UTC:        true,

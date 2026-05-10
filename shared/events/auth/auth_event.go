@@ -2,6 +2,10 @@ package auth
 
 import "time"
 
+const (
+	EventVersionOne = "1.0.0"
+)
+
 type AuthUserRegistered struct {
 	EventVersion string    `json:"event_version"`
 	AuthUserID   uint      `json:"auth_user_id"`

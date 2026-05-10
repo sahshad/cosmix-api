@@ -1,23 +1,23 @@
 package middlewares
 
-import (
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-)
+// import (
+// 	"github.com/gin-gonic/gin"
+// 	"github.com/google/uuid"
+// )
 
-func RequestIDMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
+// func RequestIDMiddleware() gin.HandlerFunc {
+// 	return func(c *gin.Context) {
 
-		id := c.GetHeader("X-Request-Id")
+// 		id := c.GetHeader("X-Request-Id")
 
-		if id == "" {
-			id = uuid.New().String()
-		}
+// 		if id == "" {
+// 			id = uuid.New().String()
+// 		}
 
-		c.Set("RequestID", id)
+// 		c.Set("RequestID", id)
 
-		c.Header("X-Request-Id", id)
+// 		c.Header("X-Request-Id", id)
 
-		c.Next()
-	}
-}
+// 		c.Next()
+// 	}
+// }

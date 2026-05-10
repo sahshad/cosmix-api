@@ -15,7 +15,6 @@ type EmailLog struct {
 	SentAt       *time.Time `json:"sent_at"`
 	FailedAt     *time.Time `json:"failed_at"`
 	CreatedAt    time.Time  `gorm:"not null;default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt    *time.Time `json:"updated_at"`
 }
 
 func (EmailLog) TableName() string {

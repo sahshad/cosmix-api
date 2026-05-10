@@ -17,8 +17,8 @@ func RegisterRoutes(router *gin.Engine, container *app.Container) {
 	api.GET("/me", middlewares.ErrorHandler(userProfileController.GetMe))
 	api.PUT("/me", middlewares.ErrorHandler(userProfileController.UpdateMe))
 	api.GET("/username/:username", middlewares.ErrorHandler(userProfileController.GetByUsername))
-	api.POST("/:id/follow", followController.Follow)
-	api.DELETE("/:id/unfollow", followController.Unfollow)
-	api.GET("/:id/followers", followController.GetFollowers)
-	api.GET("/:id/following", followController.GetFollowing)
+	api.POST("/follow/:id", middlewares.ErrorHandler(followController.Follow))
+	api.DELETE("/unfollow/:id", middlewares.ErrorHandler(followController.Unfollow))
+	api.GET("/followers/:id", middlewares.ErrorHandler(followController.GetFollowers))
+	api.GET("/following/:id", middlewares.ErrorHandler(followController.GetFollowing))
 }

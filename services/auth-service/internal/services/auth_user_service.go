@@ -5,12 +5,11 @@ import (
 	"errors"
 	"time"
 
-	"auth-service/internal/apperrors"
-	"auth-service/internal/constants"
 	"auth-service/internal/dto"
 	"auth-service/internal/models"
 	"auth-service/internal/repositories"
 	"auth-service/internal/utils"
+	appErr "cosmix/shared/core/errors"
 
 	"gorm.io/gorm"
 )
@@ -40,7 +39,7 @@ func NewAuthService(
 
 func (svc *AuthService) Register(ctx context.Context, input dto.RegisterDTO) (*models.AuthUser, error) {
 	if _, err := svc.userRepo.FindByEmail(ctx, input.Email); err == nil {
-		return nil, apperrors.NewBadRequest("email", constants.EmailInUse)
+		return nil, appErr.NewBadRequest("email", "Email already in use")
 	}
 
 	pwHash, err := utils.HashPassword(input.Password)
@@ -66,18 +65,18 @@ func (svc *AuthService) Register(ctx context.Context, input dto.RegisterDTO) (*m
 func (svc *AuthService) Login(ctx context.Context, input dto.LoginDTO) (*dto.LoginResponseDTO, error) {
 	authUser, err := svc.userRepo.FindByEmail(ctx, input.Email)
 	if err != nil {
-		return nil, apperrors.NewBadRequest("email", constants.InvalidCredentials)
+		return nil, appErr.NewBadRequest("email", "Invalid credentials")
 	}
 
 	if err := utils.VerifyPassword(input.Password, authUser.PasswordHash); err != nil {
-		return nil, apperrors.NewBadRequest("password", constants.InvalidCredentials)
+		return nil, appErr.NewBadRequest("password", "Invalid credentials")
 	}
 
-	access, err := utils.GenerateAccessToken(authUser.ID, constants.RoleUser)
+	access, err := utils.GenerateAccessToken(authUser.ID, "user")
 	if err != nil {
 		return nil, err
 	}
-	refresh, err := utils.GenerateRefreshToken(authUser.ID, constants.RoleUser)
+	refresh, err := utils.GenerateRefreshToken(authUser.ID, "user")
 	if err != nil {
 		return nil, err
 	}
@@ -122,18 +121,18 @@ func (svc *AuthService) Login(ctx context.Context, input dto.LoginDTO) (*dto.Log
 func (svc *AuthService) Refresh(ctx context.Context, refreshToken string) (*dto.RefreshResponseDTO, error) {
 	claims, err := utils.ParseRefreshToken(refreshToken)
 	if err != nil {
-		return nil, apperrors.NewUnauthorized(constants.InvalidToken)
+		return nil, appErr.NewUnauthorized("Invalid Token")
 	}
 
 	if _, err := svc.userRepo.FindByID(ctx, claims.UserID); err != nil {
-		return nil, apperrors.NewUnauthorized(constants.InvalidToken)
+		return nil, appErr.NewUnauthorized("Invalid Token")
 	}
 
-	newAccess, err := utils.GenerateAccessToken(claims.UserID, constants.RoleUser)
+	newAccess, err := utils.GenerateAccessToken(claims.UserID, "user")
 	if err != nil {
 		return nil, err
 	}
-	newRefresh, err := utils.GenerateRefreshToken(claims.UserID, constants.RoleUser)
+	newRefresh, err := utils.GenerateRefreshToken(claims.UserID, "user")
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +146,7 @@ func (svc *AuthService) GetByID(ctx context.Context, id uint) (*models.AuthUser,
 	user, err := svc.userRepo.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, apperrors.NewNotFound("user", id)
+			return nil, appErr.NewNotFound("user")
 		}
 		return nil, err
 	}

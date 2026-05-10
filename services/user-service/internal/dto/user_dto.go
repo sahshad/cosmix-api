@@ -3,7 +3,6 @@ package dto
 import "time"
 
 type UpdateProfileDTO struct {
-	Email       *string `json:"email"`
 	FirstName   *string `json:"first_name"`
 	LastName    *string `json:"last_name"`
 	Username    *string `json:"username" binding:"omitempty,alphanum"`

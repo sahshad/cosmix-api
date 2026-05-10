@@ -16,8 +16,7 @@ CREATE TABLE notifications (
     action_url TEXT NULL,
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     read_at TIMESTAMPTZ NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NULL
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_notifications_user_read ON notifications(user_id, is_read);

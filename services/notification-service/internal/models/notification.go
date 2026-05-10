@@ -19,7 +19,6 @@ type Notification struct {
 	IsRead           bool       `gorm:"not null;default:false;index:idx_notifications_user_read" json:"is_read"`
 	ReadAt           *time.Time `json:"read_at"`
 	CreatedAt        time.Time  `gorm:"not null;default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt        *time.Time `json:"updated_at"`
 }
 
 func (Notification) TableName() string {

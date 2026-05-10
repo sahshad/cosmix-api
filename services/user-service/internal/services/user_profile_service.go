@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	authEvents "cosmix-events/auth"
+	authEvents "cosmix/shared/events/auth"
 	"errors"
 	"time"
 	"user-service/internal/dto"

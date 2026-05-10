@@ -3,12 +3,15 @@ package repositories
 import (
 	"notification-service/internal/models"
 
+	"context"
+	"notification-service/internal/dto"
+
 	"gorm.io/gorm"
 )
 
 type NotificationRepositoryInterface interface {
 	Create(notification *models.Notification) error
-	GetByUserID(userID uint, limit int, offset int) ([]models.Notification, error)
+	GetUserNotifications(ctx context.Context, userID uint, params dto.PaginationRequest) (*dto.UserNotificationsResponse, error)
 	GetUnreadCount(userID uint) (int64, error)
 	MarkAsRead(notificationID uint, userID uint) error
 }
@@ -29,17 +32,30 @@ func (repo *NotificationRepository) Create(notification *models.Notification) er
 	return repo.db.Create(notification).Error
 }
 
-func (repo *NotificationRepository) GetByUserID(userID uint, limit int, offset int) ([]models.Notification, error) {
-	var notifications []models.Notification
+func (repo *NotificationRepository) GetUserNotifications(ctx context.Context, userID uint, params dto.PaginationRequest) (*dto.UserNotificationsResponse, error) {
+	var notifications []dto.NotificationList
 
-	err := repo.db.
+	err := repo.db.WithContext(ctx).
+		Table("notifications").
 		Where("user_id = ?", userID).
 		Order("created_at DESC").
-		Limit(limit).
-		Offset(offset).
+		Limit(int(params.Limit)).
+		Offset(int((params.Page - 1) * params.Limit)).
 		Find(&notifications).Error
 
-	return notifications, err
+	if err != nil {
+		return nil, err
+	}
+
+	totalCount := uint(len(notifications))
+	totalPages := (uint(len(notifications)) + params.Limit - 1) / params.Limit
+
+	return &dto.UserNotificationsResponse{Notifications: notifications, Pagination: dto.PaginationResponse{
+		Page:       params.Page,
+		Limit:      params.Limit,
+		TotalCount: totalCount,
+		TotalPages: totalPages,
+	}}, nil
 }
 
 func (repo *NotificationRepository) GetUnreadCount(userID uint) (int64, error) {

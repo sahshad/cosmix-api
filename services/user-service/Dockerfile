@@ -11,7 +11,7 @@ RUN apk add --no-cache git
 COPY services/user-service/go.* ./
 
 # Copy cosmix-events for messaging
-COPY cosmix-events /cosmix-events
+COPY shared /shared
 
 # Download dependencies
 RUN go mod download

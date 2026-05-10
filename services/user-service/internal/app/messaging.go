@@ -1,14 +1,14 @@
 package app
 
 import (
-	"user-service/internal/messaging"
+	"cosmix/shared/core/rabbitmq"
 	"user-service/internal/messaging/consumer"
 	"log"
 )
 
 func RegisterConsumers(container *Container) {
 
-	if err := messaging.DeclareExchanges(container.Rabbit.Channel); err != nil {
+	if err := rabbitmq.DeclareExchanges(container.Rabbit.Channel); err != nil {
 		log.Fatal(err)
 	}
 	
