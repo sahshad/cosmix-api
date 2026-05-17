@@ -15,19 +15,15 @@ func ErrorHandler(handler HandlerFunc) gin.HandlerFunc {
 		if err != nil {
 			if appErr, ok := err.(*apperrors.AppError); ok {
 				c.JSON(appErr.Status, gin.H{
-					"error": gin.H{
-						"code":    appErr.Code,
-						"message": appErr.Message,
-						"field":   appErr.Field,
-					},
+					"code":    appErr.Code,
+					"message": appErr.Message,
+					"field":   appErr.Field,
 				})
 				return
 			}
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": gin.H{
-					"code":    apperrors.CodeInternalServerError,
-					"message": "internal server error",
-				},
+				"code":    apperrors.CodeInternalServerError,
+				"message": "internal server error",
 			})
 			return
 		}

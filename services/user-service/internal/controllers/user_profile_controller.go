@@ -51,7 +51,7 @@ func (ctrl *UserProfileController) GetProfileByID(c *gin.Context) (interface{}, 
 
 	ctx := c.Request.Context()
 
-	profile, err := ctrl.service.GetProfileByID(ctx, uint(id))
+	profile, err := ctrl.service.GetProfile(ctx, uint(id))
 	if err != nil {
 		return nil, err
 	}

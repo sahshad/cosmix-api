@@ -15,7 +15,7 @@ type UserProfileServiceInterface interface {
 	GetProfileByID(ctx context.Context, id uint) (*dto.UserProfileResponse, error)
 	GetProfileByUsername(ctx context.Context, username string) (*dto.UserProfileResponse, error)
 	UpdateProfile(ctx context.Context, userID uint, input dto.UpdateProfileDTO) (*dto.UserProfileResponse, error)
-	CreateProfile(ctx context.Context, profile *models.UserProfile) error
+	CreateProfile(ctx context.Context, profile *models.User) error
 	CreateFromAuthEvent(event authEvents.AuthUserRegistered) error
 }
 
@@ -51,15 +51,14 @@ func (svc *UserProfileService) UpdateProfile(ctx context.Context, userID uint, i
 		return nil, errors.New("profile not found")
 	}
 
-	if input.FirstName != nil {
-		profile.FirstName = *input.FirstName
+	if input.DisplayName != nil {
+		profile.DisplayName = *input.DisplayName
 	}
-	if input.LastName != nil {
-		profile.LastName = *input.LastName
-	}
+
 	if input.Username != nil {
-		profile.Username = input.Username
+		profile.Username = *input.Username
 	}
+
 	if input.DateOfBirth != nil {
 		dob, err := time.Parse("2006-01-02", *input.DateOfBirth)
 		if err != nil {
@@ -67,9 +66,11 @@ func (svc *UserProfileService) UpdateProfile(ctx context.Context, userID uint, i
 		}
 		profile.DateOfBirth = &dob
 	}
+
 	if input.AvatarURL != nil {
 		profile.AvatarURL = input.AvatarURL
 	}
+
 	if input.Bio != nil {
 		profile.Bio = input.Bio
 	}
@@ -81,18 +82,18 @@ func (svc *UserProfileService) UpdateProfile(ctx context.Context, userID uint, i
 	return svc.toResponse(profile), nil
 }
 
-func (svc *UserProfileService) CreateProfile(ctx context.Context, profile *models.UserProfile) error {
+func (svc *UserProfileService) CreateProfile(ctx context.Context, profile *models.User) error {
 	return svc.repo.Create(ctx, profile)
 }
 
 func (svc *UserProfileService) CreateFromAuthEvent(event authEvents.AuthUserRegistered) error {
 	ctx := context.Background()
-	profile := &models.UserProfile{
-		AuthUserID: event.AuthUserID,
-		Email:      event.Email,
-		FirstName:  event.FirstName,
-		LastName:   event.LastName,
-		CreatedAt:  event.CreatedAt,
+	profile := &models.User{
+		UserID:      event.AuthUserID,
+		Email:       event.Email,
+		DisplayName: event.DisplayName,
+		Username:    event.Username,
+		CreatedAt:   event.CreatedAt,
 	}
 	return svc.repo.Create(ctx, profile)
 }
@@ -105,14 +106,15 @@ func (svc *UserProfileService) GetProfileByUsername(ctx context.Context, usernam
 	return svc.toResponse(profile), nil
 }
 
-func (svc *UserProfileService) toResponse(profile *models.UserProfile) *dto.UserProfileResponse {
+func (svc *UserProfileService) toResponse(profile *models.User) *dto.UserProfileResponse {
 	return &dto.UserProfileResponse{
 		User: dto.UserResponse{
-			ID:          profile.ID,
-			AuthUserID:  profile.AuthUserID,
-			FirstName:   profile.FirstName,
-			LastName:    profile.LastName,
+			UserID:      profile.UserID,
+			DisplayName: profile.DisplayName,
 			Username:    profile.Username,
+			Email:       profile.Email,
+			IsPrivate:   profile.IsPrivate,
+			IsActive:    profile.IsActive,
 			DateOfBirth: profile.DateOfBirth,
 			AvatarURL:   profile.AvatarURL,
 			Bio:         profile.Bio,

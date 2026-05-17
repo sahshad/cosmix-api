@@ -11,6 +11,8 @@ services:
     depends_on:
       - auth-service
       - user-service
+      - notification-service
+      - post-service
     networks:
       - cosmix-net
 
@@ -47,6 +49,19 @@ services:
     container_name: notification-service
     env_file:
       - ./services/notification-service/.env
+    depends_on:
+      - db
+      - rabbitmq
+    networks:
+      - cosmix-net
+
+  post-service:
+    build:
+      context: .
+      dockerfile: ./services/post-service/Dockerfile
+    container_name: post-service
+    env_file:
+      - ./services/post-service/.env
     depends_on:
       - db
       - rabbitmq

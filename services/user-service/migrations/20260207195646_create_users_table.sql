@@ -1,14 +1,11 @@
 -- +goose Up
 -- +goose StatementBegin
 
-CREATE TABLE user_profiles (
-    id BIGSERIAL PRIMARY KEY,
-    auth_user_id BIGINT NOT NULL UNIQUE,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    first_name VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
-    username VARCHAR(255) UNIQUE,
-    display_name VARCHAR(255),
+CREATE TABLE users (
+    user_id BIGINT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    display_name VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL,
     bio TEXT,
     avatar_url TEXT,
     is_private BOOLEAN NOT NULL DEFAULT FALSE,
@@ -23,6 +20,6 @@ CREATE TABLE user_profiles (
 -- +goose Down
 -- +goose StatementBegin
 
-DROP TABLE IF EXISTS user_profiles;
+DROP TABLE users;
 
 -- +goose StatementEnd

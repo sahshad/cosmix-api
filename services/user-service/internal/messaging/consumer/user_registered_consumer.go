@@ -6,8 +6,8 @@ import (
 
 	"user-service/internal/services"
 
-	authEvents "cosmix/shared/events/auth"
 	"cosmix/shared/core/rabbitmq"
+	authEvents "cosmix/shared/events/auth"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -56,11 +56,11 @@ func RegisterAuthUserRegisteredConsumer(ch *amqp.Channel, userProfileService ser
 			json.Unmarshal(msg.Body, &event)
 
 			userCreatedEvent := authEvents.AuthUserRegistered{
-				AuthUserID: event.AuthUserID,
-				Email:      event.Email,
-				FirstName:  event.FirstName,
-				LastName:   event.LastName,
-				CreatedAt:  event.CreatedAt,
+				AuthUserID:  event.AuthUserID,
+				Email:       event.Email,
+				Username:    event.Username,
+				DisplayName: event.DisplayName,
+				CreatedAt:   event.CreatedAt,
 			}
 
 			err := userProfileService.CreateFromAuthEvent(userCreatedEvent)

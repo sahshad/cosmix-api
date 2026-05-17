@@ -20,6 +20,10 @@ import (
 func main() {
 	godotenv.Load()
 
+	if os.Getenv("GIN_MODE") == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	port := os.Getenv("PORT")
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 

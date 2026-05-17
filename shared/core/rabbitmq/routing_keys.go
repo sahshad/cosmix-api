@@ -12,7 +12,8 @@ const (
 	UserFollowed       = "user.followed"
 	UserUnfollowed     = "user.unfollowed"
 
-	UserAuthUserRegistered = "user.auth.user.registered"
+	UserAuthUserRegistered     = "user.auth.user.registered"
+	PostUserAuthUserRegistered = "post.auth.user.registered"
 )
 
 const (

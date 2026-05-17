@@ -7,6 +7,7 @@ import (
 	"auth-service/internal/dto"
 	publisher "auth-service/internal/messaging/publisher"
 	"auth-service/internal/services"
+	"auth-service/internal/utils"
 	apperrors "cosmix/shared/core/errors"
 
 	authEvents "cosmix/shared/events/auth"
@@ -43,13 +44,16 @@ func (ctrl *AuthController) Register(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	username := utils.GenerateUsername(registerDTO.DisplayName)
+
 	// Publish user registered event
 	publisher.PublishAuthUserRegistered(ctrl.rabbitCh, authEvents.AuthUserRegistered{
 		EventVersion: authEvents.EventVersionOne,
 		AuthUserID:   user.ID,
 		Email:        user.Email,
-		FirstName:    registerDTO.FirstName,
-		LastName:     registerDTO.LastName,
+		Username:     username,
+		DisplayName:  registerDTO.DisplayName,
 		CreatedAt:    time.Now().UTC(),
 	})
 

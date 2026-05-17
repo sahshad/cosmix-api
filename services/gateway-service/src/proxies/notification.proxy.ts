@@ -5,7 +5,7 @@ export const notificationProxy = createProxyMiddleware({
     target: services.notification,
     changeOrigin: true,
     pathRewrite: {
-        "^/notification": ""
+        "^/notifications": ""
     },
     on: {
         proxyReq: (proxyReq, req: any) => {

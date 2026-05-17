@@ -8,3 +8,7 @@ type Follow struct {
 	FollowingID uint      `gorm:"not null;index:idx_follower_following,unique" json:"following_id"`
 	CreatedAt   time.Time `json:"created_at"`
 }
+
+func (Follow) TableName() string {
+	return "follows"
+}

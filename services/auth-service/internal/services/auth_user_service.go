@@ -48,12 +48,8 @@ func (svc *AuthService) Register(ctx context.Context, input dto.RegisterDTO) (*m
 	}
 
 	user := &models.AuthUser{
-		Email:         input.Email,
-		PasswordHash:  string(pwHash),
-		CreatedAt:     time.Now().UTC(),
-		LastLoginAt:   time.Now().UTC(),
-		EmailVerified: false,
-		IsActive:      true,
+		Email:        input.Email,
+		PasswordHash: string(pwHash),
 	}
 
 	if err := svc.userRepo.Create(ctx, user); err != nil {
@@ -82,7 +78,7 @@ func (svc *AuthService) Login(ctx context.Context, input dto.LoginDTO) (*dto.Log
 	}
 
 	now := time.Now().UTC()
-	authUser.LastLoginAt = now
+	authUser.LastLoginAt = &now
 	if err := svc.userRepo.Update(ctx, authUser); err != nil {
 		return nil, err
 	}

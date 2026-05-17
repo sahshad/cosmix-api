@@ -5,7 +5,7 @@ export const userProxy = createProxyMiddleware({
     target: services.user,
     changeOrigin: true,
     pathRewrite: {
-        "^/user": ""
+        "^/users": ""
     },
     on: {
         proxyReq: (proxyReq, req: any) => {

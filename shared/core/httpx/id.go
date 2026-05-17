@@ -44,6 +44,7 @@ func ParseParamID(c *gin.Context, param string) (uint, error) {
 
 	return uint(id), nil
 }
+
 func ParseParamIDWithDefault(c *gin.Context, param string, defaultValue uint) (uint, error) {
 	idStr := c.Param(param)
 	if idStr == "" {
@@ -71,4 +72,21 @@ func ParseQueryString(c *gin.Context, param string) (string, error) {
 	}
 
 	return value, nil
+}
+
+func ParseQueryIntWithDefault(c *gin.Context, param string, defaultValue int) (int64, error) {
+	valueStr := c.Query(param)
+	if valueStr == "" {
+		return int64(defaultValue), nil
+	}
+
+	value, err := strconv.ParseInt(valueStr, 10, 32)
+	if err != nil {
+		return 0, appErr.NewBadRequest(
+			param,
+			"invalid id",
+		)
+	}
+
+	return int64(value), nil
 }

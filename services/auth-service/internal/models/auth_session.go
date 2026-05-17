@@ -10,12 +10,11 @@ type AuthSession struct {
 	IPAddress        string     `gorm:"not null"`
 	UserAgent        string     `gorm:"not null"`
 	ExpiresAt        time.Time  `gorm:"not null"`
-	Revoked          bool       `gorm:"default:false"`
+	Revoked          bool       `gorm:"not null"`
 	CreatedAt        time.Time  `gorm:"not null"`
-	UpdatedAt        *time.Time `gorm:"default:null"`
+	UpdatedAt        *time.Time `gorm:"null"`
 
-	// Relation
-	AuthUser AuthUser `gorm:"foreignKey:AuthUserID;references:ID"`
+	AuthUser AuthUser `gorm:"foreignKey:AuthUserID"`
 }
 
 func (AuthSession) TableName() string {
