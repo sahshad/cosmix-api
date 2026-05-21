@@ -47,11 +47,13 @@ type Comment struct {
 }
 
 type PostList struct {
-	ID        uint       `json:"id"`
-	Content   string     `json:"content"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at"`
-	User      User       `json:"user"`
+	ID            uint       `json:"id"`
+	Content       string     `json:"content"`
+	LikesCount    int        `json:"likes_count"`
+	CommentsCount int        `json:"comments_count"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     *time.Time `json:"updated_at"`
+	User          User       `json:"user"`
 	Media     []Media    `json:"media"`
 	// Likes     []Like      `json:"likes"`
 	// Comments  []Comment   `json:"comments"`

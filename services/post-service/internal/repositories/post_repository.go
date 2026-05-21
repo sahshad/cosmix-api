@@ -40,7 +40,7 @@ func (repo *PostRepository) FindByID(ctx context.Context, id uint) (*models.Post
 func (repo *PostRepository) GetFeed(ctx context.Context, params *dto.PaginationRequest) (*dto.PostListResponse, error) {
 	var posts []models.Post
 	if err := repo.db.WithContext(ctx).
-		Table("posts").
+		Model(&models.Post{}).
 		Preload("User").
 		Preload("Media").
 		Order("created_at desc").
@@ -54,24 +54,31 @@ func (repo *PostRepository) GetFeed(ctx context.Context, params *dto.PaginationR
 	totalCount := int64(len(posts))
 	totalPages := (totalCount + params.Limit - 1) / params.Limit
 
-	postList := make([]dto.PostList, len(posts))
-	for i, post := range posts {
+	var postList []dto.PostList
+	for _, post := range posts {
+
 		var mediaList []dto.Media
+
 		for _, media := range post.Media {
 			mediaList = append(mediaList, dto.Media{
 				ID:        media.ID,
-				Type:      media.Type,
-				URL:       media.URL,
+				PostID:    media.PostID,
 				PublicID:  media.PublicID,
+				URL:       media.URL,
+				Type:      media.Type,
 				Duration:  media.Duration,
 				CreatedAt: media.CreatedAt,
 			})
 		}
-		postList[i] = dto.PostList{
-			ID:        post.ID,
-			Content:   post.Content,
-			CreatedAt: post.CreatedAt,
-			UpdatedAt: post.UpdatedAt,
+
+		postList = append(postList, dto.PostList{
+			ID:            post.ID,
+			Content:       post.Content,
+			LikesCount:    post.LikesCount,
+			CommentsCount: post.CommentsCount,
+			CreatedAt:     post.CreatedAt,
+			UpdatedAt:     post.UpdatedAt,
+
 			User: dto.User{
 				ID:          post.User.UserID,
 				Username:    post.User.Username,
@@ -79,9 +86,11 @@ func (repo *PostRepository) GetFeed(ctx context.Context, params *dto.PaginationR
 				CreatedAt:   post.User.CreatedAt,
 				UpdatedAt:   post.User.UpdatedAt,
 			},
+
 			Media: mediaList,
-		}
+		})
 	}
+
 	return &dto.PostListResponse{
 		Posts: postList,
 		Pagination: dto.PaginationResponse{

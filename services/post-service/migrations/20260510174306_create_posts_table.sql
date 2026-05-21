@@ -5,6 +5,8 @@ CREATE TABLE posts (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     content TEXT NOT NULL,
+    likes_count INT DEFAULT 0,
+    comments_count INT DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NULL,
 
