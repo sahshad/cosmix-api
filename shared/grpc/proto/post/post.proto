@@ -1,0 +1,178 @@
+syntax = "proto3";
+
+package post;
+
+option go_package = "cosmix/shared/grpc/gen/go/post";
+
+import "google/protobuf/timestamp.proto";
+
+service PostService {
+  rpc CreatePost(CreatePostRequest)
+      returns (PostResponse);
+
+  rpc GetPost(GetPostRequest)
+      returns (PostResponse);
+
+  rpc GetFeed(GetFeedRequest)
+      returns (PostListResponse);
+
+  rpc UpdatePost(UpdatePostRequest)
+      returns (PostResponse);
+
+  rpc DeletePost(DeletePostRequest)
+      returns (MessageResponse);
+
+  rpc LikePost(LikePostRequest)
+      returns (MessageResponse);
+
+  rpc UnlikePost(UnlikePostRequest)
+      returns (MessageResponse);
+
+  rpc CreateComment(CreateCommentRequest)
+      returns (CommentResponse);
+
+  rpc GetComments(GetCommentsRequest)
+      returns (CommentListResponse);
+
+  rpc UpdateComment(UpdateCommentRequest)
+      returns (CommentResponse);
+
+  rpc DeleteComment(DeleteCommentRequest)
+      returns (MessageResponse);
+}
+
+message MessageResponse {
+  string message = 1;
+}
+
+message Pagination {
+  int64 total_count = 1;
+  int64 page = 2;
+  int64 limit = 3;
+  int64 total_pages = 4;
+}
+
+message MediaItem {
+  string public_id = 1;
+  string url = 2;
+  string type = 3;
+  int32 duration = 4;
+}
+
+message Media {
+  uint64 id = 1;
+  uint64 post_id = 2;
+  string public_id = 3;
+  string url = 4;
+  string type = 5;
+  int32 duration = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message User {
+  uint64 id = 1;
+  string email = 2;
+  string username = 3;
+  string display_name = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message Post {
+  uint64 id = 1;
+  string content = 2;
+  int32 likes_count = 3;
+  int32 comments_count = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+  User user = 7;
+  repeated Media media = 8;
+}
+
+message Comment {
+  uint64 id = 1;
+  uint64 post_id = 2;
+  uint64 author_id = 3;
+  string content = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message PostResponse {
+  Post post = 1;
+}
+
+message PostListResponse {
+  repeated Post posts = 1;
+  Pagination pagination = 2;
+}
+
+message CommentResponse {
+  Comment comment = 1;
+}
+
+message CommentListResponse {
+  repeated Comment comments = 1;
+  Pagination pagination = 2;
+}
+
+message GetPostRequest {
+  uint64 post_id = 1;
+}
+
+message GetFeedRequest {
+  int64 page = 1;
+  int64 limit = 2;
+}
+
+message CreatePostRequest {
+  uint64 author_id = 1;
+  string content = 2;
+  repeated MediaItem media = 3;
+}
+
+message UpdatePostRequest {
+  uint64 post_id = 1;
+  uint64 author_id = 2;
+  string content = 3;
+  repeated MediaItem media = 4;
+}
+
+message DeletePostRequest {
+  uint64 post_id = 1;
+  uint64 author_id = 2;
+}
+
+message LikePostRequest {
+  uint64 post_id = 1;
+  uint64 user_id = 2;
+}
+
+message UnlikePostRequest {
+  uint64 post_id = 1;
+  uint64 user_id = 2;
+}
+
+message CreateCommentRequest {
+  uint64 post_id = 1;
+  uint64 author_id = 2;
+  string content = 3;
+}
+
+message GetCommentsRequest {
+  uint64 post_id = 1;
+  int64 page = 2;
+  int64 limit = 3;
+}
+
+message UpdateCommentRequest {
+  uint64 comment_id = 1;
+  uint64 author_id = 2;
+  string content = 3;
+}
+
+message DeleteCommentRequest {
+  uint64 comment_id = 1;
+  uint64 author_id = 2;
+}

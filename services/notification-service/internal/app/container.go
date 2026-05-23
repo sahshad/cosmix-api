@@ -3,6 +3,7 @@ package app
 import (
 	"cosmix/shared/core/rabbitmq"
 	"notification-service/internal/controllers"
+	grpcServer "notification-service/internal/grpc/server"
 	"notification-service/internal/repositories"
 	"notification-service/internal/services"
 
@@ -12,7 +13,7 @@ import (
 type Container struct {
 	DB     *gorm.DB
 	Rabbit *rabbitmq.Rabbit
-	
+
 	// Controllers
 	NotificationController *controllers.NotificationController
 
@@ -21,6 +22,8 @@ type Container struct {
 	NotificationPreferenceService services.NotificationPreferenceServiceInterface
 	EmailLogService               services.EmailLogServiceInterface
 	EventService                  services.EventServiceInterface
+
+	NotificationGrpcServer *grpcServer.NotificationServer
 }
 
 func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
@@ -36,6 +39,11 @@ func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 
 	notificationCtrl := controllers.NewNotificationController(notificationSvc)
 
+	notificationGrpcServer :=
+		grpcServer.NewNotificationServer(
+			notificationSvc,
+		)
+
 	return &Container{
 		DB:                            db,
 		Rabbit:                        rabbit,
@@ -44,5 +52,7 @@ func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 		EmailLogService:               emailLogSvc,
 		EventService:                  eventSvc,
 		NotificationController:        notificationCtrl,
+
+		NotificationGrpcServer: notificationGrpcServer,
 	}
 }

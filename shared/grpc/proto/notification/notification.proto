@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package notification;
+
+option go_package = "cosmix/shared/grpc/gen/go/notification";
+
+import "google/protobuf/timestamp.proto";
+
+service NotificationService {
+  rpc GetUserNotifications(
+    GetUserNotificationsRequest
+  ) returns (
+    UserNotificationsResponse
+  );
+
+  rpc HealthCheck(
+    HealthCheckRequest
+  ) returns (
+    HealthCheckResponse
+  );
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  string status = 1;
+}
+
+message GetUserNotificationsRequest {
+  uint64 user_id = 1;
+  uint32 page = 2;
+  uint32 limit = 3;
+}
+
+message UserNotificationsResponse {
+  repeated Notification notifications = 1;
+  Pagination pagination = 2;
+}
+
+message Notification {
+  uint64 id = 1;
+
+  uint64 user_id = 2;
+
+  optional uint64 actor_id = 3;
+  optional string actor_username = 4;
+  optional string actor_display_name = 5;
+  optional string actor_avatar_url = 6;
+
+  string type = 7;
+
+  optional uint64 entity_id = 8;
+  optional string entity_type = 9;
+
+  string title = 10;
+  string body = 11;
+
+  optional string image_url = 12;
+  optional string action_url = 13;
+
+  bool is_read = 14;
+
+  google.protobuf.Timestamp read_at = 15;
+  google.protobuf.Timestamp created_at = 16;
+}
+
+message Pagination {
+  uint32 total_count = 1;
+  uint32 page = 2;
+  uint32 limit = 3;
+  uint32 total_pages = 4;
+}

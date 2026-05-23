@@ -4,21 +4,25 @@ go 1.25.7
 
 require github.com/gin-gonic/gin v1.12.0
 
-require (
-	cosmix/shared/core v0.0.0
-	cosmix/shared/events v0.0.0
-)
+require cosmix/shared/events v0.0.0
+
+require cosmix/shared/core v0.0.0
+
+require cosmix/shared/grpc v0.0.0
 
 replace cosmix/shared/events => ../../shared/events
 
 replace cosmix/shared/core => ../../shared/core
 
+replace cosmix/shared/grpc => ../../shared/grpc
+
 require (
 	github.com/gin-contrib/zap v1.1.7
-	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/pressly/goose/v3 v3.27.1
+	github.com/rabbitmq/amqp091-go v1.11.0
 	go.uber.org/zap v1.28.0
+	google.golang.org/protobuf v1.36.11
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
 )
@@ -35,6 +39,7 @@ require (
 	github.com/go-playground/validator/v10 v10.30.1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.9.2 // indirect
@@ -51,7 +56,6 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.0 // indirect
-	github.com/rabbitmq/amqp091-go v1.11.0 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.1 // indirect
@@ -63,5 +67,6 @@ require (
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.44.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260420184626-e10c466a9529 // indirect
+	google.golang.org/grpc v1.81.1 // indirect
 )

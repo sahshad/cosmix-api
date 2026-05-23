@@ -1,31 +1,38 @@
 package main
 
 import (
-	"cosmix/shared/core/middleware"
-	"cosmix/shared/core/rabbitmq"
 	"log"
+	"net"
+	"os"
+
 	"notification-service/internal/app"
 	"notification-service/internal/database"
-	"notification-service/internal/routes"
-	"os"
-	"time"
 
-	ginzap "github.com/gin-contrib/zap"
-	"github.com/gin-gonic/gin"
+	"cosmix/shared/core/rabbitmq"
+	interceptors "cosmix/shared/grpc/interceptors"
+
+	notificationpb "cosmix/shared/grpc/gen/go/notification"
+
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"google.golang.org/grpc"
 )
 
 func main() {
 	godotenv.Load()
 
-	if os.Getenv("GIN_MODE") == "release" {
-		gin.SetMode(gin.ReleaseMode)
+	rabbitURL := os.Getenv("RABBITMQ_URL")
+	grpcPort := os.Getenv("GRPC_PORT")
+
+	if grpcPort == "" {
+		grpcPort = "50053"
 	}
 
-	port := os.Getenv("PORT")
-	rabbitURL := os.Getenv("RABBITMQ_URL")
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalf("failed to initialize logger: %v", err)
+	}
+	defer logger.Sync()
 
 	db, err := database.ConnectDB()
 	if err != nil {
@@ -34,32 +41,52 @@ func main() {
 
 	rabbit := rabbitmq.Connect(rabbitURL)
 	if rabbit == nil {
-		log.Fatal("rabbitmq connection failed")
+		log.Println(
+			"RabbitMQ unavailable, events will not be published",
+		)
 	}
 
-	container := app.NewContainer(db, rabbit)
+	container := app.NewContainer(
+		db,
+		rabbit,
+	)
 
-	logger, _ := zap.NewProduction()
-	router := gin.New()
+	lis, err := net.Listen(
+		"tcp",
+		":"+grpcPort,
+	)
+	if err != nil {
+		log.Fatalf(
+			"grpc listen failed: %v",
+			err,
+		)
+	}
 
-	router.Use(middleware.RequestIDMiddleware())
-	router.Use(ginzap.GinzapWithConfig(logger, &ginzap.Config{
-		TimeFormat: time.RFC3339,
-		UTC:        true,
-		Context: func(c *gin.Context) []zapcore.Field {
-			if id, exists := c.Get("RequestID"); exists {
-				return []zapcore.Field{zap.String("request_id", id.(string))}
-			}
-			return nil
-		},
-	}))
-	router.Use(ginzap.RecoveryWithZap(logger, true))
+	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			interceptors.RequestIDInterceptor,
+			interceptors.LoggingInterceptor(logger),
+			interceptors.RecoveryInterceptor(logger),
+			interceptors.ErrorInterceptor,
+		),
+	)
+
+	notificationpb.RegisterNotificationServiceServer(
+		grpcServer,
+		container.NotificationGrpcServer,
+	)
 
 	app.RegisterConsumers(container)
-	routes.RegisterRoutes(router, container)
 
-	log.Println("Notification Service running on :", port)
-	if err := router.Run(":" + port); err != nil {
-		log.Fatalf("server failed: %v", err)
+	log.Printf(
+		"Auth gRPC server running on :%s",
+		grpcPort,
+	)
+
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf(
+			"grpc serve failed: %v",
+			err,
+		)
 	}
 }

@@ -1,28 +1,31 @@
-# Build stage
+# ---------- Build Stage ----------
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml ./
+
+RUN npm install -g pnpm
+RUN pnpm install
+
+COPY tsconfig*.json ./
+COPY nest-cli.json ./
+COPY src ./src
+
+RUN pnpm build
+
+# ---------- Runtime Stage ----------
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies
-RUN npm install
+RUN npm install -g pnpm
+RUN pnpm install --prod
 
-# Copy tsconfig.json
-COPY tsconfig.json ./
+COPY --from=builder /app/dist ./dist
 
-# Copy rest of the code
-COPY src ./src
+EXPOSE 3000
 
-# Copy .env
-COPY .env .env
-
-# Build the application
-RUN npm run build
-
-# Expose port
-EXPOSE 5000
-
-# Run the application
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/main.js"]

@@ -3,6 +3,7 @@ package app
 import (
 	"cosmix/shared/core/rabbitmq"
 	"post-service/internal/controllers"
+	grpcServer "post-service/internal/grpc/server"
 	"post-service/internal/repositories"
 	"post-service/internal/services"
 
@@ -23,6 +24,8 @@ type Container struct {
 	LikeService    services.LikeServiceInterface
 	CommentService services.CommentServiceInterface
 	PostUserSvc    services.PostUserServiceInterface
+
+	PostGrpcServer *grpcServer.PostServer
 }
 
 func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
@@ -42,6 +45,13 @@ func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 	commentService := services.NewCommentService(commentRepo, postRepo)
 	commentController := controllers.NewCommentController(commentService)
 
+	postGrpcServer :=
+		grpcServer.NewPostServer(
+			postService,
+			likeService,
+			commentService,
+		)
+
 	return &Container{
 		DB:     db,
 		Rabbit: rabbit,
@@ -54,5 +64,7 @@ func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 		LikeService:    likeService,
 		CommentService: commentService,
 		PostUserSvc:    postUserService,
+
+		PostGrpcServer: postGrpcServer,
 	}
 }

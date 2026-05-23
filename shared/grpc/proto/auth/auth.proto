@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "cosmix/shared/gen/go/auth";
+
+import "google/protobuf/timestamp.proto";
+
+service AuthService {
+  rpc Register(RegisterRequest)
+      returns (RegisterResponse);
+
+  rpc Login(LoginRequest)
+      returns (LoginResponse);
+
+  rpc Refresh(RefreshRequest)
+      returns (RefreshResponse);
+
+  rpc UpdateUserPassword(
+      UpdateUserPasswordRequest
+  ) returns (
+      UpdateUserPasswordResponse
+  );
+}
+
+message RegisterRequest {
+  string display_name = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message RegisterResponse {
+  uint64 user_id = 1;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  AuthUser user = 3;
+}
+
+message RefreshRequest {
+  string refresh_token = 1;
+}
+
+message RefreshResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message UpdateUserPasswordRequest {
+  uint64 user_id = 1;
+  string new_password = 2;
+}
+
+message UpdateUserPasswordResponse {
+  string message = 1;
+}
+
+message AuthUser {
+  string email = 1;
+  bool is_active = 2;
+  bool email_verified = 3;
+
+  google.protobuf.Timestamp last_login_at = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}

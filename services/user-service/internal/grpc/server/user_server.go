@@ -1,0 +1,228 @@
+package server
+
+import (
+	"context"
+
+	"user-service/internal/dto"
+	"user-service/internal/services"
+
+	userpb "cosmix/shared/grpc/gen/go/user"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+type UserServer struct {
+	userpb.UnimplementedUserServiceServer
+
+	userProfileService services.UserProfileServiceInterface
+	followService      services.FollowServiceInterface
+}
+
+func NewUserServer(
+	userProfileService services.UserProfileServiceInterface,
+	followService services.FollowServiceInterface,
+) *UserServer {
+	return &UserServer{
+		userProfileService: userProfileService,
+		followService:      followService,
+	}
+}
+
+func (s *UserServer) GetProfile(
+	ctx context.Context,
+	req *userpb.GetProfileRequest,
+) (*userpb.UserProfileResponse, error) {
+
+	profile, err := s.userProfileService.GetProfile(
+		ctx,
+		uint(req.UserId),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &userpb.UserProfileResponse{
+		User: mapUser(profile.User),
+	}, nil
+}
+
+func (s *UserServer) GetProfileByUsername(
+	ctx context.Context,
+	req *userpb.GetProfileByUsernameRequest,
+) (*userpb.UserProfileResponse, error) {
+
+	profile, err := s.userProfileService.GetProfileByUsername(
+		ctx,
+		req.Username,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &userpb.UserProfileResponse{
+		User: mapUser(profile.User),
+	}, nil
+}
+
+func (s *UserServer) UpdateProfile(
+	ctx context.Context,
+	req *userpb.UpdateProfileRequest,
+) (*userpb.UserProfileResponse, error) {
+
+	profile, err := s.userProfileService.UpdateProfile(
+		ctx,
+		uint(req.UserId),
+		dto.UpdateProfileDTO{
+			DisplayName: req.DisplayName,
+			Username:    req.Username,
+			DateOfBirth: req.DateOfBirth,
+			AvatarURL:   req.AvatarUrl,
+			Bio:         req.Bio,
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &userpb.UserProfileResponse{
+		User: mapUser(profile.User),
+	}, nil
+}
+
+func (s *UserServer) Follow(
+	ctx context.Context,
+	req *userpb.FollowRequest,
+) (*userpb.FollowResponse, error) {
+
+	err := s.followService.Follow(
+		ctx,
+		uint(req.FollowerId),
+		uint(req.FollowingId),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &userpb.FollowResponse{
+		Message: "followed successfully",
+	}, nil
+}
+
+func (s *UserServer) Unfollow(
+	ctx context.Context,
+	req *userpb.UnfollowRequest,
+) (*userpb.UnfollowResponse, error) {
+
+	err := s.followService.Unfollow(
+		ctx,
+		uint(req.FollowerId),
+		uint(req.FollowingId),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &userpb.UnfollowResponse{
+		Message: "unfollowed successfully",
+	}, nil
+}
+
+// func (s *UserServer) GetFollowers(
+// 	ctx context.Context,
+// 	req *userpb.GetFollowersRequest,
+// ) (*userpb.UserListResponse, error) {
+
+// 	users, err := s.followService.GetFollowers(
+// 		ctx,
+// 		uint(req.UserId),
+// 	)
+
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	response := &userpb.UserListResponse{}
+
+// 	for _, user := range users {
+// 		response.Users = append(
+// 			response.Users,
+// 			mapUser(user),
+// 		)
+// 	}
+
+// 	return response, nil
+// }
+
+// func (s *UserServer) GetFollowing(
+// 	ctx context.Context,
+// 	req *userpb.GetFollowingRequest,
+// ) (*userpb.UserListResponse, error) {
+
+// 	users, err := s.followService.GetFollowing(
+// 		ctx,
+// 		uint(req.UserId),
+// 	)
+
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	response := &userpb.UserListResponse{}
+
+// 	for _, user := range users {
+// 		response.Users = append(
+// 			response.Users,
+// 			mapUser(user),
+// 		)
+// 	}
+
+// 	return response, nil
+// }
+
+func mapUser(
+	user dto.UserResponse,
+) *userpb.User {
+
+	var dateOfBirth *timestamppb.Timestamp
+	if user.DateOfBirth != nil {
+		dateOfBirth = timestamppb.New(
+			*user.DateOfBirth,
+		)
+	}
+
+	var updatedAt *timestamppb.Timestamp
+	if user.UpdatedAt != nil {
+		updatedAt = timestamppb.New(
+			*user.UpdatedAt,
+		)
+	}
+
+	return &userpb.User{
+		Id:          uint64(user.UserID),
+		DisplayName: user.DisplayName,
+		Username:    user.Username,
+		Email:       user.Email,
+		IsPrivate:   user.IsPrivate,
+		IsActive:    user.IsActive,
+		DateOfBirth: dateOfBirth,
+		AvatarUrl:   user.AvatarURL,
+		Bio:         user.Bio,
+		CreatedAt:   timestamppb.New(user.CreatedAt),
+		UpdatedAt:   updatedAt,
+	}
+}
+
+func stringValue(
+	value *string,
+) string {
+	if value == nil {
+		return ""
+	}
+
+	return *value
+}

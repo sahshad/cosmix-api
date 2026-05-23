@@ -2,32 +2,37 @@ package main
 
 import (
 	"log"
+	"net"
 	"os"
-	"time"
 
 	"auth-service/internal/app"
 	"auth-service/internal/database"
-	// "auth-service/internal/messaging"
-	"cosmix/shared/core/rabbitmq"
-	"auth-service/internal/routes"
-	"cosmix/shared/core/middleware"
 
-	ginzap "github.com/gin-contrib/zap"
-	"github.com/gin-gonic/gin"
+	"cosmix/shared/core/rabbitmq"
+	interceptors "cosmix/shared/grpc/interceptors"
+
+	authpb "cosmix/shared/grpc/gen/go/auth"
+
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"google.golang.org/grpc"
 )
 
 func main() {
 	godotenv.Load()
 
-	if os.Getenv("GIN_MODE") == "release" {
-		gin.SetMode(gin.ReleaseMode)
+	rabbitURL := os.Getenv("RABBITMQ_URL")
+	grpcPort := os.Getenv("GRPC_PORT")
+
+	if grpcPort == "" {
+		grpcPort = "50051"
 	}
 
-	port := os.Getenv("PORT")
-	rabbitURL := os.Getenv("RABBITMQ_URL")
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalf("failed to initialize logger: %v", err)
+	}
+	defer logger.Sync()
 
 	db, err := database.ConnectDB()
 	if err != nil {
@@ -36,32 +41,52 @@ func main() {
 
 	rabbit := rabbitmq.Connect(rabbitURL)
 	if rabbit == nil {
-		log.Println("RabbitMQ unavailable, events will not be published")
+		log.Println(
+			"RabbitMQ unavailable, events will not be published",
+		)
 	}
 
-	container := app.NewContainer(db, rabbit)
+	container := app.NewContainer(
+		db,
+		rabbit,
+	)
 
-	logger, _ := zap.NewProduction()
-	router := gin.New()
+	lis, err := net.Listen(
+		"tcp",
+		":"+grpcPort,
+	)
+	if err != nil {
+		log.Fatalf(
+			"grpc listen failed: %v",
+			err,
+		)
+	}
 
-	router.Use(middleware.RequestIDMiddleware())
-	router.Use(ginzap.GinzapWithConfig(logger, &ginzap.Config{
-		TimeFormat: time.RFC3339,
-		UTC:        true,
-		Context: func(c *gin.Context) []zapcore.Field {
-			if id, exists := c.Get("RequestID"); exists {
-				return []zapcore.Field{zap.String("request_id", id.(string))}
-			}
-			return nil
-		},
-	}))
-	router.Use(ginzap.RecoveryWithZap(logger, true))
+	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			interceptors.RequestIDInterceptor,
+			interceptors.LoggingInterceptor(logger),
+			interceptors.RecoveryInterceptor(logger),
+			interceptors.ErrorInterceptor,
+		),
+	)
 
-	routes.RegisterRoutes(router, container)
+	authpb.RegisterAuthServiceServer(
+		grpcServer,
+		container.AuthGrpcServer,
+	)
+
 	app.RegisterConsumers(container)
 
-	log.Println("Auth service running on :" + port)
-	if err := router.Run(":" + port); err != nil {
-		log.Fatalf("server failed: %v", err)
+	log.Printf(
+		"Auth gRPC server running on :%s",
+		grpcPort,
+	)
+
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf(
+			"grpc serve failed: %v",
+			err,
+		)
 	}
 }

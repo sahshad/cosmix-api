@@ -6,6 +6,7 @@ import (
 	"auth-service/internal/services"
 	"cosmix/shared/core/rabbitmq"
 
+	grpcServer "auth-service/internal/grpc/server"
 	"gorm.io/gorm"
 )
 
@@ -18,6 +19,8 @@ type Container struct {
 
 	// Services
 	AuthService services.AuthServiceInterface
+
+	AuthGrpcServer *grpcServer.AuthServer
 }
 
 func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
@@ -30,10 +33,16 @@ func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 
 	authController := controllers.NewAuthController(authService, rabbit.Channel)
 
+	authGrpcServer :=
+		grpcServer.NewAuthServer(
+			authService,
+		)
+
 	return &Container{
 		DB:             db,
 		Rabbit:         rabbit,
 		AuthController: authController,
 		AuthService:    authService,
+		AuthGrpcServer: authGrpcServer,
 	}
 }
