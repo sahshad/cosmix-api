@@ -9,26 +9,26 @@ import (
 )
 
 type PostUserServiceInterface interface {
-	CreateFromAuthEvent(event authEvents.AuthUserRegistered) error
+	CreateFromAuthEvent(ctx context.Context, event authEvents.AuthUserRegistered) error
 	FindByUserID(ctx context.Context, userID uint) (*models.PostUser, error)
 	Update(ctx context.Context, postUser *models.PostUser) error
 	Delete(ctx context.Context, userID uint) error
 }
 
 type PostUserService struct {
-	postUserRepository repositories.PostUserRepositoryInterface
+	Repo repositories.PostUserRepositoryInterface
 }
 
 func NewPostUserService(
 	postUserRepository repositories.PostUserRepositoryInterface,
 ) PostUserServiceInterface {
 	return &PostUserService{
-		postUserRepository: postUserRepository,
+		Repo: postUserRepository,
 	}
 }
 
-func (svc *PostUserService) CreateFromAuthEvent(event authEvents.AuthUserRegistered) error {
-	ctx := context.Background()
+func (svc *PostUserService) CreateFromAuthEvent(ctx context.Context, event authEvents.AuthUserRegistered) error {
+	// ctx := context.Background()
 	postUser := &models.PostUser{
 		UserID:      event.AuthUserID,
 		Username:    event.Username,
@@ -36,7 +36,7 @@ func (svc *PostUserService) CreateFromAuthEvent(event authEvents.AuthUserRegiste
 		CreatedAt:   event.CreatedAt,
 	}
 
-	if _, err := svc.postUserRepository.Create(ctx, postUser); err != nil {
+	if _, err := svc.Repo.Create(ctx, postUser); err != nil {
 		return err
 	}
 
@@ -44,13 +44,13 @@ func (svc *PostUserService) CreateFromAuthEvent(event authEvents.AuthUserRegiste
 }
 
 func (svc *PostUserService) FindByUserID(ctx context.Context, userID uint) (*models.PostUser, error) {
-	return svc.postUserRepository.FindByUserID(ctx, userID)
+	return svc.Repo.FindByUserID(ctx, userID)
 }
 
 func (svc *PostUserService) Update(ctx context.Context, postUser *models.PostUser) error {
-	return svc.postUserRepository.Update(ctx, postUser)
+	return svc.Repo.Update(ctx, postUser)
 }
 
 func (svc *PostUserService) Delete(ctx context.Context, userID uint) error {
-	return svc.postUserRepository.Delete(ctx, userID)
+	return svc.Repo.Delete(ctx, userID)
 }

@@ -7,37 +7,37 @@ import (
 	"notification-service/internal/repositories"
 )
 
-type NotificationServiceInterface interface {
-	Create(notification *models.Notification) error
-	GetUserNotifications(ctx context.Context, userID uint, paginationRequest dto.PaginationRequest) (*dto.UserNotificationsResponse, error)
-	GetUnreadCount(userID uint) (int64, error)
-	MarkAsRead(notificationID uint, userID uint) error
-}
+// type NotificationServiceInterface interface {
+// 	Create(notification *models.Notification) error
+// 	GetUserNotifications(ctx context.Context, userID uint, paginationRequest dto.PaginationRequest) (*dto.UserNotificationsResponse, error)
+// 	GetUnreadCount(userID uint) (int64, error)
+// 	MarkAsRead(notificationID uint, userID uint) error
+// }
 
 type NotificationService struct {
-	repository repositories.NotificationRepositoryInterface
+	repo *repositories.NotificationRepository
 }
 
 func NewNotificationService(
-	repository repositories.NotificationRepositoryInterface,
-) NotificationServiceInterface {
+	repo *repositories.NotificationRepository,
+) *NotificationService {
 	return &NotificationService{
-		repository: repository,
+		repo: repo,
 	}
 }
 
-func (svc *NotificationService) Create(notification *models.Notification) error {
-	return svc.repository.Create(notification)
+func (svc *NotificationService) Create(ctx context.Context, notification *models.Notification) error {
+	return svc.repo.Create(ctx, notification)
 }
 
 func (svc *NotificationService) GetUserNotifications(ctx context.Context, userID uint, paginationRequest dto.PaginationRequest) (*dto.UserNotificationsResponse, error) {
-	return svc.repository.GetUserNotifications(ctx, userID, paginationRequest)
+	return svc.repo.GetUserNotifications(ctx, userID, paginationRequest)
 }
 
 func (svc *NotificationService) GetUnreadCount(userID uint) (int64, error) {
-	return svc.repository.GetUnreadCount(userID)
+	return svc.repo.GetUnreadCount(userID)
 }
 
 func (s *NotificationService) MarkAsRead(notificationID uint, userID uint) error {
-	return s.repository.MarkAsRead(notificationID, userID)
+	return s.repo.MarkAsRead(notificationID, userID)
 }

@@ -8,6 +8,7 @@ import (
 	"user-service/internal/app"
 	"user-service/internal/database"
 
+	"cosmix/shared/core/eventbus"
 	"cosmix/shared/core/rabbitmq"
 	interceptors "cosmix/shared/grpc/interceptors"
 
@@ -33,6 +34,8 @@ func main() {
 		log.Fatalf("failed to initialize logger: %v", err)
 	}
 	defer logger.Sync()
+
+	eventbus.SetLogger(logger)
 
 	db, err := database.ConnectDB()
 	if err != nil {
@@ -76,7 +79,9 @@ func main() {
 		container.UserGrpcServer,
 	)
 
-	app.RegisterConsumers(container)
+	if err := app.RegisterSubscriptions(container); err != nil {
+		log.Fatalf("failed to register subscriptions: %v", err)
+	}
 
 	log.Printf(
 		"Auth gRPC server running on :%s",

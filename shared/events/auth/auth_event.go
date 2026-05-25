@@ -14,3 +14,8 @@ type AuthUserRegistered struct {
 	DisplayName  string    `json:"display_name"`
 	CreatedAt    time.Time `json:"created_at"`
 }
+
+type AuthUserEmailUpdated struct {
+	EventVersion string `json:"event_version"`
+	Email        string `json:"email"`
+}

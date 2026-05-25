@@ -1,30 +1,31 @@
 package services
 
 import (
+	"context"
 	"log"
 	"notification-service/internal/models"
 	"notification-service/internal/repositories"
 	"time"
 )
 
-type EmailLogServiceInterface interface {
-	SendWelcomeEmail(userID uint, email string) error
-	SendForgotPasswordEmail(userID uint, email string) error
-}
+// type EmailLogServiceInterface interface {
+// 	SendWelcomeEmail(userID uint, email string) error
+// 	SendForgotPasswordEmail(userID uint, email string) error
+// }
 
 type EmailLogService struct {
-	repository repositories.EmailLogRepositoryInterface
+	repo *repositories.EmailLogRepository
 }
 
 func NewEmailLogService(
-	repository repositories.EmailLogRepositoryInterface,
-) EmailLogServiceInterface {
+	repo *repositories.EmailLogRepository,
+) *EmailLogService {
 	return &EmailLogService{
-		repository: repository,
+		repo: repo,
 	}
 }
 
-func (svc *EmailLogService) SendWelcomeEmail(userID uint, email string) error {
+func (svc *EmailLogService) SendWelcomeEmail(ctx context.Context, userID uint, email string) error {
 	now := time.Now()
 
 	emailLog := &models.EmailLog{
@@ -39,10 +40,10 @@ func (svc *EmailLogService) SendWelcomeEmail(userID uint, email string) error {
 
 	log.Println("sending welcome email to:", email)
 
-	return svc.repository.Create(emailLog)
+	return svc.repo.Create(ctx, emailLog)
 }
 
-func (svc *EmailLogService) SendForgotPasswordEmail(userID uint, email string) error {
+func (svc *EmailLogService) SendForgotPasswordEmail(ctx context.Context, userID uint, email string) error {
 	now := time.Now()
 
 	emailLog := &models.EmailLog{
@@ -57,5 +58,5 @@ func (svc *EmailLogService) SendForgotPasswordEmail(userID uint, email string) e
 
 	log.Println("sending forgot password email to:", email)
 
-	return svc.repository.Create(emailLog)
+	return svc.repo.Create(ctx, emailLog)
 }

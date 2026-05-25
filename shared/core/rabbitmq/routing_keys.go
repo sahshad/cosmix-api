@@ -12,8 +12,9 @@ const (
 	UserFollowed       = "user.followed"
 	UserUnfollowed     = "user.unfollowed"
 
-	UserAuthUserRegistered     = "user.auth.user.registered"
-	PostUserAuthUserRegistered = "post.auth.user.registered"
+	UserAuthUserRegistered         = "user.auth.user.registered"
+	PostAuthUserRegistered         = "post.auth.user.registered"
+	NotificationAuthUserRegistered = "notification.auth.user.registered"
 )
 
 const (
@@ -32,8 +33,6 @@ const (
 
 const (
 	NotificationCreated = "notification.created"
-
-	NotificationAuthUserRegistered = "notification.auth.user.registered"
 )
 
 const (

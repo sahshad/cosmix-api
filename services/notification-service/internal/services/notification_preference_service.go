@@ -1,29 +1,30 @@
 package services
 
 import (
+	"context"
 	"notification-service/internal/models"
 	"notification-service/internal/repositories"
 )
 
-type NotificationPreferenceServiceInterface interface {
-	CreateDefault(userID uint) error
-	GetByUserID(userID uint) (*models.NotificationPreference, error)
-	Update(preference *models.NotificationPreference) error
-}
+// type NotificationPreferenceServiceInterface interface {
+// 	CreateDefault(userID uint) error
+// 	GetByUserID(userID uint) (*models.NotificationPreference, error)
+// 	Update(preference *models.NotificationPreference) error
+// }
 
 type NotificationPreferenceService struct {
-	repository repositories.NotificationPreferenceRepositoryInterface
+	repo *repositories.NotificationPreferenceRepository
 }
 
 func NewNotificationPreferenceService(
-	repository repositories.NotificationPreferenceRepositoryInterface,
-) NotificationPreferenceServiceInterface {
+	repo *repositories.NotificationPreferenceRepository,
+) *NotificationPreferenceService {
 	return &NotificationPreferenceService{
-		repository: repository,
+		repo: repo,
 	}
 }
 
-func (svc *NotificationPreferenceService) CreateDefault(userID uint) error {
+func (svc *NotificationPreferenceService) CreateDefault(ctx context.Context, userID uint) error {
 	preference := &models.NotificationPreference{
 		UserID:                 userID,
 		EmailEnabled:           true,
@@ -37,13 +38,13 @@ func (svc *NotificationPreferenceService) CreateDefault(userID uint) error {
 		MarketingEmailsEnabled: false,
 	}
 
-	return svc.repository.Create(preference)
+	return svc.repo.Create(ctx, preference)
 }
 
 func (svc *NotificationPreferenceService) GetByUserID(userID uint) (*models.NotificationPreference, error) {
-	return svc.repository.GetByUserID(userID)
+	return svc.repo.GetByUserID(userID)
 }
 
-func (svc *NotificationPreferenceService) Update(preference *models.NotificationPreference) error {
-	return svc.repository.Update(preference)
+func (svc *NotificationPreferenceService) Update(ctx context.Context, preference *models.NotificationPreference) error {
+	return svc.repo.Update(ctx, preference)
 }

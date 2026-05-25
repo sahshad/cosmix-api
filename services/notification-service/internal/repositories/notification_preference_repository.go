@@ -6,27 +6,27 @@ import (
 	"gorm.io/gorm"
 )
 
-type NotificationPreferenceRepositoryInterface interface {
-	Create(preference *models.NotificationPreference) error
-	GetByUserID(userID uint) (*models.NotificationPreference, error)
-	Update(preference *models.NotificationPreference) error
-}
+// type NotificationPreferenceRepositoryInterface interface {
+// 	Create(preference *models.NotificationPreference) error
+// 	GetByUserID(userID uint) (*models.NotificationPreference, error)
+// 	Update(preference *models.NotificationPreference) error
+// }
 
 type NotificationPreferenceRepository struct {
-	db *gorm.DB
+	*BaseRepository[models.NotificationPreference]
 }
 
 func NewNotificationPreferenceRepository(
 	db *gorm.DB,
-) NotificationPreferenceRepositoryInterface {
+) *NotificationPreferenceRepository {
 	return &NotificationPreferenceRepository{
-		db: db,
+		NewBaseRepository[models.NotificationPreference](db),
 	}
 }
 
-func (repo *NotificationPreferenceRepository) Create(preference *models.NotificationPreference) error {
-	return repo.db.Create(preference).Error
-}
+// func (repo *NotificationPreferenceRepository) Create(preference *models.NotificationPreference) error {
+// 	return repo.db.Create(preference).Error
+// }
 
 func (repo *NotificationPreferenceRepository) GetByUserID(userID uint) (*models.NotificationPreference, error) {
 	var preference models.NotificationPreference
@@ -42,6 +42,6 @@ func (repo *NotificationPreferenceRepository) GetByUserID(userID uint) (*models.
 	return &preference, nil
 }
 
-func (repo *NotificationPreferenceRepository) Update(preference *models.NotificationPreference) error {
-	return repo.db.Save(preference).Error
-}
+// func (repo *NotificationPreferenceRepository) Update(preference *models.NotificationPreference) error {
+// 	return repo.db.Save(preference).Error
+// }

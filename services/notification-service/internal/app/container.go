@@ -2,7 +2,7 @@ package app
 
 import (
 	"cosmix/shared/core/rabbitmq"
-	"notification-service/internal/controllers"
+	// "notification-service/internal/contro.llers"
 	grpcServer "notification-service/internal/grpc/server"
 	"notification-service/internal/repositories"
 	"notification-service/internal/services"
@@ -15,13 +15,14 @@ type Container struct {
 	Rabbit *rabbitmq.Rabbit
 
 	// Controllers
-	NotificationController *controllers.NotificationController
+	// NotificationController *controllers.NotificationController
 
 	// Services
-	NotificationService           services.NotificationServiceInterface
-	NotificationPreferenceService services.NotificationPreferenceServiceInterface
-	EmailLogService               services.EmailLogServiceInterface
-	EventService                  services.EventServiceInterface
+	NotificationService           *services.NotificationService
+	NotificationPreferenceService *services.NotificationPreferenceService
+	EmailLogService               *services.EmailLogService
+	EventService                  *services.EventService
+	NotificationUserService       *services.NotificationUserService
 
 	NotificationGrpcServer *grpcServer.NotificationServer
 }
@@ -31,13 +32,16 @@ func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 	notificationRepo := repositories.NewNotificationRepository(db)
 	notificationReferenceRepo := repositories.NewNotificationPreferenceRepository(db)
 	emailLogRepo := repositories.NewEmailLogRepository(db)
+	notificationUserRepo := repositories.NewNotificationUserRepository(db)
 
 	notificationSvc := services.NewNotificationService(notificationRepo)
 	notificationReferenceSvc := services.NewNotificationPreferenceService(notificationReferenceRepo)
 	emailLogSvc := services.NewEmailLogService(emailLogRepo)
-	eventSvc := services.NewEventService(emailLogSvc, notificationSvc, notificationReferenceSvc)
+	notificationUserSvc := services.NewNotificationUserService(notificationUserRepo)
 
-	notificationCtrl := controllers.NewNotificationController(notificationSvc)
+	eventSvc := services.NewEventService(emailLogSvc, notificationSvc, notificationReferenceSvc, notificationUserSvc)
+
+	// notificationCtrl := controllers.NewNotificationController(notificationSvc)
 
 	notificationGrpcServer :=
 		grpcServer.NewNotificationServer(
@@ -51,7 +55,8 @@ func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 		NotificationPreferenceService: notificationReferenceSvc,
 		EmailLogService:               emailLogSvc,
 		EventService:                  eventSvc,
-		NotificationController:        notificationCtrl,
+		NotificationUserService:       notificationUserSvc,
+		// NotificationController:        notificationCtrl,
 
 		NotificationGrpcServer: notificationGrpcServer,
 	}

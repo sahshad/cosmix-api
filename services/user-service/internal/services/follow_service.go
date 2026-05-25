@@ -7,18 +7,20 @@ import (
 	"user-service/internal/repositories"
 )
 
-type FollowServiceInterface interface {
-	Follow(ctx context.Context, followerID uint, followingID uint) error
-	Unfollow(ctx context.Context, followerID uint, followingID uint) error
-	GetFollowers(ctx context.Context, userID uint) ([]uint, error)
-	GetFollowing(ctx context.Context, userID uint) ([]uint, error)
-}
+// type FollowServiceInterface interface {
+// 	Follow(ctx context.Context, followerID uint, followingID uint) error
+// 	Unfollow(ctx context.Context, followerID uint, followingID uint) error
+// 	GetFollowers(ctx context.Context, userID uint) ([]uint, error)
+// 	GetFollowing(ctx context.Context, userID uint) ([]uint, error)
+// }
 
 type FollowService struct {
-	repo repositories.FollowRepositoryInterface
+	repo *repositories.FollowRepository
 }
 
-func NewFollowService(repo repositories.FollowRepositoryInterface) FollowServiceInterface {
+func NewFollowService(
+	repo *repositories.FollowRepository,
+	) *FollowService {
 	return &FollowService{
 		repo: repo,
 	}

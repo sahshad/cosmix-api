@@ -1,19 +1,33 @@
 package app
 
 import (
-	"log"
+	"cosmix/shared/core/eventbus"
 	"cosmix/shared/core/rabbitmq"
-	consumer "notification-service/internal/messaging/consumers"
+	// "log"
+
+	// consumer "notification-service/internal/messaging/consumers"
 )
 
-func RegisterConsumers(container *Container) {
+func RegisterSubscriptions(container *Container) error {
 
 	if err := rabbitmq.DeclareExchanges(container.Rabbit.Channel); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	consumer.RegisterAuthUserRegisteredConsumer(
+	if err := eventbus.Subscribe(
 		container.Rabbit.Channel,
-		container.EventService,
-		)
+		rabbitmq.ExchangeEvents,
+		rabbitmq.NotificationAuthUserRegistered,
+		rabbitmq.AuthUserRegistered,
+		container.EventService.HandleUserRegistered,
+	); err != nil {
+		return err
+	}
+
+	// consumer.RegisterAuthUserRegisteredConsumer(
+	// 	container.Rabbit.Channel,
+	// 	container.EventService,
+	// 	)
+
+	return nil
 }

@@ -14,16 +14,16 @@ import (
 type UserServer struct {
 	userpb.UnimplementedUserServiceServer
 
-	userProfileService services.UserProfileServiceInterface
-	followService      services.FollowServiceInterface
+	userService *services.UserService
+	followService      *services.FollowService
 }
 
 func NewUserServer(
-	userProfileService services.UserProfileServiceInterface,
-	followService services.FollowServiceInterface,
+	userService *services.UserService,
+	followService *services.FollowService,
 ) *UserServer {
 	return &UserServer{
-		userProfileService: userProfileService,
+		userService: userService,
 		followService:      followService,
 	}
 }
@@ -33,7 +33,7 @@ func (s *UserServer) GetProfile(
 	req *userpb.GetProfileRequest,
 ) (*userpb.UserProfileResponse, error) {
 
-	profile, err := s.userProfileService.GetProfile(
+	profile, err := s.userService.GetProfile(
 		ctx,
 		uint(req.UserId),
 	)
@@ -52,7 +52,7 @@ func (s *UserServer) GetProfileByUsername(
 	req *userpb.GetProfileByUsernameRequest,
 ) (*userpb.UserProfileResponse, error) {
 
-	profile, err := s.userProfileService.GetProfileByUsername(
+	profile, err := s.userService.GetProfileByUsername(
 		ctx,
 		req.Username,
 	)
@@ -71,7 +71,7 @@ func (s *UserServer) UpdateProfile(
 	req *userpb.UpdateProfileRequest,
 ) (*userpb.UserProfileResponse, error) {
 
-	profile, err := s.userProfileService.UpdateProfile(
+	profile, err := s.userService.UpdateProfile(
 		ctx,
 		uint(req.UserId),
 		dto.UpdateProfileDTO{

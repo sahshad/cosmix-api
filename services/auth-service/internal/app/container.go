@@ -1,7 +1,7 @@
 package app
 
 import (
-	"auth-service/internal/controllers"
+	// "auth-service/internal/controllers"
 	"auth-service/internal/repositories"
 	"auth-service/internal/services"
 	"cosmix/shared/core/rabbitmq"
@@ -15,34 +15,34 @@ type Container struct {
 	Rabbit *rabbitmq.Rabbit
 
 	// Controllers
-	AuthController *controllers.AuthController
+	// AuthController *controllers.AuthController
 
 	// Services
-	AuthService services.AuthServiceInterface
+	AuthUserService *services.AuthUserService
 
 	AuthGrpcServer *grpcServer.AuthServer
 }
 
 func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 
-	userRepo := repositories.NewUserRepository(db)
+	userRepo := repositories.NewAuthUserRepository(db)
 	sessionRepo := repositories.NewAuthSessionRepository(db)
 
 	sessionService := services.NewAuthSessionService(sessionRepo)
-	authService := services.NewAuthService(userRepo, sessionService)
+	authUserService := services.NewAuthUserService(userRepo, sessionService, rabbit.Channel)
 
-	authController := controllers.NewAuthController(authService, rabbit.Channel)
+	// authController := controllers.NewAuthController(authService, rabbit.Channel)
 
 	authGrpcServer :=
 		grpcServer.NewAuthServer(
-			authService,
+			authUserService,
 		)
 
 	return &Container{
 		DB:             db,
 		Rabbit:         rabbit,
-		AuthController: authController,
-		AuthService:    authService,
+		// AuthController: authController,
+		AuthUserService:    authUserService,
 		AuthGrpcServer: authGrpcServer,
 	}
 }

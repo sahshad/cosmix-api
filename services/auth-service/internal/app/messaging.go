@@ -2,13 +2,14 @@ package app
 
 import (
 	"cosmix/shared/core/rabbitmq"
-	"log"
+	// "log"
 )
 
-func RegisterConsumers(container *Container) {
+func RegisterSubscriptions(container *Container) error {
 
 	if err := rabbitmq.DeclareExchanges(container.Rabbit.Channel); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
+	return nil
 }

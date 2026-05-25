@@ -6,28 +6,32 @@ import (
 	"gorm.io/gorm"
 )
 
-type AuthSessionRepositoryInterface interface {
-	Create(s *models.AuthSession) (uint, error)
-	FindByRefreshTokenHash(refreshTokenHash string) (*models.AuthSession, error)
-	Revoke(refreshTokenHash string) error
+// type AuthSessionRepositoryInterface interface {
+// 	Create(s *models.AuthSession) (uint, error)
+// 	FindByRefreshTokenHash(refreshTokenHash string) (*models.AuthSession, error)
+// 	Revoke(refreshTokenHash string) error
+// }
+
+type AuthSessionRepository struct {
+	*BaseRepository[models.AuthSession]
 }
 
-type AuthSessionRepo struct {
-	db *gorm.DB
-}
-
-func NewAuthSessionRepository(db *gorm.DB) *AuthSessionRepo {
-	return &AuthSessionRepo{db: db}
-}
-
-func (repo *AuthSessionRepo) Create(s *models.AuthSession) (uint, error) {
-	if err := repo.db.Create(s).Error; err != nil {
-		return 0, err
+func NewAuthSessionRepository(
+	db *gorm.DB,
+	) *AuthSessionRepository {
+	return &AuthSessionRepository{
+		NewBaseRepository[models.AuthSession](db),
 	}
-	return s.ID, nil
 }
 
-func (repo *AuthSessionRepo) FindByRefreshTokenHash(refreshTokenHash string) (*models.AuthSession, error) {
+// func (repo *AuthSessionRepo) Create(s *models.AuthSession) (uint, error) {
+// 	if err := repo.db.Create(s).Error; err != nil {
+// 		return 0, err
+// 	}
+// 	return s.ID, nil
+// }
+
+func (repo *AuthSessionRepository) FindByRefreshTokenHash(refreshTokenHash string) (*models.AuthSession, error) {
 	var session models.AuthSession
 	if err := repo.db.Where("refresh_token_hash = ?", refreshTokenHash).First(&session).Error; err != nil {
 		return nil, err
@@ -35,6 +39,6 @@ func (repo *AuthSessionRepo) FindByRefreshTokenHash(refreshTokenHash string) (*m
 	return &session, nil
 }
 
-func (repo *AuthSessionRepo) Revoke(refreshTokenHash string) error {
+func (repo *AuthSessionRepository) Revoke(refreshTokenHash string) error {
 	return repo.db.Where("refresh_token_hash = ?", refreshTokenHash).Update("revoked", true).Error
 }

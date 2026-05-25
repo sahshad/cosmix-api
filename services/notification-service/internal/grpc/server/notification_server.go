@@ -14,11 +14,11 @@ import (
 type NotificationServer struct {
 	notificationpb.UnimplementedNotificationServiceServer
 
-	notificationService services.NotificationServiceInterface
+	notificationService *services.NotificationService
 }
 
 func NewNotificationServer(
-	notificationService services.NotificationServiceInterface,
+	notificationService *services.NotificationService,
 ) *NotificationServer {
 	return &NotificationServer{
 		notificationService: notificationService,

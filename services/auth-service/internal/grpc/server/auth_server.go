@@ -12,11 +12,11 @@ import (
 type AuthServer struct {
 	authpb.UnimplementedAuthServiceServer
 
-	authService services.AuthServiceInterface
+	authService *services.AuthUserService
 }
 
 func NewAuthServer(
-	authService services.AuthServiceInterface,
+	authService *services.AuthUserService,
 ) *AuthServer {
 	return &AuthServer{
 		authService: authService,

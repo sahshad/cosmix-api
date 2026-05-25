@@ -28,6 +28,7 @@ export class AuthController {
 
     @Post('register')
     async register(@Body() body: RegisterDTO) {
+        console.log("register body: ", body)
         const result = await this.authGrpc.register(body)
         return result
     }
