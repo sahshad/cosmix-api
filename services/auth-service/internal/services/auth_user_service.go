@@ -10,24 +10,15 @@ import (
 	"auth-service/internal/repositories"
 	"auth-service/internal/utils"
 
-	// publisher "auth-service/internal/messaging/publisher"
-	appErr "cosmix/shared/core/errors"
 	"cosmix/shared/core/eventbus"
 	"cosmix/shared/core/rabbitmq"
+
+	appErr "cosmix/shared/core/errors"
 	authEvents "cosmix/shared/events/auth"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-
 	"gorm.io/gorm"
 )
-
-// type AuthServiceInterface interface {
-// 	Register(ctx context.Context, input dto.RegisterDTO) (*models.AuthUser, error)
-// 	Login(ctx context.Context, input dto.LoginDTO) (*dto.LoginResponseDTO, error)
-// 	Refresh(ctx context.Context, refreshToken string) (*dto.RefreshResponseDTO, error)
-// 	GetByID(ctx context.Context, id uint) (*models.AuthUser, error)
-// 	UpdateUserPassword(ctx context.Context, userID uint, newPassword string) error
-// }
 
 type AuthUserService struct {
 	repo           *repositories.AuthUserRepository
@@ -88,16 +79,8 @@ func (svc *AuthUserService) Register(ctx context.Context, input dto.RegisterDTO)
 		rabbitmq.AuthUserRegistered,
 		event,
 	); err != nil {
-		// handle error
+		return nil, err
 	}
-	// publisher.PublishAuthUserRegistered(svc.rabbitCh, authEvents.AuthUserRegistered{
-	// 	EventVersion: authEvents.EventVersionOne,
-	// 	AuthUserID:   user.ID,
-	// 	Email:        user.Email,
-	// 	Username:     username,
-	// 	DisplayName:  input.DisplayName,
-	// 	CreatedAt:    time.Now().UTC(),
-	// })
 
 	return user, nil
 }

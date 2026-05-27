@@ -3,26 +3,31 @@ package services
 import (
 	"context"
 	"errors"
+
 	"post-service/internal/dto"
 	"post-service/internal/models"
 	"post-service/internal/repositories"
 )
 
-type PostServiceInterface interface {
-	CreatePost(ctx context.Context, userID uint, req *dto.CreatePostRequest) (*models.Post, error)
-	GetPostByID(ctx context.Context, id uint) (*models.Post, error)
-	GetFeed(ctx context.Context, params *dto.PaginationRequest) (*dto.PostListResponse, error)
-	GetUserPosts(ctx context.Context, userID uint, params *dto.PaginationRequest) (*dto.PostListResponse, error)
-	UpdatePost(ctx context.Context, id uint, userID uint, req *dto.UpdatePostRequest) (*models.Post, error)
-	DeletePost(ctx context.Context, id uint, userID uint) error
-}
+// type PostServiceInterface interface {
+// 	CreatePost(ctx context.Context, userID uint, req *dto.CreatePostRequest) (*models.Post, error)
+// 	GetPostByID(ctx context.Context, id uint) (*models.Post, error)
+// 	GetFeed(ctx context.Context, params *dto.PaginationRequest) (*dto.PostListResponse, error)
+// 	GetUserPosts(ctx context.Context, userID uint, params *dto.PaginationRequest) (*dto.PostListResponse, error)
+// 	UpdatePost(ctx context.Context, id uint, userID uint, req *dto.UpdatePostRequest) (*models.Post, error)
+// 	DeletePost(ctx context.Context, id uint, userID uint) error
+// }
 
 type PostService struct {
-	repo repositories.PostRepositoryInterface
+	repo *repositories.PostRepository
 }
 
-func NewPostService(repo repositories.PostRepositoryInterface) PostServiceInterface {
-	return &PostService{repo: repo}
+func NewPostService(
+	repo *repositories.PostRepository,
+) *PostService {
+	return &PostService{
+		repo: repo,
+	}
 }
 
 func (svc *PostService) CreatePost(ctx context.Context, userID uint, req *dto.CreatePostRequest) (*models.Post, error) {
@@ -37,9 +42,9 @@ func (svc *PostService) CreatePost(ctx context.Context, userID uint, req *dto.Cr
 	}
 
 	post := &models.Post{
-		UserID:   userID,
-		Content:  req.Content,
-		Media:    media,
+		UserID:  userID,
+		Content: req.Content,
+		Media:   media,
 	}
 
 	if err := svc.repo.Create(ctx, post); err != nil {

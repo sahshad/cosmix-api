@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -12,18 +11,6 @@ import (
 
 func ConnectDB() (*gorm.DB, error) {
 	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		host := os.Getenv("DB_HOST")
-		user := os.Getenv("DB_USER")
-		pass := os.Getenv("DB_PASS")
-		name := os.Getenv("DB_NAME")
-		port := os.Getenv("DB_PORT")
-		if port == "" {
-			port = "5432"
-		}
-		dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-			host, user, pass, name, port)
-	}
 
 	var db *gorm.DB
 	var err error

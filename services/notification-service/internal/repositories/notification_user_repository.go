@@ -2,8 +2,10 @@ package repositories
 
 import (
 	"context"
-	"gorm.io/gorm"
+
 	"notification-service/internal/models"
+
+	"gorm.io/gorm"
 )
 
 type NotificationUserRepository struct {

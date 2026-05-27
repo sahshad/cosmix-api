@@ -3,15 +3,11 @@ package services
 import (
 	"context"
 	"log"
+	"time"
+
 	"notification-service/internal/models"
 	"notification-service/internal/repositories"
-	"time"
 )
-
-// type EmailLogServiceInterface interface {
-// 	SendWelcomeEmail(userID uint, email string) error
-// 	SendForgotPasswordEmail(userID uint, email string) error
-// }
 
 type EmailLogService struct {
 	repo *repositories.EmailLogRepository

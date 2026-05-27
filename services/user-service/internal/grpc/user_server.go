@@ -1,4 +1,4 @@
-package server
+package grpc
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 type UserServer struct {
 	userpb.UnimplementedUserServiceServer
 
-	userService *services.UserService
-	followService      *services.FollowService
+	userService   *services.UserService
+	followService *services.FollowService
 }
 
 func NewUserServer(
@@ -23,21 +23,13 @@ func NewUserServer(
 	followService *services.FollowService,
 ) *UserServer {
 	return &UserServer{
-		userService: userService,
-		followService:      followService,
+		userService:   userService,
+		followService: followService,
 	}
 }
 
-func (s *UserServer) GetProfile(
-	ctx context.Context,
-	req *userpb.GetProfileRequest,
-) (*userpb.UserProfileResponse, error) {
-
-	profile, err := s.userService.GetProfile(
-		ctx,
-		uint(req.UserId),
-	)
-
+func (srv *UserServer) GetProfile(ctx context.Context, req *userpb.GetProfileRequest) (*userpb.UserProfileResponse, error) {
+	profile, err := srv.userService.GetProfile(ctx, uint(req.UserId))
 	if err != nil {
 		return nil, err
 	}
@@ -47,16 +39,8 @@ func (s *UserServer) GetProfile(
 	}, nil
 }
 
-func (s *UserServer) GetProfileByUsername(
-	ctx context.Context,
-	req *userpb.GetProfileByUsernameRequest,
-) (*userpb.UserProfileResponse, error) {
-
-	profile, err := s.userService.GetProfileByUsername(
-		ctx,
-		req.Username,
-	)
-
+func (srv *UserServer) GetProfileByUsername(ctx context.Context, req *userpb.GetProfileByUsernameRequest) (*userpb.UserProfileResponse, error) {
+	profile, err := srv.userService.GetProfileByUsername(ctx, req.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -66,12 +50,8 @@ func (s *UserServer) GetProfileByUsername(
 	}, nil
 }
 
-func (s *UserServer) UpdateProfile(
-	ctx context.Context,
-	req *userpb.UpdateProfileRequest,
-) (*userpb.UserProfileResponse, error) {
-
-	profile, err := s.userService.UpdateProfile(
+func (srv *UserServer) UpdateProfile(ctx context.Context, req *userpb.UpdateProfileRequest) (*userpb.UserProfileResponse, error) {
+	profile, err := srv.userService.UpdateProfile(
 		ctx,
 		uint(req.UserId),
 		dto.UpdateProfileDTO{
@@ -82,7 +62,6 @@ func (s *UserServer) UpdateProfile(
 			Bio:         req.Bio,
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -92,17 +71,12 @@ func (s *UserServer) UpdateProfile(
 	}, nil
 }
 
-func (s *UserServer) Follow(
-	ctx context.Context,
-	req *userpb.FollowRequest,
-) (*userpb.FollowResponse, error) {
-
-	err := s.followService.Follow(
+func (srv *UserServer) Follow(ctx context.Context, req *userpb.FollowRequest) (*userpb.FollowResponse, error) {
+	err := srv.followService.Follow(
 		ctx,
 		uint(req.FollowerId),
 		uint(req.FollowingId),
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -112,17 +86,12 @@ func (s *UserServer) Follow(
 	}, nil
 }
 
-func (s *UserServer) Unfollow(
-	ctx context.Context,
-	req *userpb.UnfollowRequest,
-) (*userpb.UnfollowResponse, error) {
-
-	err := s.followService.Unfollow(
+func (srv *UserServer) Unfollow(ctx context.Context, req *userpb.UnfollowRequest) (*userpb.UnfollowResponse, error) {
+	err := srv.followService.Unfollow(
 		ctx,
 		uint(req.FollowerId),
 		uint(req.FollowingId),
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -184,10 +153,7 @@ func (s *UserServer) Unfollow(
 // 	return response, nil
 // }
 
-func mapUser(
-	user dto.UserResponse,
-) *userpb.User {
-
+func mapUser(user dto.UserResponse) *userpb.User {
 	var dateOfBirth *timestamppb.Timestamp
 	if user.DateOfBirth != nil {
 		dateOfBirth = timestamppb.New(
@@ -215,14 +181,4 @@ func mapUser(
 		CreatedAt:   timestamppb.New(user.CreatedAt),
 		UpdatedAt:   updatedAt,
 	}
-}
-
-func stringValue(
-	value *string,
-) string {
-	if value == nil {
-		return ""
-	}
-
-	return *value
 }

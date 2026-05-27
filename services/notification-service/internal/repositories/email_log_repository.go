@@ -6,11 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// type EmailLogRepositoryInterface interface {
-// 	Create(emailLog *models.EmailLog) error
-// 	UpdateStatus(id uint, status string, errorMessage *string) error
-// }
-
 type EmailLogRepository struct {
 	*BaseRepository[models.EmailLog]
 }
@@ -22,10 +17,6 @@ func NewEmailLogRepository(
 		NewBaseRepository[models.EmailLog](db),
 	}
 }
-
-// func (repo *EmailLogRepository) Create(emailLog *models.EmailLog) error {
-// 	return repo.db.Create(emailLog).Error
-// }
 
 func (repo *EmailLogRepository) UpdateStatus(id uint, status string, errorMessage *string) error {
 	updates := map[string]any{

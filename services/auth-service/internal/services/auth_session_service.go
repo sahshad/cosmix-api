@@ -1,16 +1,11 @@
 package services
 
 import (
+	"context"
+
 	"auth-service/internal/models"
 	"auth-service/internal/repositories"
-	"context"
 )
-
-// type AuthSessionServiceInterface interface {
-// 	Create(s *models.AuthSession) (uint, error)
-// 	FindByRefreshTokenHash(refreshTokenHash string) (*models.AuthSession, error)
-// 	Revoke(refreshTokenHash string) error
-// }
 
 type AuthSessionService struct {
 	repo *repositories.AuthSessionRepository

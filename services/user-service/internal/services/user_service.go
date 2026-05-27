@@ -2,22 +2,15 @@ package services
 
 import (
 	"context"
-	authEvents "cosmix/shared/events/auth"
 	"errors"
 	"time"
+
 	"user-service/internal/dto"
 	"user-service/internal/models"
 	"user-service/internal/repositories"
-)
 
-// type UserProfileServiceInterface interface {
-// 	GetProfile(ctx context.Context, userID uint) (*dto.UserProfileResponse, error)
-// 	GetProfileByID(ctx context.Context, id uint) (*dto.UserProfileResponse, error)
-// 	GetProfileByUsername(ctx context.Context, username string) (*dto.UserProfileResponse, error)
-// 	UpdateProfile(ctx context.Context, userID uint, input dto.UpdateProfileDTO) (*dto.UserProfileResponse, error)
-// 	CreateProfile(ctx context.Context, profile *models.User) error
-// 	CreateFromAuthEvent(ctx context.Context, event authEvents.AuthUserRegistered) error
-// }
+	authEvents "cosmix/shared/events/auth"
+)
 
 type UserService struct {
 	repo *repositories.UserRepository
@@ -25,7 +18,7 @@ type UserService struct {
 
 func NewUserService(
 	repo *repositories.UserRepository,
-	) *UserService {
+) *UserService {
 	return &UserService{
 		repo: repo,
 	}

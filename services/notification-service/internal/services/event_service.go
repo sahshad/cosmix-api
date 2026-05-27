@@ -2,19 +2,17 @@ package services
 
 import (
 	"context"
-	authEvents "cosmix/shared/events/auth"
-	"notification-service/internal/models"
-)
 
-// type EventServiceInterface interface {
-// 	HandleUserRegistered(event authEvents.AuthUserRegistered) error
-// }
+	"notification-service/internal/models"
+
+	authEvents "cosmix/shared/events/auth"
+)
 
 type EventService struct {
 	EmailLogSvc               *EmailLogService
 	NotificationSvc           *NotificationService
 	NotificationPreferenceSvc *NotificationPreferenceService
-	NotificationUserSvc *NotificationUserService
+	NotificationUserSvc       *NotificationUserService
 }
 
 func NewEventService(
@@ -27,26 +25,22 @@ func NewEventService(
 		EmailLogSvc:               emailLogSvc,
 		NotificationSvc:           notificationSvc,
 		NotificationPreferenceSvc: notificationPreferenceSvc,
-		NotificationUserSvc: notificationUserSvc,
+		NotificationUserSvc:       notificationUserSvc,
 	}
 }
 
 func (svc *EventService) HandleUserRegistered(ctx context.Context, event authEvents.AuthUserRegistered) error {
 	notificationUser := &models.NotificationUser{
-		UserID: event.AuthUserID,
-		Username: event.Username,
+		UserID:      event.AuthUserID,
+		Username:    event.Username,
 		DisplayName: event.DisplayName,
-		CreatedAt: event.CreatedAt,
+		CreatedAt:   event.CreatedAt,
 	}
 	if err := svc.NotificationUserSvc.Create(ctx, notificationUser); err != nil {
 		return err
 	}
 
-	
-	if err := svc.NotificationPreferenceSvc.CreateDefault(
-		ctx,
-		event.AuthUserID,
-	); err != nil {
+	if err := svc.NotificationPreferenceSvc.CreateDefault(ctx, event.AuthUserID); err != nil {
 		return err
 	}
 
@@ -61,11 +55,7 @@ func (svc *EventService) HandleUserRegistered(ctx context.Context, event authEve
 		return err
 	}
 
-	if err := svc.EmailLogSvc.SendWelcomeEmail(
-		ctx,
-		event.AuthUserID,
-		event.Email,
-	); err != nil {
+	if err := svc.EmailLogSvc.SendWelcomeEmail(ctx, event.AuthUserID, event.Email); err != nil {
 		return err
 	}
 

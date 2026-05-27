@@ -1,9 +1,9 @@
 package database
 
 import (
-	"database/sql"
 	"log"
 
+	"database/sql"
 	"github.com/pressly/goose/v3"
 )
 

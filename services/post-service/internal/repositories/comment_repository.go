@@ -2,31 +2,36 @@ package repositories
 
 import (
 	"context"
+
 	"post-service/internal/dto"
 	"post-service/internal/models"
 
 	"gorm.io/gorm"
 )
 
-type CommentRepositoryInterface interface {
-	Create(ctx context.Context, comment *models.Comment) error
-	GetCommentsByPostID(ctx context.Context, postID uint, params *dto.PaginationRequest) (*dto.CommentListResponse, error)
-	FindByID(ctx context.Context, id uint) (*models.Comment, error)
-	Update(ctx context.Context, comment *models.Comment) error
-	Delete(ctx context.Context, id uint) error
-}
+// type CommentRepositoryInterface interface {
+// 	Create(ctx context.Context, comment *models.Comment) error
+// 	GetCommentsByPostID(ctx context.Context, postID uint, params *dto.PaginationRequest) (*dto.CommentListResponse, error)
+// 	FindByID(ctx context.Context, id uint) (*models.Comment, error)
+// 	Update(ctx context.Context, comment *models.Comment) error
+// 	Delete(ctx context.Context, id uint) error
+// }
 
 type CommentRepository struct {
-	db *gorm.DB
+	*BaseRepository[models.Comment]
 }
 
-func NewCommentRepository(db *gorm.DB) CommentRepositoryInterface {
-	return &CommentRepository{db: db}
+func NewCommentRepository(
+	db *gorm.DB,
+) *CommentRepository {
+	return &CommentRepository{
+		NewBaseRepository[models.Comment](db),
+	}
 }
 
-func (repo *CommentRepository) Create(ctx context.Context, comment *models.Comment) error {
-	return repo.db.WithContext(ctx).Create(comment).Error
-}
+// func (repo *CommentRepository) Create(ctx context.Context, comment *models.Comment) error {
+// 	return repo.db.WithContext(ctx).Create(comment).Error
+// }
 
 func (repo *CommentRepository) GetCommentsByPostID(ctx context.Context, postID uint, params *dto.PaginationRequest) (*dto.CommentListResponse, error) {
 	var comments []dto.CommentList
@@ -54,18 +59,18 @@ func (repo *CommentRepository) GetCommentsByPostID(ctx context.Context, postID u
 		}}, nil
 }
 
-func (repo *CommentRepository) FindByID(ctx context.Context, id uint) (*models.Comment, error) {
-	var comment models.Comment
-	if err := repo.db.WithContext(ctx).First(&comment, id).Error; err != nil {
-		return nil, err
-	}
-	return &comment, nil
-}
+// func (repo *CommentRepository) FindByID(ctx context.Context, id uint) (*models.Comment, error) {
+// 	var comment models.Comment
+// 	if err := repo.db.WithContext(ctx).First(&comment, id).Error; err != nil {
+// 		return nil, err
+// 	}
+// 	return &comment, nil
+// }
 
-func (repo *CommentRepository) Update(ctx context.Context, comment *models.Comment) error {
-	return repo.db.WithContext(ctx).Save(comment).Error
-}
+// func (repo *CommentRepository) Update(ctx context.Context, comment *models.Comment) error {
+// 	return repo.db.WithContext(ctx).Save(comment).Error
+// }
 
-func (repo *CommentRepository) Delete(ctx context.Context, id uint) error {
-	return repo.db.WithContext(ctx).Delete(&models.Comment{}, id).Error
-}
+// func (repo *CommentRepository) Delete(ctx context.Context, id uint) error {
+// 	return repo.db.WithContext(ctx).Delete(&models.Comment{}, id).Error
+// }

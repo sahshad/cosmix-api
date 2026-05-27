@@ -1,11 +1,11 @@
 package app
 
 import (
-	"cosmix/shared/core/rabbitmq"
-	// "user-service/internal/controllers"
-	grpcServer "user-service/internal/grpc/server"
+	"user-service/internal/grpc"
 	"user-service/internal/repositories"
 	"user-service/internal/services"
+
+	"cosmix/shared/core/rabbitmq"
 
 	"gorm.io/gorm"
 )
@@ -14,15 +14,10 @@ type Container struct {
 	DB     *gorm.DB
 	Rabbit *rabbitmq.Rabbit
 
-	// Controllers
-	// UserProfileController *controllers.UserProfileController
-	// FollowController      *controllers.FollowController
-
-	// Services
 	UserService   *services.UserService
 	FollowService *services.FollowService
 
-	UserGrpcServer *grpcServer.UserServer
+	UserGrpcServer *grpc.UserServer
 }
 
 func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
@@ -36,7 +31,7 @@ func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 	// followController := controllers.NewFollowController(followService)
 
 	userGrpcServer :=
-		grpcServer.NewUserServer(
+		grpc.NewUserServer(
 			userService,
 			followService,
 		)

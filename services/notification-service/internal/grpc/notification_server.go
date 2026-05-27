@@ -1,4 +1,4 @@
-package server
+package grpc
 
 import (
 	"context"
@@ -13,7 +13,6 @@ import (
 
 type NotificationServer struct {
 	notificationpb.UnimplementedNotificationServiceServer
-
 	notificationService *services.NotificationService
 }
 
@@ -25,22 +24,14 @@ func NewNotificationServer(
 	}
 }
 
-func (s *NotificationServer) HealthCheck(
-	ctx context.Context,
-	req *notificationpb.HealthCheckRequest,
-) (*notificationpb.HealthCheckResponse, error) {
-
+func (srv *NotificationServer) HealthCheck(ctx context.Context, req *notificationpb.HealthCheckRequest) (*notificationpb.HealthCheckResponse, error) {
 	return &notificationpb.HealthCheckResponse{
 		Status: "ok",
 	}, nil
 }
 
-func (s *NotificationServer) GetUserNotifications(
-	ctx context.Context,
-	req *notificationpb.GetUserNotificationsRequest,
-) (*notificationpb.UserNotificationsResponse, error) {
-
-	result, err := s.notificationService.GetUserNotifications(
+func (srv *NotificationServer) GetUserNotifications(ctx context.Context, req *notificationpb.GetUserNotificationsRequest) (*notificationpb.UserNotificationsResponse, error) {
+	result, err := srv.notificationService.GetUserNotifications(
 		ctx,
 		uint(req.UserId),
 		dto.PaginationRequest{
@@ -48,50 +39,30 @@ func (s *NotificationServer) GetUserNotifications(
 			Limit: uint(req.Limit),
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
 
-	response :=
-		&notificationpb.UserNotificationsResponse{
-			Pagination:
-				&notificationpb.Pagination{
-					TotalCount:
-						uint32(
-							result.Pagination.TotalCount,
-						),
-					Page:
-						uint32(
-							result.Pagination.Page,
-						),
-					Limit:
-						uint32(
-							result.Pagination.Limit,
-						),
-					TotalPages:
-						uint32(
-							result.Pagination.TotalPages,
-						),
-				},
-		}
+	response := &notificationpb.UserNotificationsResponse{
+		Pagination: &notificationpb.Pagination{
+			TotalCount: uint32(result.Pagination.TotalCount),
+			Page:       uint32(result.Pagination.Page),
+			Limit:      uint32(result.Pagination.Limit),
+			TotalPages: uint32(result.Pagination.TotalPages),
+		},
+	}
 
 	for _, item := range result.Notifications {
-
-		response.Notifications =
-			append(
-				response.Notifications,
-				mapNotification(item),
-			)
+		response.Notifications = append(
+			response.Notifications,
+			mapNotification(item),
+		)
 	}
 
 	return response, nil
 }
 
-func mapNotification(
-	item dto.NotificationList,
-) *notificationpb.Notification {
-
+func mapNotification(item dto.NotificationList) *notificationpb.Notification {
 	var actorID uint64
 	if item.ActorID != nil {
 		actorID = uint64(*item.ActorID)
@@ -104,10 +75,7 @@ func mapNotification(
 
 	var readAt *timestamppb.Timestamp
 	if item.ReadAt != nil {
-		readAt =
-			timestamppb.New(
-				*item.ReadAt,
-			)
+		readAt = timestamppb.New(*item.ReadAt)
 	}
 
 	return &notificationpb.Notification{
@@ -129,13 +97,3 @@ func mapNotification(
 		CreatedAt:        timestamppb.New(item.CreatedAt),
 	}
 }
-
-// func stringValue(
-// 	value *string,
-// ) string {
-// 	if value == nil {
-// 		return ""
-// 	}
-
-// 	return *value
-// }

@@ -1,27 +1,28 @@
-package server
+package grpc
 
 import (
 	"context"
 
-	postpb "cosmix/shared/grpc/gen/go/post"
-
 	"post-service/internal/dto"
 	"post-service/internal/services"
+
+	postpb "cosmix/shared/grpc/gen/go/post"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type PostServer struct {
 	postpb.UnimplementedPostServiceServer
 
-	postService    services.PostServiceInterface
-	likeService    services.LikeServiceInterface
-	commentService services.CommentServiceInterface
+	postService    *services.PostService
+	likeService    *services.LikeService
+	commentService *services.CommentService
 }
 
 func NewPostServer(
-	postService services.PostServiceInterface,
-	likeService services.LikeServiceInterface,
-	commentService services.CommentServiceInterface,
+	postService *services.PostService,
+	likeService *services.LikeService,
+	commentService *services.CommentService,
 ) *PostServer {
 	return &PostServer{
 		postService:    postService,
@@ -30,11 +31,7 @@ func NewPostServer(
 	}
 }
 
-func (s *PostServer) CreatePost(
-	ctx context.Context,
-	req *postpb.CreatePostRequest,
-) (*postpb.PostResponse, error) {
-
+func (srv *PostServer) CreatePost(ctx context.Context, req *postpb.CreatePostRequest) (*postpb.PostResponse, error) {
 	input := &dto.CreatePostRequest{
 		Content: req.Content,
 	}
@@ -51,12 +48,11 @@ func (s *PostServer) CreatePost(
 		)
 	}
 
-	_, err := s.postService.CreatePost(
+	_, err := srv.postService.CreatePost(
 		ctx,
 		uint(req.AuthorId),
 		input,
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -66,16 +62,11 @@ func (s *PostServer) CreatePost(
 	}, nil
 }
 
-func (s *PostServer) GetPost(
-	ctx context.Context,
-	req *postpb.GetPostRequest,
-) (*postpb.PostResponse, error) {
-
-	_, err := s.postService.GetPostByID(
+func (srv *PostServer) GetPost(ctx context.Context, req *postpb.GetPostRequest) (*postpb.PostResponse, error) {
+	_, err := srv.postService.GetPostByID(
 		ctx,
 		uint(req.PostId),
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -85,19 +76,14 @@ func (s *PostServer) GetPost(
 	}, nil
 }
 
-func (s *PostServer) GetFeed(
-	ctx context.Context,
-	req *postpb.GetFeedRequest,
-) (*postpb.PostListResponse, error) {
-
-	result, err := s.postService.GetFeed(
+func (srv *PostServer) GetFeed(ctx context.Context, req *postpb.GetFeedRequest) (*postpb.PostListResponse, error) {
+	result, err := srv.postService.GetFeed(
 		ctx,
 		&dto.PaginationRequest{
 			Page:  req.Page,
 			Limit: req.Limit,
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -121,11 +107,7 @@ func (s *PostServer) GetFeed(
 	return response, nil
 }
 
-
-func mapPost(
-	post dto.PostList,
-) *postpb.Post {
-
+func mapPost(post dto.PostList) *postpb.Post {
 	result := &postpb.Post{
 		Id:            uint64(post.ID),
 		Content:       post.Content,
@@ -152,10 +134,7 @@ func mapPost(
 	return result
 }
 
-func mapComment(
-	comment dto.CommentList,
-) *postpb.Comment {
-
+func mapComment(comment dto.CommentList) *postpb.Comment {
 	return &postpb.Comment{
 		Id:        uint64(comment.ID),
 		PostId:    uint64(comment.PostID),
@@ -166,10 +145,7 @@ func mapComment(
 	}
 }
 
-func mapMedia(
-	media dto.Media,
-) *postpb.Media {
-
+func mapMedia(media dto.Media) *postpb.Media {
 	result := &postpb.Media{
 		Id:        uint64(media.ID),
 		PostId:    uint64(media.PostID),
@@ -185,19 +161,13 @@ func mapMedia(
 	}
 
 	if media.UpdatedAt != nil {
-		result.UpdatedAt =
-			timestamppb.New(
-				*media.UpdatedAt,
-			)
+		result.UpdatedAt = timestamppb.New(*media.UpdatedAt)
 	}
 
 	return result
 }
 
-func mapUser(
-	user dto.User,
-) *postpb.User {
-
+func mapUser(user dto.User) *postpb.User {
 	result := &postpb.User{
 		Id:          uint64(user.ID),
 		Email:       user.Email,
@@ -207,10 +177,7 @@ func mapUser(
 	}
 
 	if user.UpdatedAt != nil {
-		result.UpdatedAt =
-			timestamppb.New(
-				*user.UpdatedAt,
-			)
+		result.UpdatedAt = timestamppb.New(*user.UpdatedAt)
 	}
 
 	return result

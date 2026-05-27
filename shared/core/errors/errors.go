@@ -8,6 +8,6 @@ type AppError struct {
 	Err     error  `json:"-"`
 }
 
-func (e *AppError) Error() string {
-	return e.Message
+func (err *AppError) Error() string {
+	return err.Message
 }

@@ -1,9 +1,11 @@
 package httpx
 
 import (
-	appErr "cosmix/shared/core/errors"
-	"github.com/gin-gonic/gin"
 	"strconv"
+
+	appErr "cosmix/shared/core/errors"
+
+	"github.com/gin-gonic/gin"
 )
 
 func ParseUserIDHeader(c *gin.Context) (uint, error) {

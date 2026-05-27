@@ -1,17 +1,16 @@
-package server
+package grpc
 
 import (
 	"context"
 
-	authpb "cosmix/shared/grpc/gen/go/auth"
-
 	"auth-service/internal/dto"
 	"auth-service/internal/services"
+
+	authpb "cosmix/shared/grpc/gen/go/auth"
 )
 
 type AuthServer struct {
 	authpb.UnimplementedAuthServiceServer
-
 	authService *services.AuthUserService
 }
 
@@ -23,12 +22,8 @@ func NewAuthServer(
 	}
 }
 
-func (s *AuthServer) Register(
-	ctx context.Context,
-	req *authpb.RegisterRequest,
-) (*authpb.RegisterResponse, error) {
-
-	user, err := s.authService.Register(
+func (srv *AuthServer) Register(ctx context.Context, req *authpb.RegisterRequest) (*authpb.RegisterResponse, error) {
+	user, err := srv.authService.Register(
 		ctx,
 		dto.RegisterDTO{
 			DisplayName: req.DisplayName,
@@ -36,7 +31,6 @@ func (s *AuthServer) Register(
 			Password:    req.Password,
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -46,19 +40,14 @@ func (s *AuthServer) Register(
 	}, nil
 }
 
-func (s *AuthServer) Login(
-	ctx context.Context,
-	req *authpb.LoginRequest,
-) (*authpb.LoginResponse, error) {
-
-	result, err := s.authService.Login(
+func (srv *AuthServer) Login(ctx context.Context, req *authpb.LoginRequest) (*authpb.LoginResponse, error) {
+	result, err := srv.authService.Login(
 		ctx,
 		dto.LoginDTO{
 			Email:    req.Email,
 			Password: req.Password,
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -79,16 +68,11 @@ func (s *AuthServer) Login(
 	return resp, nil
 }
 
-func (s *AuthServer) Refresh(
-	ctx context.Context,
-	req *authpb.RefreshRequest,
-) (*authpb.RefreshResponse, error) {
-
-	result, err := s.authService.Refresh(
+func (srv *AuthServer) Refresh(ctx context.Context, req *authpb.RefreshRequest) (*authpb.RefreshResponse, error) {
+	result, err := srv.authService.Refresh(
 		ctx,
 		req.RefreshToken,
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -99,17 +83,12 @@ func (s *AuthServer) Refresh(
 	}, nil
 }
 
-func (s *AuthServer) UpdateUserPassword(
-	ctx context.Context,
-	req *authpb.UpdateUserPasswordRequest,
-) (*authpb.UpdateUserPasswordResponse, error) {
-
-	err := s.authService.UpdateUserPassword(
+func (srv *AuthServer) UpdateUserPassword(ctx context.Context, req *authpb.UpdateUserPasswordRequest) (*authpb.UpdateUserPasswordResponse, error) {
+	err := srv.authService.UpdateUserPassword(
 		ctx,
 		uint(req.UserId),
 		req.NewPassword,
 	)
-
 	if err != nil {
 		return nil, err
 	}

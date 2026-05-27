@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+
 	"notification-service/internal/models"
 	"notification-service/internal/repositories"
 

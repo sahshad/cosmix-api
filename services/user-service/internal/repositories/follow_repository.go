@@ -2,20 +2,11 @@ package repositories
 
 import (
 	"context"
+
 	"user-service/internal/models"
 
 	"gorm.io/gorm"
 )
-
-// type FollowRepositoryInterface interface {
-// 	Create(ctx context.Context, follow *models.Follow) error
-// 	Delete(ctx context.Context, followerID, followingID uint) error
-// 	IsFollowing(ctx context.Context, followerID, followingID uint) (bool, error)
-// 	GetFollowers(ctx context.Context, userID uint) ([]uint, error)
-// 	GetFollowing(ctx context.Context, userID uint) ([]uint, error)
-// 	GetFollowerCount(ctx context.Context, userID uint) (int64, error)
-// 	GetFollowingCount(ctx context.Context, userID uint) (int64, error)
-// }
 
 type FollowRepository struct {
 	*BaseRepository[models.Follow]
@@ -23,15 +14,11 @@ type FollowRepository struct {
 
 func NewFollowRepository(
 	db *gorm.DB,
-	) *FollowRepository {
+) *FollowRepository {
 	return &FollowRepository{
 		NewBaseRepository[models.Follow](db),
 	}
 }
-
-// func (repo *FollowRepository) Create(ctx context.Context, follow *models.Follow) error {
-// 	return repo.db.WithContext(ctx).Create(follow).Error
-// }
 
 func (repo *FollowRepository) Delete(ctx context.Context, followerID, followingID uint) error {
 	return repo.db.WithContext(ctx).Where("follower_id = ? AND following_id = ?", followerID, followingID).

@@ -7,13 +7,11 @@ import (
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+
 	"go.uber.org/zap"
 )
 
-type EventHandler[T any] func(
-	ctx context.Context,
-	event T,
-) error
+type EventHandler[T any] func(ctx context.Context, event T) error
 
 func Subscribe[T any](
 	ch *amqp.Channel,

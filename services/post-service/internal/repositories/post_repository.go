@@ -8,26 +8,30 @@ import (
 	"gorm.io/gorm"
 )
 
-type PostRepositoryInterface interface {
-	Create(ctx context.Context, post *models.Post) error
-	FindByID(ctx context.Context, id uint) (*models.Post, error)
-	GetFeed(ctx context.Context, params *dto.PaginationRequest) (*dto.PostListResponse, error)
-	GetUserPosts(ctx context.Context, userID uint, params *dto.PaginationRequest) (*dto.PostListResponse, error)
-	Update(ctx context.Context, post *models.Post) error
-	Delete(ctx context.Context, id uint) error
-}
+// type PostRepositoryInterface interface {
+// 	Create(ctx context.Context, post *models.Post) error
+// 	FindByID(ctx context.Context, id uint) (*models.Post, error)
+// 	GetFeed(ctx context.Context, params *dto.PaginationRequest) (*dto.PostListResponse, error)
+// 	GetUserPosts(ctx context.Context, userID uint, params *dto.PaginationRequest) (*dto.PostListResponse, error)
+// 	Update(ctx context.Context, post *models.Post) error
+// 	Delete(ctx context.Context, id uint) error
+// }
 
 type PostRepository struct {
-	db *gorm.DB
+	*BaseRepository[models.Post]
 }
 
-func NewPostRepository(db *gorm.DB) PostRepositoryInterface {
-	return &PostRepository{db: db}
+func NewPostRepository(
+	db *gorm.DB,
+) *PostRepository {
+	return &PostRepository{
+		NewBaseRepository[models.Post](db),
+	}
 }
 
-func (repo *PostRepository) Create(ctx context.Context, post *models.Post) error {
-	return repo.db.WithContext(ctx).Create(post).Error
-}
+// func (repo *PostRepository) Create(ctx context.Context, post *models.Post) error {
+// 	return repo.db.WithContext(ctx).Create(post).Error
+// }
 
 func (repo *PostRepository) FindByID(ctx context.Context, id uint) (*models.Post, error) {
 	var post models.Post

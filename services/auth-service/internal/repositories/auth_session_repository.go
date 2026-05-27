@@ -6,30 +6,17 @@ import (
 	"gorm.io/gorm"
 )
 
-// type AuthSessionRepositoryInterface interface {
-// 	Create(s *models.AuthSession) (uint, error)
-// 	FindByRefreshTokenHash(refreshTokenHash string) (*models.AuthSession, error)
-// 	Revoke(refreshTokenHash string) error
-// }
-
 type AuthSessionRepository struct {
 	*BaseRepository[models.AuthSession]
 }
 
 func NewAuthSessionRepository(
 	db *gorm.DB,
-	) *AuthSessionRepository {
+) *AuthSessionRepository {
 	return &AuthSessionRepository{
 		NewBaseRepository[models.AuthSession](db),
 	}
 }
-
-// func (repo *AuthSessionRepo) Create(s *models.AuthSession) (uint, error) {
-// 	if err := repo.db.Create(s).Error; err != nil {
-// 		return 0, err
-// 	}
-// 	return s.ID, nil
-// }
 
 func (repo *AuthSessionRepository) FindByRefreshTokenHash(refreshTokenHash string) (*models.AuthSession, error) {
 	var session models.AuthSession

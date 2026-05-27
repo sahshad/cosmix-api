@@ -8,10 +8,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func LoggingInterceptor(
-	logger *zap.Logger,
-) grpc.UnaryServerInterceptor {
-
+func LoggingInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
 		req interface{},
@@ -20,33 +17,15 @@ func LoggingInterceptor(
 	) (interface{}, error) {
 
 		start := time.Now()
-
-		resp, err := handler(
-			ctx,
-			req,
-		)
-
+		resp, err := handler(ctx, req)
 		duration := time.Since(start)
-
-		requestID, _ :=
-			ctx.Value(
-				RequestIDKey,
-			).(string)
+		requestID, _ := ctx.Value(RequestIDKey).(string)
 
 		logger.Info(
 			"grpc request",
-			zap.String(
-				"request_id",
-				requestID,
-			),
-			zap.String(
-				"method",
-				info.FullMethod,
-			),
-			zap.Duration(
-				"duration",
-				duration,
-			),
+			zap.String("request_id", requestID),
+			zap.String("method", info.FullMethod),
+			zap.Duration("duration", duration),
 			zap.Error(err),
 		)
 

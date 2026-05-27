@@ -20,7 +20,6 @@ func RequestIDInterceptor(
 	requestID := uuid.NewString()
 
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
-
 		if values := md.Get(RequestIDKey); len(values) > 0 {
 			requestID = values[0]
 		}
@@ -32,8 +31,5 @@ func RequestIDInterceptor(
 		requestID,
 	)
 
-	return handler(
-		ctx,
-		req,
-	)
+	return handler(ctx, req)
 }

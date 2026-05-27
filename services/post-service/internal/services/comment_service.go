@@ -3,38 +3,44 @@ package services
 import (
 	"context"
 	"errors"
+
 	"post-service/internal/dto"
 	"post-service/internal/models"
 	"post-service/internal/repositories"
 )
 
-type CommentServiceInterface interface {
-	CreateComment(ctx context.Context, postID uint, userID uint, req *dto.CreateCommentRequest) (*models.Comment, error)
-	GetCommentsByPostID(ctx context.Context, postID uint, params *dto.PaginationRequest) (*dto.CommentListResponse, error)
-	UpdateComment(ctx context.Context, id uint, userID uint, req *dto.UpdateCommentRequest) (*models.Comment, error)
-	DeleteComment(ctx context.Context, id uint, userID uint) error
-}
+// type CommentServiceInterface interface {
+// 	CreateComment(ctx context.Context, postID uint, userID uint, req *dto.CreateCommentRequest) (*models.Comment, error)
+// 	GetCommentsByPostID(ctx context.Context, postID uint, params *dto.PaginationRequest) (*dto.CommentListResponse, error)
+// 	UpdateComment(ctx context.Context, id uint, userID uint, req *dto.UpdateCommentRequest) (*models.Comment, error)
+// 	DeleteComment(ctx context.Context, id uint, userID uint) error
+// }
 
 type CommentService struct {
-	repo     repositories.CommentRepositoryInterface
-	postRepo repositories.PostRepositoryInterface
+	repo     *repositories.CommentRepository
+	postRepo *repositories.PostRepository
 }
 
-func NewCommentService(repo repositories.CommentRepositoryInterface, postRepo repositories.PostRepositoryInterface) CommentServiceInterface {
-	return &CommentService{repo: repo, postRepo: postRepo}
+func NewCommentService(
+	repo *repositories.CommentRepository,
+	postRepo *repositories.PostRepository,
+) *CommentService {
+	return &CommentService{
+		repo:     repo,
+		postRepo: postRepo,
+	}
 }
 
 func (svc *CommentService) CreateComment(ctx context.Context, postID uint, userID uint, req *dto.CreateCommentRequest) (*models.Comment, error) {
-	// Verify post exists
 	_, err := svc.postRepo.FindByID(ctx, postID)
 	if err != nil {
 		return nil, errors.New("post not found")
 	}
 
 	comment := &models.Comment{
-		PostID:   postID,
-		UserID: userID,
-		Content:  req.Content,
+		PostID:  postID,
+		UserID:  userID,
+		Content: req.Content,
 	}
 
 	if err := svc.repo.Create(ctx, comment); err != nil {
@@ -75,5 +81,5 @@ func (svc *CommentService) DeleteComment(ctx context.Context, id uint, userID ui
 		return errors.New("unauthorized to delete this comment")
 	}
 
-	return svc.repo.Delete(ctx, id)
+	return svc.repo.DeleteByID(ctx, id)
 }

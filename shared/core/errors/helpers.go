@@ -2,11 +2,7 @@ package errors
 
 import "net/http"
 
-func NewBadRequest(
-	field string,
-	message string,
-) *AppError {
-
+func NewBadRequest(field string, message string) *AppError {
 	return &AppError{
 		Code:    CodeBadRequest,
 		Message: message,
@@ -15,10 +11,7 @@ func NewBadRequest(
 	}
 }
 
-func NewUnauthorized(
-	message string,
-) *AppError {
-
+func NewUnauthorized(message string) *AppError {
 	if message == "" {
 		message = "unauthorized"
 	}
@@ -30,10 +23,7 @@ func NewUnauthorized(
 	}
 }
 
-func NewForbidden(
-	message string,
-) *AppError {
-
+func NewForbidden(message string) *AppError {
 	if message == "" {
 		message = "forbidden"
 	}
@@ -45,10 +35,7 @@ func NewForbidden(
 	}
 }
 
-func NewNotFound(
-	resource string,
-) *AppError {
-
+func NewNotFound(resource string) *AppError {
 	return &AppError{
 		Code:    CodeNotFound,
 		Message: resource + " not found",
@@ -56,10 +43,7 @@ func NewNotFound(
 	}
 }
 
-func NewConflict(
-	message string,
-) *AppError {
-
+func NewConflict(message string) *AppError {
 	return &AppError{
 		Code:    CodeConflict,
 		Message: message,
@@ -67,11 +51,7 @@ func NewConflict(
 	}
 }
 
-func NewValidation(
-	field string,
-	message string,
-) *AppError {
-
+func NewValidation(field string, message string) *AppError {
 	return &AppError{
 		Code:    CodeValidation,
 		Message: message,
@@ -80,10 +60,7 @@ func NewValidation(
 	}
 }
 
-func NewInternal(
-	err error,
-) *AppError {
-
+func NewInternal(err error) *AppError {
 	return &AppError{
 		Code:    CodeInternalServerError,
 		Message: "internal server error",

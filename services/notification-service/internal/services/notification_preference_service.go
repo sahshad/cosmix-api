@@ -2,15 +2,10 @@ package services
 
 import (
 	"context"
+
 	"notification-service/internal/models"
 	"notification-service/internal/repositories"
 )
-
-// type NotificationPreferenceServiceInterface interface {
-// 	CreateDefault(userID uint) error
-// 	GetByUserID(userID uint) (*models.NotificationPreference, error)
-// 	Update(preference *models.NotificationPreference) error
-// }
 
 type NotificationPreferenceService struct {
 	repo *repositories.NotificationPreferenceRepository

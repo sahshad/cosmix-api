@@ -2,17 +2,11 @@ package services
 
 import (
 	"context"
+
 	"notification-service/internal/dto"
 	"notification-service/internal/models"
 	"notification-service/internal/repositories"
 )
-
-// type NotificationServiceInterface interface {
-// 	Create(notification *models.Notification) error
-// 	GetUserNotifications(ctx context.Context, userID uint, paginationRequest dto.PaginationRequest) (*dto.UserNotificationsResponse, error)
-// 	GetUnreadCount(userID uint) (int64, error)
-// 	MarkAsRead(notificationID uint, userID uint) error
-// }
 
 type NotificationService struct {
 	repo *repositories.NotificationRepository

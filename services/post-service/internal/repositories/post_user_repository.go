@@ -8,19 +8,23 @@ import (
 	"gorm.io/gorm"
 )
 
-type PostUserRepositoryInterface interface {
-	Create(ctx context.Context, postUser *models.PostUser) (uint, error)
-	FindByUserID(ctx context.Context, userID uint) (*models.PostUser, error)
-	Update(ctx context.Context, postUser *models.PostUser) error
-	Delete(ctx context.Context, userID uint) error
-}
+// type PostUserRepositoryInterface interface {
+// 	Create(ctx context.Context, postUser *models.PostUser) (uint, error)
+// 	FindByUserID(ctx context.Context, userID uint) (*models.PostUser, error)
+// 	Update(ctx context.Context, postUser *models.PostUser) error
+// 	Delete(ctx context.Context, userID uint) error
+// }
 
 type PostUserRepository struct {
-	db *gorm.DB
+	*BaseRepository[models.PostUser]
 }
 
-func NewPostUserRepository(db *gorm.DB) PostUserRepositoryInterface {
-	return &PostUserRepository{db: db}
+func NewPostUserRepository(
+	db *gorm.DB,
+) *PostUserRepository {
+	return &PostUserRepository{
+		NewBaseRepository[models.PostUser](db),
+	}
 }
 
 func (repo *PostUserRepository) Create(ctx context.Context, postUser *models.PostUser) (uint, error) {
@@ -45,11 +49,11 @@ func (repo *PostUserRepository) FindByUserID(ctx context.Context, userID uint) (
 	return &postUser, nil
 }
 
-func (repo *PostUserRepository) Update(ctx context.Context, postUser *models.PostUser) error {
-	return repo.db.
-		WithContext(ctx).
-		Save(postUser).Error
-}
+// func (repo *PostUserRepository) Update(ctx context.Context, postUser *models.PostUser) error {
+// 	return repo.db.
+// 		WithContext(ctx).
+// 		Save(postUser).Error
+// }
 
 func (repo *PostUserRepository) Delete(ctx context.Context, userID uint) error {
 	return repo.db.

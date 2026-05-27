@@ -10,7 +10,7 @@ import (
 
 	"cosmix/shared/core/eventbus"
 	"cosmix/shared/core/rabbitmq"
-	interceptors "cosmix/shared/grpc/interceptors"
+	"cosmix/shared/grpc/interceptors"
 
 	notificationpb "cosmix/shared/grpc/gen/go/notification"
 
@@ -44,25 +44,14 @@ func main() {
 
 	rabbit := rabbitmq.Connect(rabbitURL)
 	if rabbit == nil {
-		log.Println(
-			"RabbitMQ unavailable, events will not be published",
-		)
+		log.Println("RabbitMQ unavailable, events will not be published")
 	}
 
-	container := app.NewContainer(
-		db,
-		rabbit,
-	)
+	container := app.NewContainer(db, rabbit)
 
-	lis, err := net.Listen(
-		"tcp",
-		":"+grpcPort,
-	)
+	lis, err := net.Listen("tcp", ":"+grpcPort)
 	if err != nil {
-		log.Fatalf(
-			"grpc listen failed: %v",
-			err,
-		)
+		log.Fatalf("grpc listen failed: %v", err)
 	}
 
 	grpcServer := grpc.NewServer(
@@ -83,15 +72,9 @@ func main() {
 		log.Fatalf("failed to register subscriptions: %v", err)
 	}
 
-	log.Printf(
-		"Auth gRPC server running on :%s",
-		grpcPort,
-	)
+	log.Printf("Notification gRPC server running on :%s", grpcPort)
 
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf(
-			"grpc serve failed: %v",
-			err,
-		)
+		log.Fatalf("grpc serve failed: %v", err)
 	}
 }

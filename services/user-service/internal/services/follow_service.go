@@ -3,16 +3,10 @@ package services
 import (
 	"context"
 	"errors"
+
 	"user-service/internal/models"
 	"user-service/internal/repositories"
 )
-
-// type FollowServiceInterface interface {
-// 	Follow(ctx context.Context, followerID uint, followingID uint) error
-// 	Unfollow(ctx context.Context, followerID uint, followingID uint) error
-// 	GetFollowers(ctx context.Context, userID uint) ([]uint, error)
-// 	GetFollowing(ctx context.Context, userID uint) ([]uint, error)
-// }
 
 type FollowService struct {
 	repo *repositories.FollowRepository
@@ -20,7 +14,7 @@ type FollowService struct {
 
 func NewFollowService(
 	repo *repositories.FollowRepository,
-	) *FollowService {
+) *FollowService {
 	return &FollowService{
 		repo: repo,
 	}
