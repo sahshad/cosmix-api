@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: cosmix-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - cosmix-net
+
+  db:
+    image: postgres:16
+    container_name: cosmix-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infrastructure/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - cosmix-net
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: cosmix-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@cosmix.dev
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'True'
+    ports:
+      - "5050:80"
+    volumes:
+      - ./infrastructure/pgadmin/servers.json:/pgadmin4/servers.json
+    depends_on:
+      - db
+    networks:
+      - cosmix-net
+
+networks:
+  cosmix-net:
+
+volumes:
+  pgdata:

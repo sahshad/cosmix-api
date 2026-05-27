@@ -7,7 +7,7 @@ services:
     ports:
       - "5000:5000"
     env_file:
-      - ./services/gateway-service/.env
+      - ./services/gateway-service/.env.docker
     depends_on:
       - auth-service
       - user-service
@@ -22,7 +22,7 @@ services:
       dockerfile: ./services/auth-service/Dockerfile
     container_name: auth-service
     env_file:
-      - ./services/auth-service/.env
+      - ./services/auth-service/.env.docker
     depends_on:
       - db
       - rabbitmq
@@ -35,7 +35,7 @@ services:
       dockerfile: ./services/user-service/Dockerfile
     container_name: user-service
     env_file:
-      - ./services/user-service/.env
+      - ./services/user-service/.env.docker
     depends_on:
       - db
       - rabbitmq
@@ -48,7 +48,7 @@ services:
       dockerfile: ./services/notification-service/Dockerfile
     container_name: notification-service
     env_file:
-      - ./services/notification-service/.env
+      - ./services/notification-service/.env.docker
     depends_on:
       - db
       - rabbitmq
@@ -61,7 +61,7 @@ services:
       dockerfile: ./services/post-service/Dockerfile
     container_name: post-service
     env_file:
-      - ./services/post-service/.env
+      - ./services/post-service/.env.docker
     depends_on:
       - db
       - rabbitmq

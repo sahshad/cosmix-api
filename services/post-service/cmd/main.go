@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	godotenv.Load()
+	godotenv.Load(".env.local")
 
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	grpcPort := os.Getenv("GRPC_PORT")

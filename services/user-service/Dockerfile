@@ -20,7 +20,7 @@ RUN go mod download
 COPY services/user-service/ .
 
 # Copy .env
-COPY services/user-service/.env .env
+# COPY services/user-service/.env .env
 
 # Build the Go binary
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o user-service ./cmd/main.go
