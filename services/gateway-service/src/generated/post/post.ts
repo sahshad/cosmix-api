@@ -6,18 +6,9 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import {
-  type CallOptions,
-  type ChannelCredentials,
-  Client,
-  type ClientOptions,
-  type ClientUnaryCall,
-  type handleUnaryCall,
-  makeGenericClientConstructor,
-  type Metadata,
-  type ServiceError,
-  type UntypedServiceImplementation,
-} from "@grpc/grpc-js";
+import type { handleUnaryCall, UntypedServiceImplementation } from "@grpc/grpc-js";
+import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
+import { Observable } from "rxjs";
 import { Timestamp } from "../google/protobuf/timestamp";
 
 export const protobufPackage = "post";
@@ -47,8 +38,8 @@ export interface Media {
   url: string;
   type: string;
   duration: number;
-  createdAt: Date | undefined;
-  updatedAt: Date | undefined;
+  createdAt: Timestamp | undefined;
+  updatedAt: Timestamp | undefined;
 }
 
 export interface User {
@@ -56,8 +47,8 @@ export interface User {
   email: string;
   username: string;
   displayName: string;
-  createdAt: Date | undefined;
-  updatedAt: Date | undefined;
+  createdAt: Timestamp | undefined;
+  updatedAt: Timestamp | undefined;
 }
 
 export interface Post {
@@ -65,8 +56,8 @@ export interface Post {
   content: string;
   likesCount: number;
   commentsCount: number;
-  createdAt: Date | undefined;
-  updatedAt: Date | undefined;
+  createdAt: Timestamp | undefined;
+  updatedAt: Timestamp | undefined;
   user: User | undefined;
   media: Media[];
 }
@@ -76,8 +67,8 @@ export interface Comment {
   postId: number;
   authorId: number;
   content: string;
-  createdAt: Date | undefined;
-  updatedAt: Date | undefined;
+  createdAt: Timestamp | undefined;
+  updatedAt: Timestamp | undefined;
 }
 
 export interface PostResponse {
@@ -158,6 +149,8 @@ export interface DeleteCommentRequest {
   authorId: number;
 }
 
+export const POST_PACKAGE_NAME = "post";
+
 function createBaseMessageResponse(): MessageResponse {
   return { message: "" };
 }
@@ -191,27 +184,6 @@ export const MessageResponse: MessageFns<MessageResponse> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): MessageResponse {
-    return { message: isSet(object.message) ? globalThis.String(object.message) : "" };
-  },
-
-  toJSON(message: MessageResponse): unknown {
-    const obj: any = {};
-    if (message.message !== "") {
-      obj.message = message.message;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<MessageResponse>, I>>(base?: I): MessageResponse {
-    return MessageResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<MessageResponse>, I>>(object: I): MessageResponse {
-    const message = createBaseMessageResponse();
-    message.message = object.message ?? "";
     return message;
   },
 };
@@ -284,52 +256,6 @@ export const Pagination: MessageFns<Pagination> = {
     }
     return message;
   },
-
-  fromJSON(object: any): Pagination {
-    return {
-      totalCount: isSet(object.totalCount)
-        ? globalThis.Number(object.totalCount)
-        : isSet(object.total_count)
-        ? globalThis.Number(object.total_count)
-        : 0,
-      page: isSet(object.page) ? globalThis.Number(object.page) : 0,
-      limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
-      totalPages: isSet(object.totalPages)
-        ? globalThis.Number(object.totalPages)
-        : isSet(object.total_pages)
-        ? globalThis.Number(object.total_pages)
-        : 0,
-    };
-  },
-
-  toJSON(message: Pagination): unknown {
-    const obj: any = {};
-    if (message.totalCount !== 0) {
-      obj.totalCount = Math.round(message.totalCount);
-    }
-    if (message.page !== 0) {
-      obj.page = Math.round(message.page);
-    }
-    if (message.limit !== 0) {
-      obj.limit = Math.round(message.limit);
-    }
-    if (message.totalPages !== 0) {
-      obj.totalPages = Math.round(message.totalPages);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Pagination>, I>>(base?: I): Pagination {
-    return Pagination.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Pagination>, I>>(object: I): Pagination {
-    const message = createBasePagination();
-    message.totalCount = object.totalCount ?? 0;
-    message.page = object.page ?? 0;
-    message.limit = object.limit ?? 0;
-    message.totalPages = object.totalPages ?? 0;
-    return message;
-  },
 };
 
 function createBaseMediaItem(): MediaItem {
@@ -400,48 +326,6 @@ export const MediaItem: MessageFns<MediaItem> = {
     }
     return message;
   },
-
-  fromJSON(object: any): MediaItem {
-    return {
-      publicId: isSet(object.publicId)
-        ? globalThis.String(object.publicId)
-        : isSet(object.public_id)
-        ? globalThis.String(object.public_id)
-        : "",
-      url: isSet(object.url) ? globalThis.String(object.url) : "",
-      type: isSet(object.type) ? globalThis.String(object.type) : "",
-      duration: isSet(object.duration) ? globalThis.Number(object.duration) : 0,
-    };
-  },
-
-  toJSON(message: MediaItem): unknown {
-    const obj: any = {};
-    if (message.publicId !== "") {
-      obj.publicId = message.publicId;
-    }
-    if (message.url !== "") {
-      obj.url = message.url;
-    }
-    if (message.type !== "") {
-      obj.type = message.type;
-    }
-    if (message.duration !== 0) {
-      obj.duration = Math.round(message.duration);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<MediaItem>, I>>(base?: I): MediaItem {
-    return MediaItem.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<MediaItem>, I>>(object: I): MediaItem {
-    const message = createBaseMediaItem();
-    message.publicId = object.publicId ?? "";
-    message.url = object.url ?? "";
-    message.type = object.type ?? "";
-    message.duration = object.duration ?? 0;
-    return message;
-  },
 };
 
 function createBaseMedia(): Media {
@@ -469,10 +353,10 @@ export const Media: MessageFns<Media> = {
       writer.uint32(48).int32(message.duration);
     }
     if (message.createdAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(58).fork()).join();
+      Timestamp.encode(message.createdAt, writer.uint32(58).fork()).join();
     }
     if (message.updatedAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.updatedAt), writer.uint32(66).fork()).join();
+      Timestamp.encode(message.updatedAt, writer.uint32(66).fork()).join();
     }
     return writer;
   },
@@ -537,7 +421,7 @@ export const Media: MessageFns<Media> = {
             break;
           }
 
-          message.createdAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.createdAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
         case 8: {
@@ -545,7 +429,7 @@ export const Media: MessageFns<Media> = {
             break;
           }
 
-          message.updatedAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.updatedAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -554,80 +438,6 @@ export const Media: MessageFns<Media> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): Media {
-    return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
-      postId: isSet(object.postId)
-        ? globalThis.Number(object.postId)
-        : isSet(object.post_id)
-        ? globalThis.Number(object.post_id)
-        : 0,
-      publicId: isSet(object.publicId)
-        ? globalThis.String(object.publicId)
-        : isSet(object.public_id)
-        ? globalThis.String(object.public_id)
-        : "",
-      url: isSet(object.url) ? globalThis.String(object.url) : "",
-      type: isSet(object.type) ? globalThis.String(object.type) : "",
-      duration: isSet(object.duration) ? globalThis.Number(object.duration) : 0,
-      createdAt: isSet(object.createdAt)
-        ? fromJsonTimestamp(object.createdAt)
-        : isSet(object.created_at)
-        ? fromJsonTimestamp(object.created_at)
-        : undefined,
-      updatedAt: isSet(object.updatedAt)
-        ? fromJsonTimestamp(object.updatedAt)
-        : isSet(object.updated_at)
-        ? fromJsonTimestamp(object.updated_at)
-        : undefined,
-    };
-  },
-
-  toJSON(message: Media): unknown {
-    const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
-    }
-    if (message.postId !== 0) {
-      obj.postId = Math.round(message.postId);
-    }
-    if (message.publicId !== "") {
-      obj.publicId = message.publicId;
-    }
-    if (message.url !== "") {
-      obj.url = message.url;
-    }
-    if (message.type !== "") {
-      obj.type = message.type;
-    }
-    if (message.duration !== 0) {
-      obj.duration = Math.round(message.duration);
-    }
-    if (message.createdAt !== undefined) {
-      obj.createdAt = message.createdAt.toISOString();
-    }
-    if (message.updatedAt !== undefined) {
-      obj.updatedAt = message.updatedAt.toISOString();
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Media>, I>>(base?: I): Media {
-    return Media.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Media>, I>>(object: I): Media {
-    const message = createBaseMedia();
-    message.id = object.id ?? 0;
-    message.postId = object.postId ?? 0;
-    message.publicId = object.publicId ?? "";
-    message.url = object.url ?? "";
-    message.type = object.type ?? "";
-    message.duration = object.duration ?? 0;
-    message.createdAt = object.createdAt ?? undefined;
-    message.updatedAt = object.updatedAt ?? undefined;
     return message;
   },
 };
@@ -651,10 +461,10 @@ export const User: MessageFns<User> = {
       writer.uint32(34).string(message.displayName);
     }
     if (message.createdAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(42).fork()).join();
+      Timestamp.encode(message.createdAt, writer.uint32(42).fork()).join();
     }
     if (message.updatedAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.updatedAt), writer.uint32(50).fork()).join();
+      Timestamp.encode(message.updatedAt, writer.uint32(50).fork()).join();
     }
     return writer;
   },
@@ -703,7 +513,7 @@ export const User: MessageFns<User> = {
             break;
           }
 
-          message.createdAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.createdAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
         case 6: {
@@ -711,7 +521,7 @@ export const User: MessageFns<User> = {
             break;
           }
 
-          message.updatedAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.updatedAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -720,66 +530,6 @@ export const User: MessageFns<User> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): User {
-    return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
-      email: isSet(object.email) ? globalThis.String(object.email) : "",
-      username: isSet(object.username) ? globalThis.String(object.username) : "",
-      displayName: isSet(object.displayName)
-        ? globalThis.String(object.displayName)
-        : isSet(object.display_name)
-        ? globalThis.String(object.display_name)
-        : "",
-      createdAt: isSet(object.createdAt)
-        ? fromJsonTimestamp(object.createdAt)
-        : isSet(object.created_at)
-        ? fromJsonTimestamp(object.created_at)
-        : undefined,
-      updatedAt: isSet(object.updatedAt)
-        ? fromJsonTimestamp(object.updatedAt)
-        : isSet(object.updated_at)
-        ? fromJsonTimestamp(object.updated_at)
-        : undefined,
-    };
-  },
-
-  toJSON(message: User): unknown {
-    const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
-    }
-    if (message.email !== "") {
-      obj.email = message.email;
-    }
-    if (message.username !== "") {
-      obj.username = message.username;
-    }
-    if (message.displayName !== "") {
-      obj.displayName = message.displayName;
-    }
-    if (message.createdAt !== undefined) {
-      obj.createdAt = message.createdAt.toISOString();
-    }
-    if (message.updatedAt !== undefined) {
-      obj.updatedAt = message.updatedAt.toISOString();
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<User>, I>>(base?: I): User {
-    return User.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<User>, I>>(object: I): User {
-    const message = createBaseUser();
-    message.id = object.id ?? 0;
-    message.email = object.email ?? "";
-    message.username = object.username ?? "";
-    message.displayName = object.displayName ?? "";
-    message.createdAt = object.createdAt ?? undefined;
-    message.updatedAt = object.updatedAt ?? undefined;
     return message;
   },
 };
@@ -812,10 +562,10 @@ export const Post: MessageFns<Post> = {
       writer.uint32(32).int32(message.commentsCount);
     }
     if (message.createdAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(42).fork()).join();
+      Timestamp.encode(message.createdAt, writer.uint32(42).fork()).join();
     }
     if (message.updatedAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.updatedAt), writer.uint32(50).fork()).join();
+      Timestamp.encode(message.updatedAt, writer.uint32(50).fork()).join();
     }
     if (message.user !== undefined) {
       User.encode(message.user, writer.uint32(58).fork()).join();
@@ -870,7 +620,7 @@ export const Post: MessageFns<Post> = {
             break;
           }
 
-          message.createdAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.createdAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
         case 6: {
@@ -878,7 +628,7 @@ export const Post: MessageFns<Post> = {
             break;
           }
 
-          message.updatedAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.updatedAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
         case 7: {
@@ -905,82 +655,6 @@ export const Post: MessageFns<Post> = {
     }
     return message;
   },
-
-  fromJSON(object: any): Post {
-    return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
-      content: isSet(object.content) ? globalThis.String(object.content) : "",
-      likesCount: isSet(object.likesCount)
-        ? globalThis.Number(object.likesCount)
-        : isSet(object.likes_count)
-        ? globalThis.Number(object.likes_count)
-        : 0,
-      commentsCount: isSet(object.commentsCount)
-        ? globalThis.Number(object.commentsCount)
-        : isSet(object.comments_count)
-        ? globalThis.Number(object.comments_count)
-        : 0,
-      createdAt: isSet(object.createdAt)
-        ? fromJsonTimestamp(object.createdAt)
-        : isSet(object.created_at)
-        ? fromJsonTimestamp(object.created_at)
-        : undefined,
-      updatedAt: isSet(object.updatedAt)
-        ? fromJsonTimestamp(object.updatedAt)
-        : isSet(object.updated_at)
-        ? fromJsonTimestamp(object.updated_at)
-        : undefined,
-      user: isSet(object.user) ? User.fromJSON(object.user) : undefined,
-      media: globalThis.Array.isArray(object?.media)
-        ? object.media.map((e: any) => Media.fromJSON(e))
-        : [],
-    };
-  },
-
-  toJSON(message: Post): unknown {
-    const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
-    }
-    if (message.content !== "") {
-      obj.content = message.content;
-    }
-    if (message.likesCount !== 0) {
-      obj.likesCount = Math.round(message.likesCount);
-    }
-    if (message.commentsCount !== 0) {
-      obj.commentsCount = Math.round(message.commentsCount);
-    }
-    if (message.createdAt !== undefined) {
-      obj.createdAt = message.createdAt.toISOString();
-    }
-    if (message.updatedAt !== undefined) {
-      obj.updatedAt = message.updatedAt.toISOString();
-    }
-    if (message.user !== undefined) {
-      obj.user = User.toJSON(message.user);
-    }
-    if (message.media?.length) {
-      obj.media = message.media.map((e) => Media.toJSON(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Post>, I>>(base?: I): Post {
-    return Post.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Post>, I>>(object: I): Post {
-    const message = createBasePost();
-    message.id = object.id ?? 0;
-    message.content = object.content ?? "";
-    message.likesCount = object.likesCount ?? 0;
-    message.commentsCount = object.commentsCount ?? 0;
-    message.createdAt = object.createdAt ?? undefined;
-    message.updatedAt = object.updatedAt ?? undefined;
-    message.user = (object.user !== undefined && object.user !== null) ? User.fromPartial(object.user) : undefined;
-    message.media = object.media?.map((e) => Media.fromPartial(e)) || [];
-    return message;
-  },
 };
 
 function createBaseComment(): Comment {
@@ -1002,10 +676,10 @@ export const Comment: MessageFns<Comment> = {
       writer.uint32(34).string(message.content);
     }
     if (message.createdAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(42).fork()).join();
+      Timestamp.encode(message.createdAt, writer.uint32(42).fork()).join();
     }
     if (message.updatedAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.updatedAt), writer.uint32(50).fork()).join();
+      Timestamp.encode(message.updatedAt, writer.uint32(50).fork()).join();
     }
     return writer;
   },
@@ -1054,7 +728,7 @@ export const Comment: MessageFns<Comment> = {
             break;
           }
 
-          message.createdAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.createdAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
         case 6: {
@@ -1062,7 +736,7 @@ export const Comment: MessageFns<Comment> = {
             break;
           }
 
-          message.updatedAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.updatedAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -1071,70 +745,6 @@ export const Comment: MessageFns<Comment> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): Comment {
-    return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
-      postId: isSet(object.postId)
-        ? globalThis.Number(object.postId)
-        : isSet(object.post_id)
-        ? globalThis.Number(object.post_id)
-        : 0,
-      authorId: isSet(object.authorId)
-        ? globalThis.Number(object.authorId)
-        : isSet(object.author_id)
-        ? globalThis.Number(object.author_id)
-        : 0,
-      content: isSet(object.content) ? globalThis.String(object.content) : "",
-      createdAt: isSet(object.createdAt)
-        ? fromJsonTimestamp(object.createdAt)
-        : isSet(object.created_at)
-        ? fromJsonTimestamp(object.created_at)
-        : undefined,
-      updatedAt: isSet(object.updatedAt)
-        ? fromJsonTimestamp(object.updatedAt)
-        : isSet(object.updated_at)
-        ? fromJsonTimestamp(object.updated_at)
-        : undefined,
-    };
-  },
-
-  toJSON(message: Comment): unknown {
-    const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
-    }
-    if (message.postId !== 0) {
-      obj.postId = Math.round(message.postId);
-    }
-    if (message.authorId !== 0) {
-      obj.authorId = Math.round(message.authorId);
-    }
-    if (message.content !== "") {
-      obj.content = message.content;
-    }
-    if (message.createdAt !== undefined) {
-      obj.createdAt = message.createdAt.toISOString();
-    }
-    if (message.updatedAt !== undefined) {
-      obj.updatedAt = message.updatedAt.toISOString();
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Comment>, I>>(base?: I): Comment {
-    return Comment.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Comment>, I>>(object: I): Comment {
-    const message = createBaseComment();
-    message.id = object.id ?? 0;
-    message.postId = object.postId ?? 0;
-    message.authorId = object.authorId ?? 0;
-    message.content = object.content ?? "";
-    message.createdAt = object.createdAt ?? undefined;
-    message.updatedAt = object.updatedAt ?? undefined;
     return message;
   },
 };
@@ -1172,27 +782,6 @@ export const PostResponse: MessageFns<PostResponse> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): PostResponse {
-    return { post: isSet(object.post) ? Post.fromJSON(object.post) : undefined };
-  },
-
-  toJSON(message: PostResponse): unknown {
-    const obj: any = {};
-    if (message.post !== undefined) {
-      obj.post = Post.toJSON(message.post);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<PostResponse>, I>>(base?: I): PostResponse {
-    return PostResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<PostResponse>, I>>(object: I): PostResponse {
-    const message = createBasePostResponse();
-    message.post = (object.post !== undefined && object.post !== null) ? Post.fromPartial(object.post) : undefined;
     return message;
   },
 };
@@ -1243,36 +832,6 @@ export const PostListResponse: MessageFns<PostListResponse> = {
     }
     return message;
   },
-
-  fromJSON(object: any): PostListResponse {
-    return {
-      posts: globalThis.Array.isArray(object?.posts) ? object.posts.map((e: any) => Post.fromJSON(e)) : [],
-      pagination: isSet(object.pagination) ? Pagination.fromJSON(object.pagination) : undefined,
-    };
-  },
-
-  toJSON(message: PostListResponse): unknown {
-    const obj: any = {};
-    if (message.posts?.length) {
-      obj.posts = message.posts.map((e) => Post.toJSON(e));
-    }
-    if (message.pagination !== undefined) {
-      obj.pagination = Pagination.toJSON(message.pagination);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<PostListResponse>, I>>(base?: I): PostListResponse {
-    return PostListResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<PostListResponse>, I>>(object: I): PostListResponse {
-    const message = createBasePostListResponse();
-    message.posts = object.posts?.map((e) => Post.fromPartial(e)) || [];
-    message.pagination = (object.pagination !== undefined && object.pagination !== null)
-      ? Pagination.fromPartial(object.pagination)
-      : undefined;
-    return message;
-  },
 };
 
 function createBaseCommentResponse(): CommentResponse {
@@ -1308,29 +867,6 @@ export const CommentResponse: MessageFns<CommentResponse> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): CommentResponse {
-    return { comment: isSet(object.comment) ? Comment.fromJSON(object.comment) : undefined };
-  },
-
-  toJSON(message: CommentResponse): unknown {
-    const obj: any = {};
-    if (message.comment !== undefined) {
-      obj.comment = Comment.toJSON(message.comment);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<CommentResponse>, I>>(base?: I): CommentResponse {
-    return CommentResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<CommentResponse>, I>>(object: I): CommentResponse {
-    const message = createBaseCommentResponse();
-    message.comment = (object.comment !== undefined && object.comment !== null)
-      ? Comment.fromPartial(object.comment)
-      : undefined;
     return message;
   },
 };
@@ -1381,36 +917,6 @@ export const CommentListResponse: MessageFns<CommentListResponse> = {
     }
     return message;
   },
-
-  fromJSON(object: any): CommentListResponse {
-    return {
-      comments: globalThis.Array.isArray(object?.comments) ? object.comments.map((e: any) => Comment.fromJSON(e)) : [],
-      pagination: isSet(object.pagination) ? Pagination.fromJSON(object.pagination) : undefined,
-    };
-  },
-
-  toJSON(message: CommentListResponse): unknown {
-    const obj: any = {};
-    if (message.comments?.length) {
-      obj.comments = message.comments.map((e) => Comment.toJSON(e));
-    }
-    if (message.pagination !== undefined) {
-      obj.pagination = Pagination.toJSON(message.pagination);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<CommentListResponse>, I>>(base?: I): CommentListResponse {
-    return CommentListResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<CommentListResponse>, I>>(object: I): CommentListResponse {
-    const message = createBaseCommentListResponse();
-    message.comments = object.comments?.map((e) => Comment.fromPartial(e)) || [];
-    message.pagination = (object.pagination !== undefined && object.pagination !== null)
-      ? Pagination.fromPartial(object.pagination)
-      : undefined;
-    return message;
-  },
 };
 
 function createBaseGetPostRequest(): GetPostRequest {
@@ -1446,33 +952,6 @@ export const GetPostRequest: MessageFns<GetPostRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): GetPostRequest {
-    return {
-      postId: isSet(object.postId)
-        ? globalThis.Number(object.postId)
-        : isSet(object.post_id)
-        ? globalThis.Number(object.post_id)
-        : 0,
-    };
-  },
-
-  toJSON(message: GetPostRequest): unknown {
-    const obj: any = {};
-    if (message.postId !== 0) {
-      obj.postId = Math.round(message.postId);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<GetPostRequest>, I>>(base?: I): GetPostRequest {
-    return GetPostRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<GetPostRequest>, I>>(object: I): GetPostRequest {
-    const message = createBaseGetPostRequest();
-    message.postId = object.postId ?? 0;
     return message;
   },
 };
@@ -1521,34 +1000,6 @@ export const GetFeedRequest: MessageFns<GetFeedRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): GetFeedRequest {
-    return {
-      page: isSet(object.page) ? globalThis.Number(object.page) : 0,
-      limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
-    };
-  },
-
-  toJSON(message: GetFeedRequest): unknown {
-    const obj: any = {};
-    if (message.page !== 0) {
-      obj.page = Math.round(message.page);
-    }
-    if (message.limit !== 0) {
-      obj.limit = Math.round(message.limit);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<GetFeedRequest>, I>>(base?: I): GetFeedRequest {
-    return GetFeedRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<GetFeedRequest>, I>>(object: I): GetFeedRequest {
-    const message = createBaseGetFeedRequest();
-    message.page = object.page ?? 0;
-    message.limit = object.limit ?? 0;
     return message;
   },
 };
@@ -1608,43 +1059,6 @@ export const CreatePostRequest: MessageFns<CreatePostRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): CreatePostRequest {
-    return {
-      authorId: isSet(object.authorId)
-        ? globalThis.Number(object.authorId)
-        : isSet(object.author_id)
-        ? globalThis.Number(object.author_id)
-        : 0,
-      content: isSet(object.content) ? globalThis.String(object.content) : "",
-      media: globalThis.Array.isArray(object?.media) ? object.media.map((e: any) => MediaItem.fromJSON(e)) : [],
-    };
-  },
-
-  toJSON(message: CreatePostRequest): unknown {
-    const obj: any = {};
-    if (message.authorId !== 0) {
-      obj.authorId = Math.round(message.authorId);
-    }
-    if (message.content !== "") {
-      obj.content = message.content;
-    }
-    if (message.media?.length) {
-      obj.media = message.media.map((e) => MediaItem.toJSON(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<CreatePostRequest>, I>>(base?: I): CreatePostRequest {
-    return CreatePostRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<CreatePostRequest>, I>>(object: I): CreatePostRequest {
-    const message = createBaseCreatePostRequest();
-    message.authorId = object.authorId ?? 0;
-    message.content = object.content ?? "";
-    message.media = object.media?.map((e) => MediaItem.fromPartial(e)) || [];
     return message;
   },
 };
@@ -1717,52 +1131,6 @@ export const UpdatePostRequest: MessageFns<UpdatePostRequest> = {
     }
     return message;
   },
-
-  fromJSON(object: any): UpdatePostRequest {
-    return {
-      postId: isSet(object.postId)
-        ? globalThis.Number(object.postId)
-        : isSet(object.post_id)
-        ? globalThis.Number(object.post_id)
-        : 0,
-      authorId: isSet(object.authorId)
-        ? globalThis.Number(object.authorId)
-        : isSet(object.author_id)
-        ? globalThis.Number(object.author_id)
-        : 0,
-      content: isSet(object.content) ? globalThis.String(object.content) : "",
-      media: globalThis.Array.isArray(object?.media) ? object.media.map((e: any) => MediaItem.fromJSON(e)) : [],
-    };
-  },
-
-  toJSON(message: UpdatePostRequest): unknown {
-    const obj: any = {};
-    if (message.postId !== 0) {
-      obj.postId = Math.round(message.postId);
-    }
-    if (message.authorId !== 0) {
-      obj.authorId = Math.round(message.authorId);
-    }
-    if (message.content !== "") {
-      obj.content = message.content;
-    }
-    if (message.media?.length) {
-      obj.media = message.media.map((e) => MediaItem.toJSON(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UpdatePostRequest>, I>>(base?: I): UpdatePostRequest {
-    return UpdatePostRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UpdatePostRequest>, I>>(object: I): UpdatePostRequest {
-    const message = createBaseUpdatePostRequest();
-    message.postId = object.postId ?? 0;
-    message.authorId = object.authorId ?? 0;
-    message.content = object.content ?? "";
-    message.media = object.media?.map((e) => MediaItem.fromPartial(e)) || [];
-    return message;
-  },
 };
 
 function createBaseDeletePostRequest(): DeletePostRequest {
@@ -1809,42 +1177,6 @@ export const DeletePostRequest: MessageFns<DeletePostRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): DeletePostRequest {
-    return {
-      postId: isSet(object.postId)
-        ? globalThis.Number(object.postId)
-        : isSet(object.post_id)
-        ? globalThis.Number(object.post_id)
-        : 0,
-      authorId: isSet(object.authorId)
-        ? globalThis.Number(object.authorId)
-        : isSet(object.author_id)
-        ? globalThis.Number(object.author_id)
-        : 0,
-    };
-  },
-
-  toJSON(message: DeletePostRequest): unknown {
-    const obj: any = {};
-    if (message.postId !== 0) {
-      obj.postId = Math.round(message.postId);
-    }
-    if (message.authorId !== 0) {
-      obj.authorId = Math.round(message.authorId);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<DeletePostRequest>, I>>(base?: I): DeletePostRequest {
-    return DeletePostRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<DeletePostRequest>, I>>(object: I): DeletePostRequest {
-    const message = createBaseDeletePostRequest();
-    message.postId = object.postId ?? 0;
-    message.authorId = object.authorId ?? 0;
     return message;
   },
 };
@@ -1895,42 +1227,6 @@ export const LikePostRequest: MessageFns<LikePostRequest> = {
     }
     return message;
   },
-
-  fromJSON(object: any): LikePostRequest {
-    return {
-      postId: isSet(object.postId)
-        ? globalThis.Number(object.postId)
-        : isSet(object.post_id)
-        ? globalThis.Number(object.post_id)
-        : 0,
-      userId: isSet(object.userId)
-        ? globalThis.Number(object.userId)
-        : isSet(object.user_id)
-        ? globalThis.Number(object.user_id)
-        : 0,
-    };
-  },
-
-  toJSON(message: LikePostRequest): unknown {
-    const obj: any = {};
-    if (message.postId !== 0) {
-      obj.postId = Math.round(message.postId);
-    }
-    if (message.userId !== 0) {
-      obj.userId = Math.round(message.userId);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<LikePostRequest>, I>>(base?: I): LikePostRequest {
-    return LikePostRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<LikePostRequest>, I>>(object: I): LikePostRequest {
-    const message = createBaseLikePostRequest();
-    message.postId = object.postId ?? 0;
-    message.userId = object.userId ?? 0;
-    return message;
-  },
 };
 
 function createBaseUnlikePostRequest(): UnlikePostRequest {
@@ -1977,42 +1273,6 @@ export const UnlikePostRequest: MessageFns<UnlikePostRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): UnlikePostRequest {
-    return {
-      postId: isSet(object.postId)
-        ? globalThis.Number(object.postId)
-        : isSet(object.post_id)
-        ? globalThis.Number(object.post_id)
-        : 0,
-      userId: isSet(object.userId)
-        ? globalThis.Number(object.userId)
-        : isSet(object.user_id)
-        ? globalThis.Number(object.user_id)
-        : 0,
-    };
-  },
-
-  toJSON(message: UnlikePostRequest): unknown {
-    const obj: any = {};
-    if (message.postId !== 0) {
-      obj.postId = Math.round(message.postId);
-    }
-    if (message.userId !== 0) {
-      obj.userId = Math.round(message.userId);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UnlikePostRequest>, I>>(base?: I): UnlikePostRequest {
-    return UnlikePostRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UnlikePostRequest>, I>>(object: I): UnlikePostRequest {
-    const message = createBaseUnlikePostRequest();
-    message.postId = object.postId ?? 0;
-    message.userId = object.userId ?? 0;
     return message;
   },
 };
@@ -2074,47 +1334,6 @@ export const CreateCommentRequest: MessageFns<CreateCommentRequest> = {
     }
     return message;
   },
-
-  fromJSON(object: any): CreateCommentRequest {
-    return {
-      postId: isSet(object.postId)
-        ? globalThis.Number(object.postId)
-        : isSet(object.post_id)
-        ? globalThis.Number(object.post_id)
-        : 0,
-      authorId: isSet(object.authorId)
-        ? globalThis.Number(object.authorId)
-        : isSet(object.author_id)
-        ? globalThis.Number(object.author_id)
-        : 0,
-      content: isSet(object.content) ? globalThis.String(object.content) : "",
-    };
-  },
-
-  toJSON(message: CreateCommentRequest): unknown {
-    const obj: any = {};
-    if (message.postId !== 0) {
-      obj.postId = Math.round(message.postId);
-    }
-    if (message.authorId !== 0) {
-      obj.authorId = Math.round(message.authorId);
-    }
-    if (message.content !== "") {
-      obj.content = message.content;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<CreateCommentRequest>, I>>(base?: I): CreateCommentRequest {
-    return CreateCommentRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<CreateCommentRequest>, I>>(object: I): CreateCommentRequest {
-    const message = createBaseCreateCommentRequest();
-    message.postId = object.postId ?? 0;
-    message.authorId = object.authorId ?? 0;
-    message.content = object.content ?? "";
-    return message;
-  },
 };
 
 function createBaseGetCommentsRequest(): GetCommentsRequest {
@@ -2172,43 +1391,6 @@ export const GetCommentsRequest: MessageFns<GetCommentsRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): GetCommentsRequest {
-    return {
-      postId: isSet(object.postId)
-        ? globalThis.Number(object.postId)
-        : isSet(object.post_id)
-        ? globalThis.Number(object.post_id)
-        : 0,
-      page: isSet(object.page) ? globalThis.Number(object.page) : 0,
-      limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
-    };
-  },
-
-  toJSON(message: GetCommentsRequest): unknown {
-    const obj: any = {};
-    if (message.postId !== 0) {
-      obj.postId = Math.round(message.postId);
-    }
-    if (message.page !== 0) {
-      obj.page = Math.round(message.page);
-    }
-    if (message.limit !== 0) {
-      obj.limit = Math.round(message.limit);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<GetCommentsRequest>, I>>(base?: I): GetCommentsRequest {
-    return GetCommentsRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<GetCommentsRequest>, I>>(object: I): GetCommentsRequest {
-    const message = createBaseGetCommentsRequest();
-    message.postId = object.postId ?? 0;
-    message.page = object.page ?? 0;
-    message.limit = object.limit ?? 0;
     return message;
   },
 };
@@ -2270,47 +1452,6 @@ export const UpdateCommentRequest: MessageFns<UpdateCommentRequest> = {
     }
     return message;
   },
-
-  fromJSON(object: any): UpdateCommentRequest {
-    return {
-      commentId: isSet(object.commentId)
-        ? globalThis.Number(object.commentId)
-        : isSet(object.comment_id)
-        ? globalThis.Number(object.comment_id)
-        : 0,
-      authorId: isSet(object.authorId)
-        ? globalThis.Number(object.authorId)
-        : isSet(object.author_id)
-        ? globalThis.Number(object.author_id)
-        : 0,
-      content: isSet(object.content) ? globalThis.String(object.content) : "",
-    };
-  },
-
-  toJSON(message: UpdateCommentRequest): unknown {
-    const obj: any = {};
-    if (message.commentId !== 0) {
-      obj.commentId = Math.round(message.commentId);
-    }
-    if (message.authorId !== 0) {
-      obj.authorId = Math.round(message.authorId);
-    }
-    if (message.content !== "") {
-      obj.content = message.content;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UpdateCommentRequest>, I>>(base?: I): UpdateCommentRequest {
-    return UpdateCommentRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UpdateCommentRequest>, I>>(object: I): UpdateCommentRequest {
-    const message = createBaseUpdateCommentRequest();
-    message.commentId = object.commentId ?? 0;
-    message.authorId = object.authorId ?? 0;
-    message.content = object.content ?? "";
-    return message;
-  },
 };
 
 function createBaseDeleteCommentRequest(): DeleteCommentRequest {
@@ -2359,43 +1500,92 @@ export const DeleteCommentRequest: MessageFns<DeleteCommentRequest> = {
     }
     return message;
   },
-
-  fromJSON(object: any): DeleteCommentRequest {
-    return {
-      commentId: isSet(object.commentId)
-        ? globalThis.Number(object.commentId)
-        : isSet(object.comment_id)
-        ? globalThis.Number(object.comment_id)
-        : 0,
-      authorId: isSet(object.authorId)
-        ? globalThis.Number(object.authorId)
-        : isSet(object.author_id)
-        ? globalThis.Number(object.author_id)
-        : 0,
-    };
-  },
-
-  toJSON(message: DeleteCommentRequest): unknown {
-    const obj: any = {};
-    if (message.commentId !== 0) {
-      obj.commentId = Math.round(message.commentId);
-    }
-    if (message.authorId !== 0) {
-      obj.authorId = Math.round(message.authorId);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<DeleteCommentRequest>, I>>(base?: I): DeleteCommentRequest {
-    return DeleteCommentRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<DeleteCommentRequest>, I>>(object: I): DeleteCommentRequest {
-    const message = createBaseDeleteCommentRequest();
-    message.commentId = object.commentId ?? 0;
-    message.authorId = object.authorId ?? 0;
-    return message;
-  },
 };
+
+export interface PostServiceClient {
+  createPost(request: CreatePostRequest): Observable<PostResponse>;
+
+  getPost(request: GetPostRequest): Observable<PostResponse>;
+
+  getFeed(request: GetFeedRequest): Observable<PostListResponse>;
+
+  updatePost(request: UpdatePostRequest): Observable<PostResponse>;
+
+  deletePost(request: DeletePostRequest): Observable<MessageResponse>;
+
+  likePost(request: LikePostRequest): Observable<MessageResponse>;
+
+  unlikePost(request: UnlikePostRequest): Observable<MessageResponse>;
+
+  createComment(request: CreateCommentRequest): Observable<CommentResponse>;
+
+  getComments(request: GetCommentsRequest): Observable<CommentListResponse>;
+
+  updateComment(request: UpdateCommentRequest): Observable<CommentResponse>;
+
+  deleteComment(request: DeleteCommentRequest): Observable<MessageResponse>;
+}
+
+export interface PostServiceController {
+  createPost(request: CreatePostRequest): Promise<PostResponse> | Observable<PostResponse> | PostResponse;
+
+  getPost(request: GetPostRequest): Promise<PostResponse> | Observable<PostResponse> | PostResponse;
+
+  getFeed(request: GetFeedRequest): Promise<PostListResponse> | Observable<PostListResponse> | PostListResponse;
+
+  updatePost(request: UpdatePostRequest): Promise<PostResponse> | Observable<PostResponse> | PostResponse;
+
+  deletePost(request: DeletePostRequest): Promise<MessageResponse> | Observable<MessageResponse> | MessageResponse;
+
+  likePost(request: LikePostRequest): Promise<MessageResponse> | Observable<MessageResponse> | MessageResponse;
+
+  unlikePost(request: UnlikePostRequest): Promise<MessageResponse> | Observable<MessageResponse> | MessageResponse;
+
+  createComment(
+    request: CreateCommentRequest,
+  ): Promise<CommentResponse> | Observable<CommentResponse> | CommentResponse;
+
+  getComments(
+    request: GetCommentsRequest,
+  ): Promise<CommentListResponse> | Observable<CommentListResponse> | CommentListResponse;
+
+  updateComment(
+    request: UpdateCommentRequest,
+  ): Promise<CommentResponse> | Observable<CommentResponse> | CommentResponse;
+
+  deleteComment(
+    request: DeleteCommentRequest,
+  ): Promise<MessageResponse> | Observable<MessageResponse> | MessageResponse;
+}
+
+export function PostServiceControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = [
+      "createPost",
+      "getPost",
+      "getFeed",
+      "updatePost",
+      "deletePost",
+      "likePost",
+      "unlikePost",
+      "createComment",
+      "getComments",
+      "updateComment",
+      "deleteComment",
+    ];
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcMethod("PostService", method)(constructor.prototype[method], method, descriptor);
+    }
+    const grpcStreamMethods: string[] = [];
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcStreamMethod("PostService", method)(constructor.prototype[method], method, descriptor);
+    }
+  };
+}
+
+export const POST_SERVICE_NAME = "PostService";
 
 export type PostServiceService = typeof PostServiceService;
 export const PostServiceService = {
@@ -2514,214 +1704,6 @@ export interface PostServiceServer extends UntypedServiceImplementation {
   deleteComment: handleUnaryCall<DeleteCommentRequest, MessageResponse>;
 }
 
-export interface PostServiceClient extends Client {
-  createPost(
-    request: CreatePostRequest,
-    callback: (error: ServiceError | null, response: PostResponse) => void,
-  ): ClientUnaryCall;
-  createPost(
-    request: CreatePostRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: PostResponse) => void,
-  ): ClientUnaryCall;
-  createPost(
-    request: CreatePostRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: PostResponse) => void,
-  ): ClientUnaryCall;
-  getPost(
-    request: GetPostRequest,
-    callback: (error: ServiceError | null, response: PostResponse) => void,
-  ): ClientUnaryCall;
-  getPost(
-    request: GetPostRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: PostResponse) => void,
-  ): ClientUnaryCall;
-  getPost(
-    request: GetPostRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: PostResponse) => void,
-  ): ClientUnaryCall;
-  getFeed(
-    request: GetFeedRequest,
-    callback: (error: ServiceError | null, response: PostListResponse) => void,
-  ): ClientUnaryCall;
-  getFeed(
-    request: GetFeedRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: PostListResponse) => void,
-  ): ClientUnaryCall;
-  getFeed(
-    request: GetFeedRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: PostListResponse) => void,
-  ): ClientUnaryCall;
-  updatePost(
-    request: UpdatePostRequest,
-    callback: (error: ServiceError | null, response: PostResponse) => void,
-  ): ClientUnaryCall;
-  updatePost(
-    request: UpdatePostRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: PostResponse) => void,
-  ): ClientUnaryCall;
-  updatePost(
-    request: UpdatePostRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: PostResponse) => void,
-  ): ClientUnaryCall;
-  deletePost(
-    request: DeletePostRequest,
-    callback: (error: ServiceError | null, response: MessageResponse) => void,
-  ): ClientUnaryCall;
-  deletePost(
-    request: DeletePostRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: MessageResponse) => void,
-  ): ClientUnaryCall;
-  deletePost(
-    request: DeletePostRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: MessageResponse) => void,
-  ): ClientUnaryCall;
-  likePost(
-    request: LikePostRequest,
-    callback: (error: ServiceError | null, response: MessageResponse) => void,
-  ): ClientUnaryCall;
-  likePost(
-    request: LikePostRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: MessageResponse) => void,
-  ): ClientUnaryCall;
-  likePost(
-    request: LikePostRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: MessageResponse) => void,
-  ): ClientUnaryCall;
-  unlikePost(
-    request: UnlikePostRequest,
-    callback: (error: ServiceError | null, response: MessageResponse) => void,
-  ): ClientUnaryCall;
-  unlikePost(
-    request: UnlikePostRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: MessageResponse) => void,
-  ): ClientUnaryCall;
-  unlikePost(
-    request: UnlikePostRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: MessageResponse) => void,
-  ): ClientUnaryCall;
-  createComment(
-    request: CreateCommentRequest,
-    callback: (error: ServiceError | null, response: CommentResponse) => void,
-  ): ClientUnaryCall;
-  createComment(
-    request: CreateCommentRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: CommentResponse) => void,
-  ): ClientUnaryCall;
-  createComment(
-    request: CreateCommentRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: CommentResponse) => void,
-  ): ClientUnaryCall;
-  getComments(
-    request: GetCommentsRequest,
-    callback: (error: ServiceError | null, response: CommentListResponse) => void,
-  ): ClientUnaryCall;
-  getComments(
-    request: GetCommentsRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: CommentListResponse) => void,
-  ): ClientUnaryCall;
-  getComments(
-    request: GetCommentsRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: CommentListResponse) => void,
-  ): ClientUnaryCall;
-  updateComment(
-    request: UpdateCommentRequest,
-    callback: (error: ServiceError | null, response: CommentResponse) => void,
-  ): ClientUnaryCall;
-  updateComment(
-    request: UpdateCommentRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: CommentResponse) => void,
-  ): ClientUnaryCall;
-  updateComment(
-    request: UpdateCommentRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: CommentResponse) => void,
-  ): ClientUnaryCall;
-  deleteComment(
-    request: DeleteCommentRequest,
-    callback: (error: ServiceError | null, response: MessageResponse) => void,
-  ): ClientUnaryCall;
-  deleteComment(
-    request: DeleteCommentRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: MessageResponse) => void,
-  ): ClientUnaryCall;
-  deleteComment(
-    request: DeleteCommentRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: MessageResponse) => void,
-  ): ClientUnaryCall;
-}
-
-export const PostServiceClient = makeGenericClientConstructor(PostServiceService, "post.PostService") as unknown as {
-  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): PostServiceClient;
-  service: typeof PostServiceService;
-  serviceName: string;
-};
-
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
-
-export type DeepPartial<T> = T extends Builtin ? T
-  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
-  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : Partial<T>;
-
-type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
-
-function toTimestamp(date: Date): Timestamp {
-  const seconds = Math.trunc(date.getTime() / 1_000);
-  const nanos = (date.getTime() % 1_000) * 1_000_000;
-  return { seconds, nanos };
-}
-
-function fromTimestamp(t: Timestamp): Date {
-  let millis = (t.seconds || 0) * 1_000;
-  millis += (t.nanos || 0) / 1_000_000;
-  return new globalThis.Date(millis);
-}
-
-function fromJsonTimestamp(o: any): Date {
-  if (o instanceof globalThis.Date) {
-    return o;
-  } else if (typeof o === "string") {
-    return new globalThis.Date(o);
-  } else {
-    return fromTimestamp(Timestamp.fromJSON(o));
-  }
-}
-
 function longToNumber(int64: { toString(): string }): number {
   const num = globalThis.Number(int64.toString());
   if (num > globalThis.Number.MAX_SAFE_INTEGER) {
@@ -2733,15 +1715,7 @@ function longToNumber(int64: { toString(): string }): number {
   return num;
 }
 
-function isSet(value: any): boolean {
-  return value !== null && value !== undefined;
-}
-
 export interface MessageFns<T> {
   encode(message: T, writer?: BinaryWriter): BinaryWriter;
   decode(input: BinaryReader | Uint8Array, length?: number): T;
-  fromJSON(object: any): T;
-  toJSON(message: T): unknown;
-  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
-  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
 }

@@ -6,18 +6,9 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import {
-  type CallOptions,
-  type ChannelCredentials,
-  Client,
-  type ClientOptions,
-  type ClientUnaryCall,
-  type handleUnaryCall,
-  makeGenericClientConstructor,
-  type Metadata,
-  type ServiceError,
-  type UntypedServiceImplementation,
-} from "@grpc/grpc-js";
+import type { handleUnaryCall, UntypedServiceImplementation } from "@grpc/grpc-js";
+import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
+import { Observable } from "rxjs";
 import { Timestamp } from "../google/protobuf/timestamp";
 
 export const protobufPackage = "user";
@@ -80,12 +71,14 @@ export interface User {
   email: string;
   isPrivate: boolean;
   isActive: boolean;
-  dateOfBirth: Date | undefined;
+  dateOfBirth: Timestamp | undefined;
   avatarUrl?: string | undefined;
   bio?: string | undefined;
-  createdAt: Date | undefined;
-  updatedAt: Date | undefined;
+  createdAt: Timestamp | undefined;
+  updatedAt: Timestamp | undefined;
 }
+
+export const USER_PACKAGE_NAME = "user";
 
 function createBaseGetProfileRequest(): GetProfileRequest {
   return { userId: 0 };
@@ -120,33 +113,6 @@ export const GetProfileRequest: MessageFns<GetProfileRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): GetProfileRequest {
-    return {
-      userId: isSet(object.userId)
-        ? globalThis.Number(object.userId)
-        : isSet(object.user_id)
-        ? globalThis.Number(object.user_id)
-        : 0,
-    };
-  },
-
-  toJSON(message: GetProfileRequest): unknown {
-    const obj: any = {};
-    if (message.userId !== 0) {
-      obj.userId = Math.round(message.userId);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<GetProfileRequest>, I>>(base?: I): GetProfileRequest {
-    return GetProfileRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<GetProfileRequest>, I>>(object: I): GetProfileRequest {
-    const message = createBaseGetProfileRequest();
-    message.userId = object.userId ?? 0;
     return message;
   },
 };
@@ -186,38 +152,10 @@ export const GetProfileByUsernameRequest: MessageFns<GetProfileByUsernameRequest
     }
     return message;
   },
-
-  fromJSON(object: any): GetProfileByUsernameRequest {
-    return { username: isSet(object.username) ? globalThis.String(object.username) : "" };
-  },
-
-  toJSON(message: GetProfileByUsernameRequest): unknown {
-    const obj: any = {};
-    if (message.username !== "") {
-      obj.username = message.username;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<GetProfileByUsernameRequest>, I>>(base?: I): GetProfileByUsernameRequest {
-    return GetProfileByUsernameRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<GetProfileByUsernameRequest>, I>>(object: I): GetProfileByUsernameRequest {
-    const message = createBaseGetProfileByUsernameRequest();
-    message.username = object.username ?? "";
-    return message;
-  },
 };
 
 function createBaseUpdateProfileRequest(): UpdateProfileRequest {
-  return {
-    userId: 0,
-    displayName: undefined,
-    username: undefined,
-    dateOfBirth: undefined,
-    avatarUrl: undefined,
-    bio: undefined,
-  };
+  return { userId: 0 };
 }
 
 export const UpdateProfileRequest: MessageFns<UpdateProfileRequest> = {
@@ -306,70 +244,6 @@ export const UpdateProfileRequest: MessageFns<UpdateProfileRequest> = {
     }
     return message;
   },
-
-  fromJSON(object: any): UpdateProfileRequest {
-    return {
-      userId: isSet(object.userId)
-        ? globalThis.Number(object.userId)
-        : isSet(object.user_id)
-        ? globalThis.Number(object.user_id)
-        : 0,
-      displayName: isSet(object.displayName)
-        ? globalThis.String(object.displayName)
-        : isSet(object.display_name)
-        ? globalThis.String(object.display_name)
-        : undefined,
-      username: isSet(object.username) ? globalThis.String(object.username) : undefined,
-      dateOfBirth: isSet(object.dateOfBirth)
-        ? globalThis.String(object.dateOfBirth)
-        : isSet(object.date_of_birth)
-        ? globalThis.String(object.date_of_birth)
-        : undefined,
-      avatarUrl: isSet(object.avatarUrl)
-        ? globalThis.String(object.avatarUrl)
-        : isSet(object.avatar_url)
-        ? globalThis.String(object.avatar_url)
-        : undefined,
-      bio: isSet(object.bio) ? globalThis.String(object.bio) : undefined,
-    };
-  },
-
-  toJSON(message: UpdateProfileRequest): unknown {
-    const obj: any = {};
-    if (message.userId !== 0) {
-      obj.userId = Math.round(message.userId);
-    }
-    if (message.displayName !== undefined) {
-      obj.displayName = message.displayName;
-    }
-    if (message.username !== undefined) {
-      obj.username = message.username;
-    }
-    if (message.dateOfBirth !== undefined) {
-      obj.dateOfBirth = message.dateOfBirth;
-    }
-    if (message.avatarUrl !== undefined) {
-      obj.avatarUrl = message.avatarUrl;
-    }
-    if (message.bio !== undefined) {
-      obj.bio = message.bio;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UpdateProfileRequest>, I>>(base?: I): UpdateProfileRequest {
-    return UpdateProfileRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UpdateProfileRequest>, I>>(object: I): UpdateProfileRequest {
-    const message = createBaseUpdateProfileRequest();
-    message.userId = object.userId ?? 0;
-    message.displayName = object.displayName ?? undefined;
-    message.username = object.username ?? undefined;
-    message.dateOfBirth = object.dateOfBirth ?? undefined;
-    message.avatarUrl = object.avatarUrl ?? undefined;
-    message.bio = object.bio ?? undefined;
-    return message;
-  },
 };
 
 function createBaseFollowRequest(): FollowRequest {
@@ -416,42 +290,6 @@ export const FollowRequest: MessageFns<FollowRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): FollowRequest {
-    return {
-      followerId: isSet(object.followerId)
-        ? globalThis.Number(object.followerId)
-        : isSet(object.follower_id)
-        ? globalThis.Number(object.follower_id)
-        : 0,
-      followingId: isSet(object.followingId)
-        ? globalThis.Number(object.followingId)
-        : isSet(object.following_id)
-        ? globalThis.Number(object.following_id)
-        : 0,
-    };
-  },
-
-  toJSON(message: FollowRequest): unknown {
-    const obj: any = {};
-    if (message.followerId !== 0) {
-      obj.followerId = Math.round(message.followerId);
-    }
-    if (message.followingId !== 0) {
-      obj.followingId = Math.round(message.followingId);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<FollowRequest>, I>>(base?: I): FollowRequest {
-    return FollowRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<FollowRequest>, I>>(object: I): FollowRequest {
-    const message = createBaseFollowRequest();
-    message.followerId = object.followerId ?? 0;
-    message.followingId = object.followingId ?? 0;
     return message;
   },
 };
@@ -502,42 +340,6 @@ export const UnfollowRequest: MessageFns<UnfollowRequest> = {
     }
     return message;
   },
-
-  fromJSON(object: any): UnfollowRequest {
-    return {
-      followerId: isSet(object.followerId)
-        ? globalThis.Number(object.followerId)
-        : isSet(object.follower_id)
-        ? globalThis.Number(object.follower_id)
-        : 0,
-      followingId: isSet(object.followingId)
-        ? globalThis.Number(object.followingId)
-        : isSet(object.following_id)
-        ? globalThis.Number(object.following_id)
-        : 0,
-    };
-  },
-
-  toJSON(message: UnfollowRequest): unknown {
-    const obj: any = {};
-    if (message.followerId !== 0) {
-      obj.followerId = Math.round(message.followerId);
-    }
-    if (message.followingId !== 0) {
-      obj.followingId = Math.round(message.followingId);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UnfollowRequest>, I>>(base?: I): UnfollowRequest {
-    return UnfollowRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UnfollowRequest>, I>>(object: I): UnfollowRequest {
-    const message = createBaseUnfollowRequest();
-    message.followerId = object.followerId ?? 0;
-    message.followingId = object.followingId ?? 0;
-    return message;
-  },
 };
 
 function createBaseGetFollowersRequest(): GetFollowersRequest {
@@ -573,33 +375,6 @@ export const GetFollowersRequest: MessageFns<GetFollowersRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): GetFollowersRequest {
-    return {
-      userId: isSet(object.userId)
-        ? globalThis.Number(object.userId)
-        : isSet(object.user_id)
-        ? globalThis.Number(object.user_id)
-        : 0,
-    };
-  },
-
-  toJSON(message: GetFollowersRequest): unknown {
-    const obj: any = {};
-    if (message.userId !== 0) {
-      obj.userId = Math.round(message.userId);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<GetFollowersRequest>, I>>(base?: I): GetFollowersRequest {
-    return GetFollowersRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<GetFollowersRequest>, I>>(object: I): GetFollowersRequest {
-    const message = createBaseGetFollowersRequest();
-    message.userId = object.userId ?? 0;
     return message;
   },
 };
@@ -639,33 +414,6 @@ export const GetFollowingRequest: MessageFns<GetFollowingRequest> = {
     }
     return message;
   },
-
-  fromJSON(object: any): GetFollowingRequest {
-    return {
-      userId: isSet(object.userId)
-        ? globalThis.Number(object.userId)
-        : isSet(object.user_id)
-        ? globalThis.Number(object.user_id)
-        : 0,
-    };
-  },
-
-  toJSON(message: GetFollowingRequest): unknown {
-    const obj: any = {};
-    if (message.userId !== 0) {
-      obj.userId = Math.round(message.userId);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<GetFollowingRequest>, I>>(base?: I): GetFollowingRequest {
-    return GetFollowingRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<GetFollowingRequest>, I>>(object: I): GetFollowingRequest {
-    const message = createBaseGetFollowingRequest();
-    message.userId = object.userId ?? 0;
-    return message;
-  },
 };
 
 function createBaseFollowResponse(): FollowResponse {
@@ -701,27 +449,6 @@ export const FollowResponse: MessageFns<FollowResponse> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): FollowResponse {
-    return { message: isSet(object.message) ? globalThis.String(object.message) : "" };
-  },
-
-  toJSON(message: FollowResponse): unknown {
-    const obj: any = {};
-    if (message.message !== "") {
-      obj.message = message.message;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<FollowResponse>, I>>(base?: I): FollowResponse {
-    return FollowResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<FollowResponse>, I>>(object: I): FollowResponse {
-    const message = createBaseFollowResponse();
-    message.message = object.message ?? "";
     return message;
   },
 };
@@ -761,27 +488,6 @@ export const UnfollowResponse: MessageFns<UnfollowResponse> = {
     }
     return message;
   },
-
-  fromJSON(object: any): UnfollowResponse {
-    return { message: isSet(object.message) ? globalThis.String(object.message) : "" };
-  },
-
-  toJSON(message: UnfollowResponse): unknown {
-    const obj: any = {};
-    if (message.message !== "") {
-      obj.message = message.message;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UnfollowResponse>, I>>(base?: I): UnfollowResponse {
-    return UnfollowResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UnfollowResponse>, I>>(object: I): UnfollowResponse {
-    const message = createBaseUnfollowResponse();
-    message.message = object.message ?? "";
-    return message;
-  },
 };
 
 function createBaseUserProfileResponse(): UserProfileResponse {
@@ -817,27 +523,6 @@ export const UserProfileResponse: MessageFns<UserProfileResponse> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): UserProfileResponse {
-    return { user: isSet(object.user) ? User.fromJSON(object.user) : undefined };
-  },
-
-  toJSON(message: UserProfileResponse): unknown {
-    const obj: any = {};
-    if (message.user !== undefined) {
-      obj.user = User.toJSON(message.user);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UserProfileResponse>, I>>(base?: I): UserProfileResponse {
-    return UserProfileResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UserProfileResponse>, I>>(object: I): UserProfileResponse {
-    const message = createBaseUserProfileResponse();
-    message.user = (object.user !== undefined && object.user !== null) ? User.fromPartial(object.user) : undefined;
     return message;
   },
 };
@@ -877,27 +562,6 @@ export const UserListResponse: MessageFns<UserListResponse> = {
     }
     return message;
   },
-
-  fromJSON(object: any): UserListResponse {
-    return { users: globalThis.Array.isArray(object?.users) ? object.users.map((e: any) => User.fromJSON(e)) : [] };
-  },
-
-  toJSON(message: UserListResponse): unknown {
-    const obj: any = {};
-    if (message.users?.length) {
-      obj.users = message.users.map((e) => User.toJSON(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UserListResponse>, I>>(base?: I): UserListResponse {
-    return UserListResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UserListResponse>, I>>(object: I): UserListResponse {
-    const message = createBaseUserListResponse();
-    message.users = object.users?.map((e) => User.fromPartial(e)) || [];
-    return message;
-  },
 };
 
 function createBaseUser(): User {
@@ -909,8 +573,6 @@ function createBaseUser(): User {
     isPrivate: false,
     isActive: false,
     dateOfBirth: undefined,
-    avatarUrl: undefined,
-    bio: undefined,
     createdAt: undefined,
     updatedAt: undefined,
   };
@@ -937,7 +599,7 @@ export const User: MessageFns<User> = {
       writer.uint32(48).bool(message.isActive);
     }
     if (message.dateOfBirth !== undefined) {
-      Timestamp.encode(toTimestamp(message.dateOfBirth), writer.uint32(58).fork()).join();
+      Timestamp.encode(message.dateOfBirth, writer.uint32(58).fork()).join();
     }
     if (message.avatarUrl !== undefined) {
       writer.uint32(66).string(message.avatarUrl);
@@ -946,10 +608,10 @@ export const User: MessageFns<User> = {
       writer.uint32(74).string(message.bio);
     }
     if (message.createdAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(82).fork()).join();
+      Timestamp.encode(message.createdAt, writer.uint32(82).fork()).join();
     }
     if (message.updatedAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.updatedAt), writer.uint32(90).fork()).join();
+      Timestamp.encode(message.updatedAt, writer.uint32(90).fork()).join();
     }
     return writer;
   },
@@ -1014,7 +676,7 @@ export const User: MessageFns<User> = {
             break;
           }
 
-          message.dateOfBirth = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.dateOfBirth = Timestamp.decode(reader, reader.uint32());
           continue;
         }
         case 8: {
@@ -1038,7 +700,7 @@ export const User: MessageFns<User> = {
             break;
           }
 
-          message.createdAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.createdAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
         case 11: {
@@ -1046,7 +708,7 @@ export const User: MessageFns<User> = {
             break;
           }
 
-          message.updatedAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.updatedAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -1057,108 +719,74 @@ export const User: MessageFns<User> = {
     }
     return message;
   },
-
-  fromJSON(object: any): User {
-    return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
-      displayName: isSet(object.displayName)
-        ? globalThis.String(object.displayName)
-        : isSet(object.display_name)
-        ? globalThis.String(object.display_name)
-        : "",
-      username: isSet(object.username) ? globalThis.String(object.username) : "",
-      email: isSet(object.email) ? globalThis.String(object.email) : "",
-      isPrivate: isSet(object.isPrivate)
-        ? globalThis.Boolean(object.isPrivate)
-        : isSet(object.is_private)
-        ? globalThis.Boolean(object.is_private)
-        : false,
-      isActive: isSet(object.isActive)
-        ? globalThis.Boolean(object.isActive)
-        : isSet(object.is_active)
-        ? globalThis.Boolean(object.is_active)
-        : false,
-      dateOfBirth: isSet(object.dateOfBirth)
-        ? fromJsonTimestamp(object.dateOfBirth)
-        : isSet(object.date_of_birth)
-        ? fromJsonTimestamp(object.date_of_birth)
-        : undefined,
-      avatarUrl: isSet(object.avatarUrl)
-        ? globalThis.String(object.avatarUrl)
-        : isSet(object.avatar_url)
-        ? globalThis.String(object.avatar_url)
-        : undefined,
-      bio: isSet(object.bio) ? globalThis.String(object.bio) : undefined,
-      createdAt: isSet(object.createdAt)
-        ? fromJsonTimestamp(object.createdAt)
-        : isSet(object.created_at)
-        ? fromJsonTimestamp(object.created_at)
-        : undefined,
-      updatedAt: isSet(object.updatedAt)
-        ? fromJsonTimestamp(object.updatedAt)
-        : isSet(object.updated_at)
-        ? fromJsonTimestamp(object.updated_at)
-        : undefined,
-    };
-  },
-
-  toJSON(message: User): unknown {
-    const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
-    }
-    if (message.displayName !== "") {
-      obj.displayName = message.displayName;
-    }
-    if (message.username !== "") {
-      obj.username = message.username;
-    }
-    if (message.email !== "") {
-      obj.email = message.email;
-    }
-    if (message.isPrivate !== false) {
-      obj.isPrivate = message.isPrivate;
-    }
-    if (message.isActive !== false) {
-      obj.isActive = message.isActive;
-    }
-    if (message.dateOfBirth !== undefined) {
-      obj.dateOfBirth = message.dateOfBirth.toISOString();
-    }
-    if (message.avatarUrl !== undefined) {
-      obj.avatarUrl = message.avatarUrl;
-    }
-    if (message.bio !== undefined) {
-      obj.bio = message.bio;
-    }
-    if (message.createdAt !== undefined) {
-      obj.createdAt = message.createdAt.toISOString();
-    }
-    if (message.updatedAt !== undefined) {
-      obj.updatedAt = message.updatedAt.toISOString();
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<User>, I>>(base?: I): User {
-    return User.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<User>, I>>(object: I): User {
-    const message = createBaseUser();
-    message.id = object.id ?? 0;
-    message.displayName = object.displayName ?? "";
-    message.username = object.username ?? "";
-    message.email = object.email ?? "";
-    message.isPrivate = object.isPrivate ?? false;
-    message.isActive = object.isActive ?? false;
-    message.dateOfBirth = object.dateOfBirth ?? undefined;
-    message.avatarUrl = object.avatarUrl ?? undefined;
-    message.bio = object.bio ?? undefined;
-    message.createdAt = object.createdAt ?? undefined;
-    message.updatedAt = object.updatedAt ?? undefined;
-    return message;
-  },
 };
+
+export interface UserServiceClient {
+  getProfile(request: GetProfileRequest): Observable<UserProfileResponse>;
+
+  getProfileByUsername(request: GetProfileByUsernameRequest): Observable<UserProfileResponse>;
+
+  updateProfile(request: UpdateProfileRequest): Observable<UserProfileResponse>;
+
+  follow(request: FollowRequest): Observable<FollowResponse>;
+
+  unfollow(request: UnfollowRequest): Observable<UnfollowResponse>;
+
+  getFollowers(request: GetFollowersRequest): Observable<UserListResponse>;
+
+  getFollowing(request: GetFollowingRequest): Observable<UserListResponse>;
+}
+
+export interface UserServiceController {
+  getProfile(
+    request: GetProfileRequest,
+  ): Promise<UserProfileResponse> | Observable<UserProfileResponse> | UserProfileResponse;
+
+  getProfileByUsername(
+    request: GetProfileByUsernameRequest,
+  ): Promise<UserProfileResponse> | Observable<UserProfileResponse> | UserProfileResponse;
+
+  updateProfile(
+    request: UpdateProfileRequest,
+  ): Promise<UserProfileResponse> | Observable<UserProfileResponse> | UserProfileResponse;
+
+  follow(request: FollowRequest): Promise<FollowResponse> | Observable<FollowResponse> | FollowResponse;
+
+  unfollow(request: UnfollowRequest): Promise<UnfollowResponse> | Observable<UnfollowResponse> | UnfollowResponse;
+
+  getFollowers(
+    request: GetFollowersRequest,
+  ): Promise<UserListResponse> | Observable<UserListResponse> | UserListResponse;
+
+  getFollowing(
+    request: GetFollowingRequest,
+  ): Promise<UserListResponse> | Observable<UserListResponse> | UserListResponse;
+}
+
+export function UserServiceControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = [
+      "getProfile",
+      "getProfileByUsername",
+      "updateProfile",
+      "follow",
+      "unfollow",
+      "getFollowers",
+      "getFollowing",
+    ];
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcMethod("UserService", method)(constructor.prototype[method], method, descriptor);
+    }
+    const grpcStreamMethods: string[] = [];
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcStreamMethod("UserService", method)(constructor.prototype[method], method, descriptor);
+    }
+  };
+}
+
+export const USER_SERVICE_NAME = "UserService";
 
 export type UserServiceService = typeof UserServiceService;
 export const UserServiceService = {
@@ -1238,154 +866,6 @@ export interface UserServiceServer extends UntypedServiceImplementation {
   getFollowing: handleUnaryCall<GetFollowingRequest, UserListResponse>;
 }
 
-export interface UserServiceClient extends Client {
-  getProfile(
-    request: GetProfileRequest,
-    callback: (error: ServiceError | null, response: UserProfileResponse) => void,
-  ): ClientUnaryCall;
-  getProfile(
-    request: GetProfileRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UserProfileResponse) => void,
-  ): ClientUnaryCall;
-  getProfile(
-    request: GetProfileRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UserProfileResponse) => void,
-  ): ClientUnaryCall;
-  getProfileByUsername(
-    request: GetProfileByUsernameRequest,
-    callback: (error: ServiceError | null, response: UserProfileResponse) => void,
-  ): ClientUnaryCall;
-  getProfileByUsername(
-    request: GetProfileByUsernameRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UserProfileResponse) => void,
-  ): ClientUnaryCall;
-  getProfileByUsername(
-    request: GetProfileByUsernameRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UserProfileResponse) => void,
-  ): ClientUnaryCall;
-  updateProfile(
-    request: UpdateProfileRequest,
-    callback: (error: ServiceError | null, response: UserProfileResponse) => void,
-  ): ClientUnaryCall;
-  updateProfile(
-    request: UpdateProfileRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UserProfileResponse) => void,
-  ): ClientUnaryCall;
-  updateProfile(
-    request: UpdateProfileRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UserProfileResponse) => void,
-  ): ClientUnaryCall;
-  follow(
-    request: FollowRequest,
-    callback: (error: ServiceError | null, response: FollowResponse) => void,
-  ): ClientUnaryCall;
-  follow(
-    request: FollowRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: FollowResponse) => void,
-  ): ClientUnaryCall;
-  follow(
-    request: FollowRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: FollowResponse) => void,
-  ): ClientUnaryCall;
-  unfollow(
-    request: UnfollowRequest,
-    callback: (error: ServiceError | null, response: UnfollowResponse) => void,
-  ): ClientUnaryCall;
-  unfollow(
-    request: UnfollowRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UnfollowResponse) => void,
-  ): ClientUnaryCall;
-  unfollow(
-    request: UnfollowRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UnfollowResponse) => void,
-  ): ClientUnaryCall;
-  getFollowers(
-    request: GetFollowersRequest,
-    callback: (error: ServiceError | null, response: UserListResponse) => void,
-  ): ClientUnaryCall;
-  getFollowers(
-    request: GetFollowersRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UserListResponse) => void,
-  ): ClientUnaryCall;
-  getFollowers(
-    request: GetFollowersRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UserListResponse) => void,
-  ): ClientUnaryCall;
-  getFollowing(
-    request: GetFollowingRequest,
-    callback: (error: ServiceError | null, response: UserListResponse) => void,
-  ): ClientUnaryCall;
-  getFollowing(
-    request: GetFollowingRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UserListResponse) => void,
-  ): ClientUnaryCall;
-  getFollowing(
-    request: GetFollowingRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UserListResponse) => void,
-  ): ClientUnaryCall;
-}
-
-export const UserServiceClient = makeGenericClientConstructor(UserServiceService, "user.UserService") as unknown as {
-  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): UserServiceClient;
-  service: typeof UserServiceService;
-  serviceName: string;
-};
-
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
-
-export type DeepPartial<T> = T extends Builtin ? T
-  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
-  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : Partial<T>;
-
-type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
-
-function toTimestamp(date: Date): Timestamp {
-  const seconds = Math.trunc(date.getTime() / 1_000);
-  const nanos = (date.getTime() % 1_000) * 1_000_000;
-  return { seconds, nanos };
-}
-
-function fromTimestamp(t: Timestamp): Date {
-  let millis = (t.seconds || 0) * 1_000;
-  millis += (t.nanos || 0) / 1_000_000;
-  return new globalThis.Date(millis);
-}
-
-function fromJsonTimestamp(o: any): Date {
-  if (o instanceof globalThis.Date) {
-    return o;
-  } else if (typeof o === "string") {
-    return new globalThis.Date(o);
-  } else {
-    return fromTimestamp(Timestamp.fromJSON(o));
-  }
-}
-
 function longToNumber(int64: { toString(): string }): number {
   const num = globalThis.Number(int64.toString());
   if (num > globalThis.Number.MAX_SAFE_INTEGER) {
@@ -1397,15 +877,7 @@ function longToNumber(int64: { toString(): string }): number {
   return num;
 }
 
-function isSet(value: any): boolean {
-  return value !== null && value !== undefined;
-}
-
 export interface MessageFns<T> {
   encode(message: T, writer?: BinaryWriter): BinaryWriter;
   decode(input: BinaryReader | Uint8Array, length?: number): T;
-  fromJSON(object: any): T;
-  toJSON(message: T): unknown;
-  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
-  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
 }

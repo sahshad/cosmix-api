@@ -1,0 +1,65 @@
+{{ define "content" }}
+
+<h2 style="
+        margin-top:0;
+        color:#ffffff;
+        font-size:28px;
+    ">
+    Verify your email
+</h2>
+
+<p style="
+        color:#cbd5e1;
+        line-height:1.7;
+        font-size:15px;
+    ">
+    Hi {{ .DisplayName }},
+</p>
+
+<p style="
+        color:#cbd5e1;
+        line-height:1.7;
+        font-size:15px;
+    ">
+    Thanks for creating your Cosmix account.
+
+    Please verify your email address to activate
+    your account and continue.
+</p>
+
+<div style="
+        margin-top:32px;
+        margin-bottom:32px;
+        text-align:center;
+    ">
+    <a href="{{ .VerificationLink }}" style="
+            display:inline-block;
+            background:#8b5cf6;
+            color:white;
+            text-decoration:none;
+            padding:14px 28px;
+            border-radius:10px;
+            font-weight:bold;
+        ">
+        Verify Email
+    </a>
+</div>
+
+<p style="
+        color:#94a3b8;
+        font-size:14px;
+        line-height:1.6;
+    ">
+    This verification link will expire in 24 hours.
+</p>
+
+<p style="
+        color:#94a3b8;
+        font-size:14px;
+        line-height:1.6;
+    ">
+    If you did not create a Cosmix account,
+    you can safely ignore this email.
+</p>
+
+{{ end }}

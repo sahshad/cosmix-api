@@ -8,6 +8,12 @@ type RegisterDTO struct {
 	Password    string `json:"password" binding:"required,min=6"`
 }
 
+type VerifyEmailDTO struct {
+	Token    string `json:"token" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=8,max=64"`
+}
+
 type LoginDTO struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`

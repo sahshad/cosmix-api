@@ -4,9 +4,11 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 
 	"notification-service/internal/app"
 	"notification-service/internal/database"
+	"notification-service/internal/email"
 
 	"cosmix/shared/core/eventbus"
 	"cosmix/shared/core/rabbitmq"
@@ -47,7 +49,21 @@ func main() {
 		log.Println("RabbitMQ unavailable, events will not be published")
 	}
 
-	container := app.NewContainer(db, rabbit)
+	smtpPort, err := strconv.Atoi(
+		os.Getenv("SMTP_PORT"),
+	)
+	if err != nil {
+		log.Fatal("invalid SMTP_PORT")
+	}
+
+	emailService := email.NewMailDispatcher(
+		os.Getenv("SMTP_HOST"),
+		smtpPort,
+		os.Getenv("SMTP_FROM"),
+		"internal/email/templates",
+	)
+
+	container := app.NewContainer(db, rabbit, emailService)
 
 	lis, err := net.Listen("tcp", ":"+grpcPort)
 	if err != nil {

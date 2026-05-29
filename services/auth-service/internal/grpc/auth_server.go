@@ -40,6 +40,24 @@ func (srv *AuthServer) Register(ctx context.Context, req *authpb.RegisterRequest
 	}, nil
 }
 
+func (srv *AuthServer) VerifyEmail(ctx context.Context, req *authpb.VerifyEmailRequest) (*authpb.VerifyEmailResponse, error) {
+	err := srv.authService.VerifyEmail(
+		ctx,
+		dto.VerifyEmailDTO{
+			Token:    req.Token,
+			Email:    req.Email,
+			Password: req.Password,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &authpb.VerifyEmailResponse{
+		Message: "email verified successfully",
+	}, nil
+}
+
 func (srv *AuthServer) Login(ctx context.Context, req *authpb.LoginRequest) (*authpb.LoginResponse, error) {
 	result, err := srv.authService.Login(
 		ctx,

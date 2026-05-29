@@ -21,25 +21,28 @@ import (
 )
 
 type AuthUserService struct {
-	repo           *repositories.AuthUserRepository
-	authSessionSvc *AuthSessionService
-	rabbitCh       *amqp.Channel
+	authUserRepo               *repositories.AuthUserRepository
+	emailVerificationTokenRepo *repositories.EmailVerificationTokenRepository
+	authSessionSvc             *AuthSessionService
+	rabbitCh                   *amqp.Channel
 }
 
 func NewAuthUserService(
-	repo *repositories.AuthUserRepository,
+	authUserRepo *repositories.AuthUserRepository,
+	emailVerificationTokenRepo *repositories.EmailVerificationTokenRepository,
 	authSessionSvc *AuthSessionService,
 	rabbitCh *amqp.Channel,
 ) *AuthUserService {
 	return &AuthUserService{
-		repo:           repo,
-		authSessionSvc: authSessionSvc,
-		rabbitCh:       rabbitCh,
+		authUserRepo:               authUserRepo,
+		emailVerificationTokenRepo: emailVerificationTokenRepo,
+		authSessionSvc:             authSessionSvc,
+		rabbitCh:                   rabbitCh,
 	}
 }
 
 func (svc *AuthUserService) Register(ctx context.Context, input dto.RegisterDTO) (*models.AuthUser, error) {
-	if _, err := svc.repo.FindByEmail(ctx, input.Email); err == nil {
+	if _, err := svc.authUserRepo.FindByEmail(ctx, input.Email); err == nil {
 		return nil, appErr.NewBadRequest("email", "Email already in use")
 	}
 
@@ -53,30 +56,42 @@ func (svc *AuthUserService) Register(ctx context.Context, input dto.RegisterDTO)
 		PasswordHash: string(pwHash),
 	}
 
-	if err := svc.repo.Create(ctx, user); err != nil {
+	if err := svc.authUserRepo.Create(ctx, user); err != nil {
 		return nil, err
 	}
 
-	username := utils.GenerateUsername(input.DisplayName)
+	tokenValue, err := utils.GenerateSecureToken(32)
+	if err != nil {
+		return nil, err
+	}
 
-	event := authEvents.AuthUserRegistered{
-		EventVersion: authEvents.EventVersionOne,
-		AuthUserID:   user.ID,
-		Email:        user.Email,
-		Username:     username,
-		DisplayName:  input.DisplayName,
-		CreatedAt:    time.Now().UTC(),
+	token := &models.EmailVerificationToken{
+		AuthUserID:  user.ID,
+		DisplayName: input.DisplayName,
+		Token:       tokenValue,
+		ExpiresAt:   time.Now().Add(24 * time.Hour),
+	}
+
+	if err := svc.emailVerificationTokenRepo.Create(ctx, token); err != nil {
+		return nil, err
 	}
 
 	requestID := eventbus.RequestID(ctx)
-	eventbus.WithCorrelationID(ctx, requestID)
+	ctx = eventbus.WithCorrelationID(ctx, requestID)
 
-	// Publish user registered event
+	event := authEvents.AuthUserEmailVerification{
+		EventVersion: authEvents.EventVersionOne,
+		Email:        user.Email,
+		DisplayName:  input.DisplayName,
+		Token:        tokenValue,
+	}
+
+	// @Publish - user email verification
 	if err := eventbus.Publish(
 		ctx,
 		svc.rabbitCh,
 		rabbitmq.ExchangeEvents,
-		rabbitmq.AuthUserRegistered,
+		rabbitmq.AuthUserEmailVerification,
 		event,
 	); err != nil {
 		return nil, err
@@ -85,10 +100,82 @@ func (svc *AuthUserService) Register(ctx context.Context, input dto.RegisterDTO)
 	return user, nil
 }
 
+func (svc *AuthUserService) VerifyEmail(ctx context.Context, input dto.VerifyEmailDTO) error {
+	tokenRecord, err := svc.emailVerificationTokenRepo.FindByToken(ctx, input.Token)
+	if err != nil {
+		return appErr.NewBadRequest("token", "Invalid or expired token")
+	}
+
+	if time.Now().After(tokenRecord.ExpiresAt) {
+		return appErr.NewBadRequest("token", "Token has expired")
+	}
+
+	user, err := svc.authUserRepo.FindByID(ctx, tokenRecord.AuthUserID)
+	if err != nil {
+		return appErr.NewNotFound("user")
+	}
+
+	if user.Email != input.Email {
+		return appErr.NewBadRequest("email", "Email does not match token")
+	}
+
+	if err := utils.VerifyPassword(input.Password, user.PasswordHash); err != nil {
+		return appErr.NewBadRequest("password", "Invalid password")
+	}
+
+	if user.EmailVerified {
+		return appErr.NewBadRequest("email", "Email already verified")
+	}
+
+	now := time.Now()
+	user.EmailVerified = true
+	user.UpdatedAt = &now
+
+	if err := svc.authUserRepo.Update(ctx, user); err != nil {
+		return err
+	}
+
+	displayName := tokenRecord.DisplayName
+	username := utils.GenerateUsername(tokenRecord.DisplayName)
+
+	if err := svc.emailVerificationTokenRepo.Delete(ctx, tokenRecord); err != nil {
+		return err
+	}
+
+	requestID := eventbus.RequestID(ctx)
+	ctx = eventbus.WithCorrelationID(ctx, requestID)
+
+	event := authEvents.AuthUserRegistered{
+		EventVersion: authEvents.EventVersionOne,
+		AuthUserID:   user.ID,
+		Email:        user.Email,
+		DisplayName:  displayName,
+		Username:     username,
+		CreatedAt:    user.CreatedAt,
+	}
+
+	// @Publish - user registerd
+	if err := eventbus.Publish(
+		ctx,
+		svc.rabbitCh,
+		rabbitmq.ExchangeEvents,
+		rabbitmq.AuthUserRegistered,
+		event,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (svc *AuthUserService) Login(ctx context.Context, input dto.LoginDTO) (*dto.LoginResponseDTO, error) {
-	authUser, err := svc.repo.FindByEmail(ctx, input.Email)
+	authUser, err := svc.authUserRepo.FindByEmail(ctx, input.Email)
 	if err != nil {
 		return nil, appErr.NewBadRequest("email", "Invalid credentials")
+	}
+
+	if !authUser.EmailVerified {
+		return nil, appErr.NewBadRequest("email", "Email not verified")
 	}
 
 	if err := utils.VerifyPassword(input.Password, authUser.PasswordHash); err != nil {
@@ -106,7 +193,7 @@ func (svc *AuthUserService) Login(ctx context.Context, input dto.LoginDTO) (*dto
 
 	now := time.Now().UTC()
 	authUser.LastLoginAt = &now
-	if err := svc.repo.Update(ctx, authUser); err != nil {
+	if err := svc.authUserRepo.Update(ctx, authUser); err != nil {
 		return nil, err
 	}
 
@@ -147,7 +234,7 @@ func (svc *AuthUserService) Refresh(ctx context.Context, refreshToken string) (*
 		return nil, appErr.NewUnauthorized("Invalid Token")
 	}
 
-	if _, err := svc.repo.FindByID(ctx, claims.UserID); err != nil {
+	if _, err := svc.authUserRepo.FindByID(ctx, claims.UserID); err != nil {
 		return nil, appErr.NewUnauthorized("Invalid Token")
 	}
 
@@ -166,7 +253,7 @@ func (svc *AuthUserService) Refresh(ctx context.Context, refreshToken string) (*
 }
 
 func (svc *AuthUserService) GetByID(ctx context.Context, id uint) (*models.AuthUser, error) {
-	user, err := svc.repo.FindByID(ctx, id)
+	user, err := svc.authUserRepo.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, appErr.NewNotFound("user")
@@ -191,5 +278,5 @@ func (svc *AuthUserService) UpdateUserPassword(ctx context.Context, userID uint,
 
 	user.PasswordHash = string(pwHash)
 	user.UpdatedAt = &now
-	return svc.repo.Update(ctx, user)
+	return svc.authUserRepo.Update(ctx, user)
 }

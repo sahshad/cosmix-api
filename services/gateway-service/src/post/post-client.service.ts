@@ -1,202 +1,76 @@
-import { Injectable } from '@nestjs/common';
-import * as grpc from '@grpc/grpc-js';
+import { Inject, Injectable } from '@nestjs/common';
 
 import {
+  CommentListResponse,
+  CommentResponse,
+  MessageResponse,
+  POST_PACKAGE_NAME,
+  POST_SERVICE_NAME,
+  PostListResponse,
+  PostResponse,
   PostServiceClient,
 } from '../generated/post/post';
 
-import { grpcUnaryCall } from '../common/utils/grpc.util';
+import type { ClientGrpc } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class PostGrpcService {
-  private readonly client: PostServiceClient;
+  private client!: PostServiceClient;
 
-  constructor() {
+  constructor(
+    @Inject(POST_PACKAGE_NAME)
+    private readonly grpcClient: ClientGrpc,
+  ) { }
+
+  onModuleInit() {
     this.client =
-      new PostServiceClient(
-        process.env.POST_GRPC_ADDR ??
-          'post-service:50054',
-        grpc.credentials.createInsecure(),
+      this.grpcClient.getService<PostServiceClient>(
+        POST_SERVICE_NAME,
       );
   }
 
-  createPost(
-    authorId: number,
-    body: any,
-  ) {
-    return grpcUnaryCall(
-      callback =>
-        this.client.createPost(
-          {
-            authorId,
-            content: body.content,
-            media: body.media ?? [],
-          },
-          callback,
-        ),
-    );
+  createPost(authorId: number, body: any): Promise<PostResponse> {
+    return firstValueFrom(this.client.createPost({ authorId, ...body }))
   }
 
-  getPost(postId: number) {
-    return grpcUnaryCall(
-      callback =>
-        this.client.getPost(
-          { postId },
-          callback,
-        ),
-    );
+  getPost(postId: number): Promise<PostResponse> {
+    return firstValueFrom(this.client.getPost({ postId }))
   }
 
-  getFeed(
-    page: number,
-    limit: number,
-  ) {
-    return grpcUnaryCall(
-      callback =>
-        this.client.getFeed(
-          {
-            page,
-            limit,
-          },
-          callback,
-        ),
-    );
+  getFeed(page: number, limit: number): Promise<PostListResponse> {
+    return firstValueFrom(this.client.getFeed({ page, limit }))
   }
 
-  updatePost(
-    postId: number,
-    authorId: number,
-    body: any,
-  ) {
-    return grpcUnaryCall(
-      callback =>
-        this.client.updatePost(
-          {
-            postId,
-            authorId,
-            content: body.content,
-            media: body.media ?? [],
-          },
-          callback,
-        ),
-    );
+  updatePost(postId: number, authorId: number, body: any): Promise<PostResponse> {
+    return firstValueFrom(this.client.updatePost({ postId, authorId, ...body }))
   }
 
-  deletePost(
-    postId: number,
-    authorId: number,
-  ) {
-    return grpcUnaryCall(
-      callback =>
-        this.client.deletePost(
-          {
-            postId,
-            authorId,
-          },
-          callback,
-        ),
-    );
+  deletePost(postId: number, authorId: number): Promise<MessageResponse> {
+    return firstValueFrom(this.client.deletePost({ postId, authorId }))
   }
 
-  likePost(
-    postId: number,
-    userId: number,
-  ) {
-    return grpcUnaryCall(
-      callback =>
-        this.client.likePost(
-          {
-            postId,
-            userId,
-          },
-          callback,
-        ),
-    );
+  likePost(postId: number,userId: number): Promise<MessageResponse> {
+    return firstValueFrom(this.client.likePost({ postId, userId }))
   }
 
-  unlikePost(
-    postId: number,
-    userId: number,
-  ) {
-    return grpcUnaryCall(
-      callback =>
-        this.client.unlikePost(
-          {
-            postId,
-            userId,
-          },
-          callback,
-        ),
-    );
+  unlikePost(postId: number,userId: number): Promise<MessageResponse> {
+    return firstValueFrom(this.client.unlikePost({ postId, userId }))
   }
 
-  createComment(
-    postId: number,
-    authorId: number,
-    content: string,
-  ) {
-    return grpcUnaryCall(
-      callback =>
-        this.client.createComment(
-          {
-            postId,
-            authorId,
-            content,
-          },
-          callback,
-        ),
-    );
+  createComment(postId: number,authorId: number,content: string): Promise<CommentResponse> {
+    return firstValueFrom(this.client.createComment({ postId,authorId,content}))
   }
 
-  getComments(
-    postId: number,
-    page: number,
-    limit: number,
-  ) {
-    return grpcUnaryCall(
-      callback =>
-        this.client.getComments(
-          {
-            postId,
-            page,
-            limit,
-          },
-          callback,
-        ),
-    );
+  getComments(postId: number,page: number,limit: number): Promise<CommentListResponse> {
+    return firstValueFrom(this.client.getComments({ postId,page,limit}))
   }
 
-  updateComment(
-    commentId: number,
-    authorId: number,
-    content: string,
-  ) {
-    return grpcUnaryCall(
-      callback =>
-        this.client.updateComment(
-          {
-            commentId,
-            authorId,
-            content,
-          },
-          callback,
-        ),
-    );
+  updateComment(commentId: number,authorId: number,content: string): Promise<CommentResponse> {
+    return firstValueFrom(this.client.updateComment({ commentId,authorId,content}))
   }
 
-  deleteComment(
-    commentId: number,
-    authorId: number,
-  ) {
-    return grpcUnaryCall(
-      callback =>
-        this.client.deleteComment(
-          {
-            commentId,
-            authorId,
-          },
-          callback,
-        ),
-    );
+  deleteComment(commentId: number,authorId: number): Promise<MessageResponse> {
+    return firstValueFrom(this.client.deleteComment({ commentId,authorId}))
   }
 }

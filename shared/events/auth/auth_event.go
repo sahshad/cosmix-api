@@ -19,3 +19,10 @@ type AuthUserEmailUpdated struct {
 	EventVersion string `json:"event_version"`
 	Email        string `json:"email"`
 }
+
+type AuthUserEmailVerification struct {
+	EventVersion string `json:"event_version"`
+	Email        string `json:"email"`
+	DisplayName  string `json:"dispaly_name"`
+	Token        string `json:"token"`
+}

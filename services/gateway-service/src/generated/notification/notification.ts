@@ -6,18 +6,9 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import {
-  type CallOptions,
-  type ChannelCredentials,
-  Client,
-  type ClientOptions,
-  type ClientUnaryCall,
-  type handleUnaryCall,
-  makeGenericClientConstructor,
-  type Metadata,
-  type ServiceError,
-  type UntypedServiceImplementation,
-} from "@grpc/grpc-js";
+import type { handleUnaryCall, UntypedServiceImplementation } from "@grpc/grpc-js";
+import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
+import { Observable } from "rxjs";
 import { Timestamp } from "../google/protobuf/timestamp";
 
 export const protobufPackage = "notification";
@@ -55,8 +46,8 @@ export interface Notification {
   imageUrl?: string | undefined;
   actionUrl?: string | undefined;
   isRead: boolean;
-  readAt: Date | undefined;
-  createdAt: Date | undefined;
+  readAt: Timestamp | undefined;
+  createdAt: Timestamp | undefined;
 }
 
 export interface Pagination {
@@ -65,6 +56,8 @@ export interface Pagination {
   limit: number;
   totalPages: number;
 }
+
+export const NOTIFICATION_PACKAGE_NAME = "notification";
 
 function createBaseHealthCheckRequest(): HealthCheckRequest {
   return {};
@@ -88,23 +81,6 @@ export const HealthCheckRequest: MessageFns<HealthCheckRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(_: any): HealthCheckRequest {
-    return {};
-  },
-
-  toJSON(_: HealthCheckRequest): unknown {
-    const obj: any = {};
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<HealthCheckRequest>, I>>(base?: I): HealthCheckRequest {
-    return HealthCheckRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<HealthCheckRequest>, I>>(_: I): HealthCheckRequest {
-    const message = createBaseHealthCheckRequest();
     return message;
   },
 };
@@ -142,27 +118,6 @@ export const HealthCheckResponse: MessageFns<HealthCheckResponse> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): HealthCheckResponse {
-    return { status: isSet(object.status) ? globalThis.String(object.status) : "" };
-  },
-
-  toJSON(message: HealthCheckResponse): unknown {
-    const obj: any = {};
-    if (message.status !== "") {
-      obj.status = message.status;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<HealthCheckResponse>, I>>(base?: I): HealthCheckResponse {
-    return HealthCheckResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<HealthCheckResponse>, I>>(object: I): HealthCheckResponse {
-    const message = createBaseHealthCheckResponse();
-    message.status = object.status ?? "";
     return message;
   },
 };
@@ -224,43 +179,6 @@ export const GetUserNotificationsRequest: MessageFns<GetUserNotificationsRequest
     }
     return message;
   },
-
-  fromJSON(object: any): GetUserNotificationsRequest {
-    return {
-      userId: isSet(object.userId)
-        ? globalThis.Number(object.userId)
-        : isSet(object.user_id)
-        ? globalThis.Number(object.user_id)
-        : 0,
-      page: isSet(object.page) ? globalThis.Number(object.page) : 0,
-      limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
-    };
-  },
-
-  toJSON(message: GetUserNotificationsRequest): unknown {
-    const obj: any = {};
-    if (message.userId !== 0) {
-      obj.userId = Math.round(message.userId);
-    }
-    if (message.page !== 0) {
-      obj.page = Math.round(message.page);
-    }
-    if (message.limit !== 0) {
-      obj.limit = Math.round(message.limit);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<GetUserNotificationsRequest>, I>>(base?: I): GetUserNotificationsRequest {
-    return GetUserNotificationsRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<GetUserNotificationsRequest>, I>>(object: I): GetUserNotificationsRequest {
-    const message = createBaseGetUserNotificationsRequest();
-    message.userId = object.userId ?? 0;
-    message.page = object.page ?? 0;
-    message.limit = object.limit ?? 0;
-    return message;
-  },
 };
 
 function createBaseUserNotificationsResponse(): UserNotificationsResponse {
@@ -309,59 +227,10 @@ export const UserNotificationsResponse: MessageFns<UserNotificationsResponse> = 
     }
     return message;
   },
-
-  fromJSON(object: any): UserNotificationsResponse {
-    return {
-      notifications: globalThis.Array.isArray(object?.notifications)
-        ? object.notifications.map((e: any) => Notification.fromJSON(e))
-        : [],
-      pagination: isSet(object.pagination) ? Pagination.fromJSON(object.pagination) : undefined,
-    };
-  },
-
-  toJSON(message: UserNotificationsResponse): unknown {
-    const obj: any = {};
-    if (message.notifications?.length) {
-      obj.notifications = message.notifications.map((e) => Notification.toJSON(e));
-    }
-    if (message.pagination !== undefined) {
-      obj.pagination = Pagination.toJSON(message.pagination);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UserNotificationsResponse>, I>>(base?: I): UserNotificationsResponse {
-    return UserNotificationsResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UserNotificationsResponse>, I>>(object: I): UserNotificationsResponse {
-    const message = createBaseUserNotificationsResponse();
-    message.notifications = object.notifications?.map((e) => Notification.fromPartial(e)) || [];
-    message.pagination = (object.pagination !== undefined && object.pagination !== null)
-      ? Pagination.fromPartial(object.pagination)
-      : undefined;
-    return message;
-  },
 };
 
 function createBaseNotification(): Notification {
-  return {
-    id: 0,
-    userId: 0,
-    actorId: undefined,
-    actorUsername: undefined,
-    actorDisplayName: undefined,
-    actorAvatarUrl: undefined,
-    type: "",
-    entityId: undefined,
-    entityType: undefined,
-    title: "",
-    body: "",
-    imageUrl: undefined,
-    actionUrl: undefined,
-    isRead: false,
-    readAt: undefined,
-    createdAt: undefined,
-  };
+  return { id: 0, userId: 0, type: "", title: "", body: "", isRead: false, readAt: undefined, createdAt: undefined };
 }
 
 export const Notification: MessageFns<Notification> = {
@@ -409,10 +278,10 @@ export const Notification: MessageFns<Notification> = {
       writer.uint32(112).bool(message.isRead);
     }
     if (message.readAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.readAt), writer.uint32(122).fork()).join();
+      Timestamp.encode(message.readAt, writer.uint32(122).fork()).join();
     }
     if (message.createdAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(130).fork()).join();
+      Timestamp.encode(message.createdAt, writer.uint32(130).fork()).join();
     }
     return writer;
   },
@@ -541,7 +410,7 @@ export const Notification: MessageFns<Notification> = {
             break;
           }
 
-          message.readAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.readAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
         case 16: {
@@ -549,7 +418,7 @@ export const Notification: MessageFns<Notification> = {
             break;
           }
 
-          message.createdAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.createdAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -558,152 +427,6 @@ export const Notification: MessageFns<Notification> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): Notification {
-    return {
-      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
-      userId: isSet(object.userId)
-        ? globalThis.Number(object.userId)
-        : isSet(object.user_id)
-        ? globalThis.Number(object.user_id)
-        : 0,
-      actorId: isSet(object.actorId)
-        ? globalThis.Number(object.actorId)
-        : isSet(object.actor_id)
-        ? globalThis.Number(object.actor_id)
-        : undefined,
-      actorUsername: isSet(object.actorUsername)
-        ? globalThis.String(object.actorUsername)
-        : isSet(object.actor_username)
-        ? globalThis.String(object.actor_username)
-        : undefined,
-      actorDisplayName: isSet(object.actorDisplayName)
-        ? globalThis.String(object.actorDisplayName)
-        : isSet(object.actor_display_name)
-        ? globalThis.String(object.actor_display_name)
-        : undefined,
-      actorAvatarUrl: isSet(object.actorAvatarUrl)
-        ? globalThis.String(object.actorAvatarUrl)
-        : isSet(object.actor_avatar_url)
-        ? globalThis.String(object.actor_avatar_url)
-        : undefined,
-      type: isSet(object.type) ? globalThis.String(object.type) : "",
-      entityId: isSet(object.entityId)
-        ? globalThis.Number(object.entityId)
-        : isSet(object.entity_id)
-        ? globalThis.Number(object.entity_id)
-        : undefined,
-      entityType: isSet(object.entityType)
-        ? globalThis.String(object.entityType)
-        : isSet(object.entity_type)
-        ? globalThis.String(object.entity_type)
-        : undefined,
-      title: isSet(object.title) ? globalThis.String(object.title) : "",
-      body: isSet(object.body) ? globalThis.String(object.body) : "",
-      imageUrl: isSet(object.imageUrl)
-        ? globalThis.String(object.imageUrl)
-        : isSet(object.image_url)
-        ? globalThis.String(object.image_url)
-        : undefined,
-      actionUrl: isSet(object.actionUrl)
-        ? globalThis.String(object.actionUrl)
-        : isSet(object.action_url)
-        ? globalThis.String(object.action_url)
-        : undefined,
-      isRead: isSet(object.isRead)
-        ? globalThis.Boolean(object.isRead)
-        : isSet(object.is_read)
-        ? globalThis.Boolean(object.is_read)
-        : false,
-      readAt: isSet(object.readAt)
-        ? fromJsonTimestamp(object.readAt)
-        : isSet(object.read_at)
-        ? fromJsonTimestamp(object.read_at)
-        : undefined,
-      createdAt: isSet(object.createdAt)
-        ? fromJsonTimestamp(object.createdAt)
-        : isSet(object.created_at)
-        ? fromJsonTimestamp(object.created_at)
-        : undefined,
-    };
-  },
-
-  toJSON(message: Notification): unknown {
-    const obj: any = {};
-    if (message.id !== 0) {
-      obj.id = Math.round(message.id);
-    }
-    if (message.userId !== 0) {
-      obj.userId = Math.round(message.userId);
-    }
-    if (message.actorId !== undefined) {
-      obj.actorId = Math.round(message.actorId);
-    }
-    if (message.actorUsername !== undefined) {
-      obj.actorUsername = message.actorUsername;
-    }
-    if (message.actorDisplayName !== undefined) {
-      obj.actorDisplayName = message.actorDisplayName;
-    }
-    if (message.actorAvatarUrl !== undefined) {
-      obj.actorAvatarUrl = message.actorAvatarUrl;
-    }
-    if (message.type !== "") {
-      obj.type = message.type;
-    }
-    if (message.entityId !== undefined) {
-      obj.entityId = Math.round(message.entityId);
-    }
-    if (message.entityType !== undefined) {
-      obj.entityType = message.entityType;
-    }
-    if (message.title !== "") {
-      obj.title = message.title;
-    }
-    if (message.body !== "") {
-      obj.body = message.body;
-    }
-    if (message.imageUrl !== undefined) {
-      obj.imageUrl = message.imageUrl;
-    }
-    if (message.actionUrl !== undefined) {
-      obj.actionUrl = message.actionUrl;
-    }
-    if (message.isRead !== false) {
-      obj.isRead = message.isRead;
-    }
-    if (message.readAt !== undefined) {
-      obj.readAt = message.readAt.toISOString();
-    }
-    if (message.createdAt !== undefined) {
-      obj.createdAt = message.createdAt.toISOString();
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Notification>, I>>(base?: I): Notification {
-    return Notification.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Notification>, I>>(object: I): Notification {
-    const message = createBaseNotification();
-    message.id = object.id ?? 0;
-    message.userId = object.userId ?? 0;
-    message.actorId = object.actorId ?? undefined;
-    message.actorUsername = object.actorUsername ?? undefined;
-    message.actorDisplayName = object.actorDisplayName ?? undefined;
-    message.actorAvatarUrl = object.actorAvatarUrl ?? undefined;
-    message.type = object.type ?? "";
-    message.entityId = object.entityId ?? undefined;
-    message.entityType = object.entityType ?? undefined;
-    message.title = object.title ?? "";
-    message.body = object.body ?? "";
-    message.imageUrl = object.imageUrl ?? undefined;
-    message.actionUrl = object.actionUrl ?? undefined;
-    message.isRead = object.isRead ?? false;
-    message.readAt = object.readAt ?? undefined;
-    message.createdAt = object.createdAt ?? undefined;
     return message;
   },
 };
@@ -776,53 +499,40 @@ export const Pagination: MessageFns<Pagination> = {
     }
     return message;
   },
-
-  fromJSON(object: any): Pagination {
-    return {
-      totalCount: isSet(object.totalCount)
-        ? globalThis.Number(object.totalCount)
-        : isSet(object.total_count)
-        ? globalThis.Number(object.total_count)
-        : 0,
-      page: isSet(object.page) ? globalThis.Number(object.page) : 0,
-      limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
-      totalPages: isSet(object.totalPages)
-        ? globalThis.Number(object.totalPages)
-        : isSet(object.total_pages)
-        ? globalThis.Number(object.total_pages)
-        : 0,
-    };
-  },
-
-  toJSON(message: Pagination): unknown {
-    const obj: any = {};
-    if (message.totalCount !== 0) {
-      obj.totalCount = Math.round(message.totalCount);
-    }
-    if (message.page !== 0) {
-      obj.page = Math.round(message.page);
-    }
-    if (message.limit !== 0) {
-      obj.limit = Math.round(message.limit);
-    }
-    if (message.totalPages !== 0) {
-      obj.totalPages = Math.round(message.totalPages);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Pagination>, I>>(base?: I): Pagination {
-    return Pagination.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Pagination>, I>>(object: I): Pagination {
-    const message = createBasePagination();
-    message.totalCount = object.totalCount ?? 0;
-    message.page = object.page ?? 0;
-    message.limit = object.limit ?? 0;
-    message.totalPages = object.totalPages ?? 0;
-    return message;
-  },
 };
+
+export interface NotificationServiceClient {
+  getUserNotifications(request: GetUserNotificationsRequest): Observable<UserNotificationsResponse>;
+
+  healthCheck(request: HealthCheckRequest): Observable<HealthCheckResponse>;
+}
+
+export interface NotificationServiceController {
+  getUserNotifications(
+    request: GetUserNotificationsRequest,
+  ): Promise<UserNotificationsResponse> | Observable<UserNotificationsResponse> | UserNotificationsResponse;
+
+  healthCheck(
+    request: HealthCheckRequest,
+  ): Promise<HealthCheckResponse> | Observable<HealthCheckResponse> | HealthCheckResponse;
+}
+
+export function NotificationServiceControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = ["getUserNotifications", "healthCheck"];
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcMethod("NotificationService", method)(constructor.prototype[method], method, descriptor);
+    }
+    const grpcStreamMethods: string[] = [];
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcStreamMethod("NotificationService", method)(constructor.prototype[method], method, descriptor);
+    }
+  };
+}
+
+export const NOTIFICATION_SERVICE_NAME = "NotificationService";
 
 export type NotificationServiceService = typeof NotificationServiceService;
 export const NotificationServiceService = {
@@ -853,82 +563,6 @@ export interface NotificationServiceServer extends UntypedServiceImplementation 
   healthCheck: handleUnaryCall<HealthCheckRequest, HealthCheckResponse>;
 }
 
-export interface NotificationServiceClient extends Client {
-  getUserNotifications(
-    request: GetUserNotificationsRequest,
-    callback: (error: ServiceError | null, response: UserNotificationsResponse) => void,
-  ): ClientUnaryCall;
-  getUserNotifications(
-    request: GetUserNotificationsRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UserNotificationsResponse) => void,
-  ): ClientUnaryCall;
-  getUserNotifications(
-    request: GetUserNotificationsRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UserNotificationsResponse) => void,
-  ): ClientUnaryCall;
-  healthCheck(
-    request: HealthCheckRequest,
-    callback: (error: ServiceError | null, response: HealthCheckResponse) => void,
-  ): ClientUnaryCall;
-  healthCheck(
-    request: HealthCheckRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: HealthCheckResponse) => void,
-  ): ClientUnaryCall;
-  healthCheck(
-    request: HealthCheckRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: HealthCheckResponse) => void,
-  ): ClientUnaryCall;
-}
-
-export const NotificationServiceClient = makeGenericClientConstructor(
-  NotificationServiceService,
-  "notification.NotificationService",
-) as unknown as {
-  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): NotificationServiceClient;
-  service: typeof NotificationServiceService;
-  serviceName: string;
-};
-
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
-
-export type DeepPartial<T> = T extends Builtin ? T
-  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
-  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : Partial<T>;
-
-type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
-
-function toTimestamp(date: Date): Timestamp {
-  const seconds = Math.trunc(date.getTime() / 1_000);
-  const nanos = (date.getTime() % 1_000) * 1_000_000;
-  return { seconds, nanos };
-}
-
-function fromTimestamp(t: Timestamp): Date {
-  let millis = (t.seconds || 0) * 1_000;
-  millis += (t.nanos || 0) / 1_000_000;
-  return new globalThis.Date(millis);
-}
-
-function fromJsonTimestamp(o: any): Date {
-  if (o instanceof globalThis.Date) {
-    return o;
-  } else if (typeof o === "string") {
-    return new globalThis.Date(o);
-  } else {
-    return fromTimestamp(Timestamp.fromJSON(o));
-  }
-}
-
 function longToNumber(int64: { toString(): string }): number {
   const num = globalThis.Number(int64.toString());
   if (num > globalThis.Number.MAX_SAFE_INTEGER) {
@@ -940,15 +574,7 @@ function longToNumber(int64: { toString(): string }): number {
   return num;
 }
 
-function isSet(value: any): boolean {
-  return value !== null && value !== undefined;
-}
-
 export interface MessageFns<T> {
   encode(message: T, writer?: BinaryWriter): BinaryWriter;
   decode(input: BinaryReader | Uint8Array, length?: number): T;
-  fromJSON(object: any): T;
-  toJSON(message: T): unknown;
-  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
-  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
 }

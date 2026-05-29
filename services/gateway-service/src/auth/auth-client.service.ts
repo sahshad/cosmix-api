@@ -1,79 +1,59 @@
-import { Injectable } from '@nestjs/common';
-import * as grpc from '@grpc/grpc-js';
+import { Inject, Injectable } from '@nestjs/common';
 import {
+    AUTH_PACKAGE_NAME,
+    AUTH_SERVICE_NAME,
     AuthServiceClient,
     LoginRequest,
     LoginResponse,
     RefreshResponse,
     RegisterRequest,
     RegisterResponse,
+    VerifyEmailRequest,
+    VerifyEmailResponse,
 } from '../generated/auth/auth';
-import { handleGrpcError } from '../common/utils/grpc-error.util';
+import { RpcException, type ClientGrpc } from '@nestjs/microservices';
+import { catchError, firstValueFrom, Observable } from 'rxjs';
 
 @Injectable()
 export class AuthGrpcService {
-    private readonly client: AuthServiceClient;
+    private client!: AuthServiceClient;
 
-    constructor() {
-        this.client = new AuthServiceClient(
-            process.env.AUTH_GRPC_ADDR || 'auth-service:50051',
-            grpc.credentials.createInsecure(),
-        );
+    constructor(
+        @Inject(AUTH_PACKAGE_NAME)
+        private readonly grpcClient: ClientGrpc,
+    ) { }
+
+    onModuleInit() {
+        this.client =
+            this.grpcClient.getService<AuthServiceClient>(
+                AUTH_SERVICE_NAME,
+            );
     }
 
-    getClient() {
-        return this.client;
+    private call<T>(observable: Observable<T>): Promise<T> {
+        return firstValueFrom(
+            observable.pipe(
+                catchError(err => { throw new RpcException(err); })
+            )
+        );
     }
 
     register(body: RegisterRequest): Promise<RegisterResponse> {
-        return new Promise((resolve, reject) => {
-            const reqBody: RegisterRequest = body
+        return this.call(this.client.register(body)).then(res => ({
+            ...res,
+            userId: Number(res.userId)
+        }));
+    }
 
-            this.client.register(reqBody, (err, response) => {
-                if (err) {
-                    return reject(handleGrpcError(err));
-                }
-
-                resolve(response);
-            });
-        })
+    verifyEmail(body: VerifyEmailRequest): Promise<VerifyEmailResponse> {
+        return this.call(this.client.verifyEmail(body))
     }
 
     login(body: LoginRequest): Promise<LoginResponse> {
-        return new Promise((resolve, reject) => {
-            const reqBody: LoginRequest = body
-
-            this.client.login(
-                reqBody,
-                (err, response) => {
-                    if (err) {
-                        return reject(handleGrpcError(err));
-                    }
-
-                    resolve(response);
-                },
-            );
-        });
+        return this.call(this.client.login(body))
     }
 
     refresh(refreshToken: string): Promise<RefreshResponse> {
-        return new Promise(
-            (resolve, reject) => {
-                this.client.refresh(
-                    {
-                        refreshToken,
-                    },
-                    (err, response) => {
-                        if (err) {
-                            return reject(
-                                handleGrpcError(err),
-                            );
-                        }
-
-                        resolve(response);
-                    },
-                );
-            },
-        );
+        return this.call(this.client.refresh({ refreshToken }))
     }
 }

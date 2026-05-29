@@ -1,0 +1,70 @@
+{{ define "content" }}
+
+<h2 style="
+        margin-top:0;
+        color:#ffffff;
+        font-size:28px;
+    ">
+    Welcome to Cosmix
+</h2>
+
+<p style="
+        color:#cbd5e1;
+        line-height:1.7;
+        font-size:15px;
+    ">
+    Hi {{ .DisplayName }},
+</p>
+
+<p style="
+        color:#cbd5e1;
+        line-height:1.7;
+        font-size:15px;
+    ">
+    Your email has been successfully verified and your account is now active.
+</p>
+
+<p style="
+        color:#cbd5e1;
+        line-height:1.7;
+        font-size:15px;
+    ">
+    You can now start building your profile, connecting with people, sharing content, and discovering communities across
+    Cosmix.
+</p>
+
+<div style="
+        margin-top:32px;
+        margin-bottom:32px;
+        text-align:center;
+    ">
+    <a href="{{ .AppLink }}" style="
+            display:inline-block;
+            background:#8b5cf6;
+            color:white;
+            text-decoration:none;
+            padding:14px 28px;
+            border-radius:10px;
+            font-weight:bold;
+        ">
+        Get Started
+    </a>
+</div>
+
+<p style="
+        color:#94a3b8;
+        font-size:14px;
+        line-height:1.6;
+    ">
+    If you need help getting started, our support team is always available to assist you.
+</p>
+
+<p style="
+        color:#94a3b8;
+        font-size:14px;
+        line-height:1.6;
+    ">
+    We're excited to have you as part of the Cosmix community.
+</p>
+
+{{ end }}

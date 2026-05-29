@@ -13,6 +13,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDTO } from './dto/register.dto';
 import type { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
+import { VerifyEmailDTO } from './dto/verify-email.dto';
 
 @Throttle({
     default: {
@@ -30,6 +31,13 @@ export class AuthController {
     async register(@Body() body: RegisterDTO) {
         console.log("register body: ", body)
         const result = await this.authGrpc.register(body)
+        return result
+    }
+
+    @Post('verify-email')
+    async verifyEmail(@Body() body: VerifyEmailDTO) {
+        console.log("verify-email body: ", body)
+        const result = await this.authGrpc.verifyEmail(body)
         return result
     }
 

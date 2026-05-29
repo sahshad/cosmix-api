@@ -1,127 +1,66 @@
-import { Injectable } from '@nestjs/common';
-import * as grpc from '@grpc/grpc-js';
-
+import { Inject, Injectable } from '@nestjs/common';
 import {
   FollowResponse,
-  GetFollowersRequest,
-  GetFollowingRequest,
-  GetProfileByUsernameRequest,
-  GetProfileRequest,
   UnfollowResponse,
   UpdateProfileRequest,
+  USER_PACKAGE_NAME,
+  USER_SERVICE_NAME,
   UserListResponse,
   UserProfileResponse,
   UserServiceClient,
 } from '../generated/user/user';
-
-import { grpcUnaryCall } from '../common/utils/grpc.util';
+import { RpcException, type ClientGrpc } from '@nestjs/microservices';
+import { catchError, firstValueFrom, Observable } from 'rxjs';
 
 @Injectable()
 export class UserGrpcService {
-  private readonly client: UserServiceClient;
+  private client!: UserServiceClient;
 
-  constructor() {
+  constructor(
+    @Inject(USER_PACKAGE_NAME)
+    private readonly grpcClient: ClientGrpc,
+  ) { }
+
+  onModuleInit() {
     this.client =
-      new UserServiceClient(
-        process.env.USER_GRPC_ADDR ??
-          'user-service:50052',
-        grpc.credentials.createInsecure(),
+      this.grpcClient.getService<UserServiceClient>(
+        USER_SERVICE_NAME,
       );
   }
 
-  getProfile(
-    userId: number,
-  ): Promise<UserProfileResponse> {
-    return grpcUnaryCall(
-      callback =>
-        this.client.getProfile(
-          { userId },
-          callback,
-        ),
+  private call<T>(observable: Observable<T>): Promise<T> {
+    return firstValueFrom(
+      observable.pipe(
+        catchError(err => { throw new RpcException(err); })
+      )
     );
   }
 
-  getProfileByUsername(
-    username: string,
-  ): Promise<UserProfileResponse> {
-    return grpcUnaryCall(
-      callback =>
-        this.client.getProfileByUsername(
-          { username },
-          callback,
-        ),
-    );
+  getProfile(userId: number): Promise<UserProfileResponse> {
+    return this.call(this.client.getProfile({ userId }))
   }
 
-  updateProfile(
-    userId: number,
-    body: Partial<UpdateProfileRequest>,
-  ): Promise<UserProfileResponse> {
-    return grpcUnaryCall(
-      callback =>
-        this.client.updateProfile(
-          {
-            userId,
-            ...body,
-          },
-          callback,
-        ),
-    );
+  getProfileByUsername(username: string,): Promise<UserProfileResponse> {
+    return this.call(this.client.getProfileByUsername({ username }))
   }
 
-  follow(
-    followerId: number,
-    followingId: number,
-  ): Promise<FollowResponse> {
-    return grpcUnaryCall(
-      callback =>
-        this.client.follow(
-          {
-            followerId,
-            followingId,
-          },
-          callback,
-        ),
-    );
+  updateProfile(userId: number, body: Partial<UpdateProfileRequest>): Promise<UserProfileResponse> {
+    return this.call(this.client.updateProfile({ userId, ...body }))
   }
 
-  unfollow(
-    followerId: number,
-    followingId: number,
-  ): Promise<UnfollowResponse> {
-    return grpcUnaryCall(
-      callback =>
-        this.client.unfollow(
-          {
-            followerId,
-            followingId,
-          },
-          callback,
-        ),
-    );
+  follow(followerId: number, followingId: number): Promise<FollowResponse> {
+    return this.call(this.client.follow({ followerId, followingId }))
   }
 
-  getFollowers(
-    userId: number,
-  ): Promise<UserListResponse> {
-    return grpcUnaryCall(
-      callback =>
-        this.client.getFollowers(
-          { userId },
-          callback,
-        ),
-    );
+  unfollow(followerId: number, followingId: number): Promise<UnfollowResponse> {
+    return this.call(this.client.unfollow({ followerId, followingId }))
   }
 
-  getFollowing(
-    userId: number,
-  ): Promise<UserListResponse> {
-    return grpcUnaryCall(
-      callback =>
-        this.client.getFollowing(
-          { userId },
-          callback,
-        ),
-    );
+  getFollowers(userId: number): Promise<UserListResponse> {
+    return this.call(this.client.getFollowers({ userId }))
+  }
+
+  getFollowing(userId: number): Promise<UserListResponse> {
+    return this.call(this.client.getFollowing({ userId }))
   }
 }

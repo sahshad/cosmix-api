@@ -21,11 +21,12 @@ type Container struct {
 
 func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 
-	userRepo := repositories.NewAuthUserRepository(db)
-	sessionRepo := repositories.NewAuthSessionRepository(db)
+	authUserRepo := repositories.NewAuthUserRepository(db)
+	authSessionRepo := repositories.NewAuthSessionRepository(db)
+	emailVerificationTokenRepo := repositories.NewEmailVerificationTokenRepository(db)
 
-	sessionService := services.NewAuthSessionService(sessionRepo)
-	authUserService := services.NewAuthUserService(userRepo, sessionService, rabbit.Channel)
+	authSessionService := services.NewAuthSessionService(authSessionRepo)
+	authUserService := services.NewAuthUserService(authUserRepo, emailVerificationTokenRepo, authSessionService, rabbit.Channel)
 
 	authGrpcServer := grpc.NewAuthServer(authUserService)
 

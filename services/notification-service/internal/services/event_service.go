@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 
+	"notification-service/internal/email"
 	"notification-service/internal/models"
 
 	authEvents "cosmix/shared/events/auth"
@@ -13,6 +14,7 @@ type EventService struct {
 	NotificationSvc           *NotificationService
 	NotificationPreferenceSvc *NotificationPreferenceService
 	NotificationUserSvc       *NotificationUserService
+	MailDispatcher            *email.MailDispatcher
 }
 
 func NewEventService(
@@ -20,12 +22,14 @@ func NewEventService(
 	notificationSvc *NotificationService,
 	notificationPreferenceSvc *NotificationPreferenceService,
 	notificationUserSvc *NotificationUserService,
+	mailDispatcher *email.MailDispatcher,
 ) *EventService {
 	return &EventService{
 		EmailLogSvc:               emailLogSvc,
 		NotificationSvc:           notificationSvc,
 		NotificationPreferenceSvc: notificationPreferenceSvc,
 		NotificationUserSvc:       notificationUserSvc,
+		MailDispatcher:            mailDispatcher,
 	}
 }
 
@@ -55,7 +59,27 @@ func (svc *EventService) HandleUserRegistered(ctx context.Context, event authEve
 		return err
 	}
 
-	if err := svc.EmailLogSvc.SendWelcomeEmail(ctx, event.AuthUserID, event.Email); err != nil {
+	// if err := svc.EmailLogSvc.SendWelcomeEmail(ctx, event.AuthUserID, event.Email); err != nil {
+	// 	return err
+	// }
+
+	appLink := "http://localhost:3000"
+
+	templateData := map[string]any{
+		"Title":       "Welcome to Cosmix",
+		"DisplayName": event.DisplayName,
+		"AppLink":     appLink,
+	}
+
+	mailDto := email.SendEmailDTO{
+		To:           event.Email,
+		Subject:      "Welcome to Cosmix",
+		TemplateName: email.TemplateAuthWelcome,
+		TemplateData: templateData,
+	}
+
+	err := svc.MailDispatcher.Send(mailDto)
+	if err != nil {
 		return err
 	}
 

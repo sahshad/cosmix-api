@@ -2,6 +2,7 @@ package app
 
 import (
 	"cosmix/shared/core/rabbitmq"
+	"notification-service/internal/email"
 	"notification-service/internal/grpc"
 	"notification-service/internal/repositories"
 	"notification-service/internal/services"
@@ -10,8 +11,9 @@ import (
 )
 
 type Container struct {
-	DB     *gorm.DB
-	Rabbit *rabbitmq.Rabbit
+	DB             *gorm.DB
+	Rabbit         *rabbitmq.Rabbit
+	MailDispatcher *email.MailDispatcher
 
 	NotificationService           *services.NotificationService
 	NotificationPreferenceService *services.NotificationPreferenceService
@@ -22,25 +24,26 @@ type Container struct {
 	NotificationGrpcServer *grpc.NotificationServer
 }
 
-func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
+func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit, mailDispatcher *email.MailDispatcher) *Container {
 
 	notificationRepo := repositories.NewNotificationRepository(db)
 	notificationReferenceRepo := repositories.NewNotificationPreferenceRepository(db)
 	emailLogRepo := repositories.NewEmailLogRepository(db)
 	notificationUserRepo := repositories.NewNotificationUserRepository(db)
 
-	notificationSvc := services.NewNotificationService(notificationRepo)
+	notificationSvc := services.NewNotificationService(notificationRepo, mailDispatcher)
 	notificationReferenceSvc := services.NewNotificationPreferenceService(notificationReferenceRepo)
 	emailLogSvc := services.NewEmailLogService(emailLogRepo)
 	notificationUserSvc := services.NewNotificationUserService(notificationUserRepo)
 
-	eventSvc := services.NewEventService(emailLogSvc, notificationSvc, notificationReferenceSvc, notificationUserSvc)
+	eventSvc := services.NewEventService(emailLogSvc, notificationSvc, notificationReferenceSvc, notificationUserSvc, mailDispatcher)
 
 	notificationGrpcServer := grpc.NewNotificationServer(notificationSvc)
 
 	return &Container{
-		DB:     db,
-		Rabbit: rabbit,
+		DB:             db,
+		Rabbit:         rabbit,
+		MailDispatcher: mailDispatcher,
 
 		NotificationService:           notificationSvc,
 		NotificationPreferenceService: notificationReferenceSvc,

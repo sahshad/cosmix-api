@@ -6,18 +6,9 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import {
-  type CallOptions,
-  type ChannelCredentials,
-  Client,
-  type ClientOptions,
-  type ClientUnaryCall,
-  type handleUnaryCall,
-  makeGenericClientConstructor,
-  type Metadata,
-  type ServiceError,
-  type UntypedServiceImplementation,
-} from "@grpc/grpc-js";
+import type { handleUnaryCall, UntypedServiceImplementation } from "@grpc/grpc-js";
+import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
+import { Observable } from "rxjs";
 import { Timestamp } from "../google/protobuf/timestamp";
 
 export const protobufPackage = "auth";
@@ -30,6 +21,16 @@ export interface RegisterRequest {
 
 export interface RegisterResponse {
   userId: number;
+}
+
+export interface VerifyEmailRequest {
+  token: string;
+  email: string;
+  password: string;
+}
+
+export interface VerifyEmailResponse {
+  message: string;
 }
 
 export interface LoginRequest {
@@ -65,10 +66,12 @@ export interface AuthUser {
   email: string;
   isActive: boolean;
   emailVerified: boolean;
-  lastLoginAt: Date | undefined;
-  createdAt: Date | undefined;
-  updatedAt: Date | undefined;
+  lastLoginAt: Timestamp | undefined;
+  createdAt: Timestamp | undefined;
+  updatedAt: Timestamp | undefined;
 }
+
+export const AUTH_PACKAGE_NAME = "auth";
 
 function createBaseRegisterRequest(): RegisterRequest {
   return { displayName: "", email: "", password: "" };
@@ -127,43 +130,6 @@ export const RegisterRequest: MessageFns<RegisterRequest> = {
     }
     return message;
   },
-
-  fromJSON(object: any): RegisterRequest {
-    return {
-      displayName: isSet(object.displayName)
-        ? globalThis.String(object.displayName)
-        : isSet(object.display_name)
-        ? globalThis.String(object.display_name)
-        : "",
-      email: isSet(object.email) ? globalThis.String(object.email) : "",
-      password: isSet(object.password) ? globalThis.String(object.password) : "",
-    };
-  },
-
-  toJSON(message: RegisterRequest): unknown {
-    const obj: any = {};
-    if (message.displayName !== "") {
-      obj.displayName = message.displayName;
-    }
-    if (message.email !== "") {
-      obj.email = message.email;
-    }
-    if (message.password !== "") {
-      obj.password = message.password;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<RegisterRequest>, I>>(base?: I): RegisterRequest {
-    return RegisterRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<RegisterRequest>, I>>(object: I): RegisterRequest {
-    const message = createBaseRegisterRequest();
-    message.displayName = object.displayName ?? "";
-    message.email = object.email ?? "";
-    message.password = object.password ?? "";
-    return message;
-  },
 };
 
 function createBaseRegisterResponse(): RegisterResponse {
@@ -201,31 +167,100 @@ export const RegisterResponse: MessageFns<RegisterResponse> = {
     }
     return message;
   },
+};
 
-  fromJSON(object: any): RegisterResponse {
-    return {
-      userId: isSet(object.userId)
-        ? globalThis.Number(object.userId)
-        : isSet(object.user_id)
-        ? globalThis.Number(object.user_id)
-        : 0,
-    };
-  },
+function createBaseVerifyEmailRequest(): VerifyEmailRequest {
+  return { token: "", email: "", password: "" };
+}
 
-  toJSON(message: RegisterResponse): unknown {
-    const obj: any = {};
-    if (message.userId !== 0) {
-      obj.userId = Math.round(message.userId);
+export const VerifyEmailRequest: MessageFns<VerifyEmailRequest> = {
+  encode(message: VerifyEmailRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.token !== "") {
+      writer.uint32(10).string(message.token);
     }
-    return obj;
+    if (message.email !== "") {
+      writer.uint32(18).string(message.email);
+    }
+    if (message.password !== "") {
+      writer.uint32(26).string(message.password);
+    }
+    return writer;
   },
 
-  create<I extends Exact<DeepPartial<RegisterResponse>, I>>(base?: I): RegisterResponse {
-    return RegisterResponse.fromPartial(base ?? ({} as any));
+  decode(input: BinaryReader | Uint8Array, length?: number): VerifyEmailRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseVerifyEmailRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.token = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.email = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.password = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
   },
-  fromPartial<I extends Exact<DeepPartial<RegisterResponse>, I>>(object: I): RegisterResponse {
-    const message = createBaseRegisterResponse();
-    message.userId = object.userId ?? 0;
+};
+
+function createBaseVerifyEmailResponse(): VerifyEmailResponse {
+  return { message: "" };
+}
+
+export const VerifyEmailResponse: MessageFns<VerifyEmailResponse> = {
+  encode(message: VerifyEmailResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.message !== "") {
+      writer.uint32(10).string(message.message);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): VerifyEmailResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseVerifyEmailResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
     return message;
   },
 };
@@ -274,34 +309,6 @@ export const LoginRequest: MessageFns<LoginRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): LoginRequest {
-    return {
-      email: isSet(object.email) ? globalThis.String(object.email) : "",
-      password: isSet(object.password) ? globalThis.String(object.password) : "",
-    };
-  },
-
-  toJSON(message: LoginRequest): unknown {
-    const obj: any = {};
-    if (message.email !== "") {
-      obj.email = message.email;
-    }
-    if (message.password !== "") {
-      obj.password = message.password;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<LoginRequest>, I>>(base?: I): LoginRequest {
-    return LoginRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<LoginRequest>, I>>(object: I): LoginRequest {
-    const message = createBaseLoginRequest();
-    message.email = object.email ?? "";
-    message.password = object.password ?? "";
     return message;
   },
 };
@@ -363,47 +370,6 @@ export const LoginResponse: MessageFns<LoginResponse> = {
     }
     return message;
   },
-
-  fromJSON(object: any): LoginResponse {
-    return {
-      accessToken: isSet(object.accessToken)
-        ? globalThis.String(object.accessToken)
-        : isSet(object.access_token)
-        ? globalThis.String(object.access_token)
-        : "",
-      refreshToken: isSet(object.refreshToken)
-        ? globalThis.String(object.refreshToken)
-        : isSet(object.refresh_token)
-        ? globalThis.String(object.refresh_token)
-        : "",
-      user: isSet(object.user) ? AuthUser.fromJSON(object.user) : undefined,
-    };
-  },
-
-  toJSON(message: LoginResponse): unknown {
-    const obj: any = {};
-    if (message.accessToken !== "") {
-      obj.accessToken = message.accessToken;
-    }
-    if (message.refreshToken !== "") {
-      obj.refreshToken = message.refreshToken;
-    }
-    if (message.user !== undefined) {
-      obj.user = AuthUser.toJSON(message.user);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<LoginResponse>, I>>(base?: I): LoginResponse {
-    return LoginResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<LoginResponse>, I>>(object: I): LoginResponse {
-    const message = createBaseLoginResponse();
-    message.accessToken = object.accessToken ?? "";
-    message.refreshToken = object.refreshToken ?? "";
-    message.user = (object.user !== undefined && object.user !== null) ? AuthUser.fromPartial(object.user) : undefined;
-    return message;
-  },
 };
 
 function createBaseRefreshRequest(): RefreshRequest {
@@ -439,33 +405,6 @@ export const RefreshRequest: MessageFns<RefreshRequest> = {
       }
       reader.skip(tag & 7);
     }
-    return message;
-  },
-
-  fromJSON(object: any): RefreshRequest {
-    return {
-      refreshToken: isSet(object.refreshToken)
-        ? globalThis.String(object.refreshToken)
-        : isSet(object.refresh_token)
-        ? globalThis.String(object.refresh_token)
-        : "",
-    };
-  },
-
-  toJSON(message: RefreshRequest): unknown {
-    const obj: any = {};
-    if (message.refreshToken !== "") {
-      obj.refreshToken = message.refreshToken;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<RefreshRequest>, I>>(base?: I): RefreshRequest {
-    return RefreshRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<RefreshRequest>, I>>(object: I): RefreshRequest {
-    const message = createBaseRefreshRequest();
-    message.refreshToken = object.refreshToken ?? "";
     return message;
   },
 };
@@ -516,42 +455,6 @@ export const RefreshResponse: MessageFns<RefreshResponse> = {
     }
     return message;
   },
-
-  fromJSON(object: any): RefreshResponse {
-    return {
-      accessToken: isSet(object.accessToken)
-        ? globalThis.String(object.accessToken)
-        : isSet(object.access_token)
-        ? globalThis.String(object.access_token)
-        : "",
-      refreshToken: isSet(object.refreshToken)
-        ? globalThis.String(object.refreshToken)
-        : isSet(object.refresh_token)
-        ? globalThis.String(object.refresh_token)
-        : "",
-    };
-  },
-
-  toJSON(message: RefreshResponse): unknown {
-    const obj: any = {};
-    if (message.accessToken !== "") {
-      obj.accessToken = message.accessToken;
-    }
-    if (message.refreshToken !== "") {
-      obj.refreshToken = message.refreshToken;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<RefreshResponse>, I>>(base?: I): RefreshResponse {
-    return RefreshResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<RefreshResponse>, I>>(object: I): RefreshResponse {
-    const message = createBaseRefreshResponse();
-    message.accessToken = object.accessToken ?? "";
-    message.refreshToken = object.refreshToken ?? "";
-    return message;
-  },
 };
 
 function createBaseUpdateUserPasswordRequest(): UpdateUserPasswordRequest {
@@ -600,42 +503,6 @@ export const UpdateUserPasswordRequest: MessageFns<UpdateUserPasswordRequest> = 
     }
     return message;
   },
-
-  fromJSON(object: any): UpdateUserPasswordRequest {
-    return {
-      userId: isSet(object.userId)
-        ? globalThis.Number(object.userId)
-        : isSet(object.user_id)
-        ? globalThis.Number(object.user_id)
-        : 0,
-      newPassword: isSet(object.newPassword)
-        ? globalThis.String(object.newPassword)
-        : isSet(object.new_password)
-        ? globalThis.String(object.new_password)
-        : "",
-    };
-  },
-
-  toJSON(message: UpdateUserPasswordRequest): unknown {
-    const obj: any = {};
-    if (message.userId !== 0) {
-      obj.userId = Math.round(message.userId);
-    }
-    if (message.newPassword !== "") {
-      obj.newPassword = message.newPassword;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UpdateUserPasswordRequest>, I>>(base?: I): UpdateUserPasswordRequest {
-    return UpdateUserPasswordRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UpdateUserPasswordRequest>, I>>(object: I): UpdateUserPasswordRequest {
-    const message = createBaseUpdateUserPasswordRequest();
-    message.userId = object.userId ?? 0;
-    message.newPassword = object.newPassword ?? "";
-    return message;
-  },
 };
 
 function createBaseUpdateUserPasswordResponse(): UpdateUserPasswordResponse {
@@ -673,27 +540,6 @@ export const UpdateUserPasswordResponse: MessageFns<UpdateUserPasswordResponse> 
     }
     return message;
   },
-
-  fromJSON(object: any): UpdateUserPasswordResponse {
-    return { message: isSet(object.message) ? globalThis.String(object.message) : "" };
-  },
-
-  toJSON(message: UpdateUserPasswordResponse): unknown {
-    const obj: any = {};
-    if (message.message !== "") {
-      obj.message = message.message;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<UpdateUserPasswordResponse>, I>>(base?: I): UpdateUserPasswordResponse {
-    return UpdateUserPasswordResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<UpdateUserPasswordResponse>, I>>(object: I): UpdateUserPasswordResponse {
-    const message = createBaseUpdateUserPasswordResponse();
-    message.message = object.message ?? "";
-    return message;
-  },
 };
 
 function createBaseAuthUser(): AuthUser {
@@ -719,13 +565,13 @@ export const AuthUser: MessageFns<AuthUser> = {
       writer.uint32(24).bool(message.emailVerified);
     }
     if (message.lastLoginAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.lastLoginAt), writer.uint32(34).fork()).join();
+      Timestamp.encode(message.lastLoginAt, writer.uint32(34).fork()).join();
     }
     if (message.createdAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(42).fork()).join();
+      Timestamp.encode(message.createdAt, writer.uint32(42).fork()).join();
     }
     if (message.updatedAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.updatedAt), writer.uint32(50).fork()).join();
+      Timestamp.encode(message.updatedAt, writer.uint32(50).fork()).join();
     }
     return writer;
   },
@@ -766,7 +612,7 @@ export const AuthUser: MessageFns<AuthUser> = {
             break;
           }
 
-          message.lastLoginAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.lastLoginAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
         case 5: {
@@ -774,7 +620,7 @@ export const AuthUser: MessageFns<AuthUser> = {
             break;
           }
 
-          message.createdAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.createdAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
         case 6: {
@@ -782,7 +628,7 @@ export const AuthUser: MessageFns<AuthUser> = {
             break;
           }
 
-          message.updatedAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.updatedAt = Timestamp.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -793,75 +639,52 @@ export const AuthUser: MessageFns<AuthUser> = {
     }
     return message;
   },
-
-  fromJSON(object: any): AuthUser {
-    return {
-      email: isSet(object.email) ? globalThis.String(object.email) : "",
-      isActive: isSet(object.isActive)
-        ? globalThis.Boolean(object.isActive)
-        : isSet(object.is_active)
-        ? globalThis.Boolean(object.is_active)
-        : false,
-      emailVerified: isSet(object.emailVerified)
-        ? globalThis.Boolean(object.emailVerified)
-        : isSet(object.email_verified)
-        ? globalThis.Boolean(object.email_verified)
-        : false,
-      lastLoginAt: isSet(object.lastLoginAt)
-        ? fromJsonTimestamp(object.lastLoginAt)
-        : isSet(object.last_login_at)
-        ? fromJsonTimestamp(object.last_login_at)
-        : undefined,
-      createdAt: isSet(object.createdAt)
-        ? fromJsonTimestamp(object.createdAt)
-        : isSet(object.created_at)
-        ? fromJsonTimestamp(object.created_at)
-        : undefined,
-      updatedAt: isSet(object.updatedAt)
-        ? fromJsonTimestamp(object.updatedAt)
-        : isSet(object.updated_at)
-        ? fromJsonTimestamp(object.updated_at)
-        : undefined,
-    };
-  },
-
-  toJSON(message: AuthUser): unknown {
-    const obj: any = {};
-    if (message.email !== "") {
-      obj.email = message.email;
-    }
-    if (message.isActive !== false) {
-      obj.isActive = message.isActive;
-    }
-    if (message.emailVerified !== false) {
-      obj.emailVerified = message.emailVerified;
-    }
-    if (message.lastLoginAt !== undefined) {
-      obj.lastLoginAt = message.lastLoginAt.toISOString();
-    }
-    if (message.createdAt !== undefined) {
-      obj.createdAt = message.createdAt.toISOString();
-    }
-    if (message.updatedAt !== undefined) {
-      obj.updatedAt = message.updatedAt.toISOString();
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<AuthUser>, I>>(base?: I): AuthUser {
-    return AuthUser.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<AuthUser>, I>>(object: I): AuthUser {
-    const message = createBaseAuthUser();
-    message.email = object.email ?? "";
-    message.isActive = object.isActive ?? false;
-    message.emailVerified = object.emailVerified ?? false;
-    message.lastLoginAt = object.lastLoginAt ?? undefined;
-    message.createdAt = object.createdAt ?? undefined;
-    message.updatedAt = object.updatedAt ?? undefined;
-    return message;
-  },
 };
+
+export interface AuthServiceClient {
+  register(request: RegisterRequest): Observable<RegisterResponse>;
+
+  verifyEmail(request: VerifyEmailRequest): Observable<VerifyEmailResponse>;
+
+  login(request: LoginRequest): Observable<LoginResponse>;
+
+  refresh(request: RefreshRequest): Observable<RefreshResponse>;
+
+  updateUserPassword(request: UpdateUserPasswordRequest): Observable<UpdateUserPasswordResponse>;
+}
+
+export interface AuthServiceController {
+  register(request: RegisterRequest): Promise<RegisterResponse> | Observable<RegisterResponse> | RegisterResponse;
+
+  verifyEmail(
+    request: VerifyEmailRequest,
+  ): Promise<VerifyEmailResponse> | Observable<VerifyEmailResponse> | VerifyEmailResponse;
+
+  login(request: LoginRequest): Promise<LoginResponse> | Observable<LoginResponse> | LoginResponse;
+
+  refresh(request: RefreshRequest): Promise<RefreshResponse> | Observable<RefreshResponse> | RefreshResponse;
+
+  updateUserPassword(
+    request: UpdateUserPasswordRequest,
+  ): Promise<UpdateUserPasswordResponse> | Observable<UpdateUserPasswordResponse> | UpdateUserPasswordResponse;
+}
+
+export function AuthServiceControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = ["register", "verifyEmail", "login", "refresh", "updateUserPassword"];
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);
+    }
+    const grpcStreamMethods: string[] = [];
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcStreamMethod("AuthService", method)(constructor.prototype[method], method, descriptor);
+    }
+  };
+}
+
+export const AUTH_SERVICE_NAME = "AuthService";
 
 export type AuthServiceService = typeof AuthServiceService;
 export const AuthServiceService = {
@@ -873,6 +696,15 @@ export const AuthServiceService = {
     requestDeserialize: (value: Buffer): RegisterRequest => RegisterRequest.decode(value),
     responseSerialize: (value: RegisterResponse): Buffer => Buffer.from(RegisterResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): RegisterResponse => RegisterResponse.decode(value),
+  },
+  verifyEmail: {
+    path: "/auth.AuthService/VerifyEmail" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: VerifyEmailRequest): Buffer => Buffer.from(VerifyEmailRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): VerifyEmailRequest => VerifyEmailRequest.decode(value),
+    responseSerialize: (value: VerifyEmailResponse): Buffer => Buffer.from(VerifyEmailResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): VerifyEmailResponse => VerifyEmailResponse.decode(value),
   },
   login: {
     path: "/auth.AuthService/Login" as const,
@@ -907,112 +739,10 @@ export const AuthServiceService = {
 
 export interface AuthServiceServer extends UntypedServiceImplementation {
   register: handleUnaryCall<RegisterRequest, RegisterResponse>;
+  verifyEmail: handleUnaryCall<VerifyEmailRequest, VerifyEmailResponse>;
   login: handleUnaryCall<LoginRequest, LoginResponse>;
   refresh: handleUnaryCall<RefreshRequest, RefreshResponse>;
   updateUserPassword: handleUnaryCall<UpdateUserPasswordRequest, UpdateUserPasswordResponse>;
-}
-
-export interface AuthServiceClient extends Client {
-  register(
-    request: RegisterRequest,
-    callback: (error: ServiceError | null, response: RegisterResponse) => void,
-  ): ClientUnaryCall;
-  register(
-    request: RegisterRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: RegisterResponse) => void,
-  ): ClientUnaryCall;
-  register(
-    request: RegisterRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: RegisterResponse) => void,
-  ): ClientUnaryCall;
-  login(
-    request: LoginRequest,
-    callback: (error: ServiceError | null, response: LoginResponse) => void,
-  ): ClientUnaryCall;
-  login(
-    request: LoginRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: LoginResponse) => void,
-  ): ClientUnaryCall;
-  login(
-    request: LoginRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: LoginResponse) => void,
-  ): ClientUnaryCall;
-  refresh(
-    request: RefreshRequest,
-    callback: (error: ServiceError | null, response: RefreshResponse) => void,
-  ): ClientUnaryCall;
-  refresh(
-    request: RefreshRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: RefreshResponse) => void,
-  ): ClientUnaryCall;
-  refresh(
-    request: RefreshRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: RefreshResponse) => void,
-  ): ClientUnaryCall;
-  updateUserPassword(
-    request: UpdateUserPasswordRequest,
-    callback: (error: ServiceError | null, response: UpdateUserPasswordResponse) => void,
-  ): ClientUnaryCall;
-  updateUserPassword(
-    request: UpdateUserPasswordRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: UpdateUserPasswordResponse) => void,
-  ): ClientUnaryCall;
-  updateUserPassword(
-    request: UpdateUserPasswordRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UpdateUserPasswordResponse) => void,
-  ): ClientUnaryCall;
-}
-
-export const AuthServiceClient = makeGenericClientConstructor(AuthServiceService, "auth.AuthService") as unknown as {
-  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): AuthServiceClient;
-  service: typeof AuthServiceService;
-  serviceName: string;
-};
-
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
-
-export type DeepPartial<T> = T extends Builtin ? T
-  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
-  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : Partial<T>;
-
-type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
-
-function toTimestamp(date: Date): Timestamp {
-  const seconds = Math.trunc(date.getTime() / 1_000);
-  const nanos = (date.getTime() % 1_000) * 1_000_000;
-  return { seconds, nanos };
-}
-
-function fromTimestamp(t: Timestamp): Date {
-  let millis = (t.seconds || 0) * 1_000;
-  millis += (t.nanos || 0) / 1_000_000;
-  return new globalThis.Date(millis);
-}
-
-function fromJsonTimestamp(o: any): Date {
-  if (o instanceof globalThis.Date) {
-    return o;
-  } else if (typeof o === "string") {
-    return new globalThis.Date(o);
-  } else {
-    return fromTimestamp(Timestamp.fromJSON(o));
-  }
 }
 
 function longToNumber(int64: { toString(): string }): number {
@@ -1026,15 +756,7 @@ function longToNumber(int64: { toString(): string }): number {
   return num;
 }
 
-function isSet(value: any): boolean {
-  return value !== null && value !== undefined;
-}
-
 export interface MessageFns<T> {
   encode(message: T, writer?: BinaryWriter): BinaryWriter;
   decode(input: BinaryReader | Uint8Array, length?: number): T;
-  fromJSON(object: any): T;
-  toJSON(message: T): unknown;
-  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
-  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
 }

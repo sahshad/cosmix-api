@@ -1,6 +1,7 @@
 package rabbitmq
 
 const (
+	AuthUserEmailVerification  = "auth.user.email.verification"
 	AuthUserRegistered         = "auth.user.registered"
 	AuthUserEmailUpdated       = "auth.user.email.updated"
 	AuthPasswordResetRequested = "auth.password.reset.requested"
@@ -8,31 +9,29 @@ const (
 )
 
 const (
-	UserProfileUpdated = "user.profile.updated"
-	UserFollowed       = "user.followed"
-	UserUnfollowed     = "user.unfollowed"
-
-	UserAuthUserRegistered         = "user.auth.user.registered"
-	PostAuthUserRegistered         = "post.auth.user.registered"
-	NotificationAuthUserRegistered = "notification.auth.user.registered"
+	UserProfileUpdated     = "user.profile.updated"
+	UserFollowed           = "user.followed"
+	UserUnfollowed         = "user.unfollowed"
+	UserAuthUserRegistered = "user.auth.user.registered"
 )
 
 const (
-	PostCreated = "post.created"
-	PostUpdated = "post.updated"
-	PostDeleted = "post.deleted"
-	PostLiked   = "post.liked"
-	PostUnliked = "post.unliked"
-)
+	PostAuthUserRegistered = "post.auth.user.registered"
+	PostCreated            = "post.created"
+	PostUpdated            = "post.updated"
+	PostDeleted            = "post.deleted"
+	PostLiked              = "post.liked"
+	PostUnliked            = "post.unliked"
 
-const (
 	CommentCreated = "comment.created"
 	CommentUpdated = "comment.updated"
 	CommentDeleted = "comment.deleted"
 )
 
 const (
-	NotificationCreated = "notification.created"
+	NotificationAuthUserRegistered = "notification.auth.user.registered"
+	NotificationCreated            = "notification.created"
+	NotificationAuthUserEmailVerification = "notification.auth.user.email.verification"
 )
 
 const (

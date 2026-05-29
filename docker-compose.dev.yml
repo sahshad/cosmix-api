@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   rabbitmq:
     image: rabbitmq:3-management
@@ -41,8 +39,22 @@ services:
     networks:
       - cosmix-net
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: cosmix-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    volumes:
+      - mailpit-data:/data
+    environment:
+      MP_DATABASE: /data/mailpit.db
+    networks:
+      - cosmix-net
+
 networks:
   cosmix-net:
 
 volumes:
   pgdata:
+  mailpit-data:

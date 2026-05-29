@@ -1,45 +1,32 @@
-import { Injectable } from '@nestjs/common';
-import * as grpc from '@grpc/grpc-js';
+import { Inject, Injectable } from '@nestjs/common';
 
 import {
-  GetUserNotificationsRequest,
+  NOTIFICATION_PACKAGE_NAME,
+  NOTIFICATION_SERVICE_NAME,
   NotificationServiceClient,
   UserNotificationsResponse,
 } from '../generated/notification/notification';
 
-import { grpcUnaryCall } from '../common/utils/grpc.util';
+import type { ClientGrpc } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class NotificationGrpcService {
-  private readonly client: NotificationServiceClient;
+  private client!: NotificationServiceClient;
 
-  constructor() {
+  constructor(
+    @Inject(NOTIFICATION_PACKAGE_NAME)
+    private readonly grpcClient: ClientGrpc,
+  ) { }
+
+  onModuleInit() {
     this.client =
-      new NotificationServiceClient(
-        process.env.NOTIFICATION_GRPC_ADDR ??
-          'notification-service:50053',
-        grpc.credentials.createInsecure(),
+      this.grpcClient.getService<NotificationServiceClient>(
+        NOTIFICATION_SERVICE_NAME,
       );
   }
 
-  getUserNotifications(
-    userId: number,
-    page = 1,
-    limit = 10,
-  ): Promise<UserNotificationsResponse> {
-    const request: GetUserNotificationsRequest =
-      {
-        userId,
-        page,
-        limit,
-      };
-
-    return grpcUnaryCall(
-      callback =>
-        this.client.getUserNotifications(
-          request,
-          callback,
-        ),
-    );
+  getUserNotifications(userId: number, page = 1, limit = 10): Promise<UserNotificationsResponse> {
+    return firstValueFrom(this.client.getUserNotifications({ userId, page, limit }))
   }
 }
