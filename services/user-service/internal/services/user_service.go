@@ -81,7 +81,7 @@ func (svc *UserService) CreateProfile(ctx context.Context, profile *models.User)
 	return svc.repo.Create(ctx, profile)
 }
 
-func (svc *UserService) CreateFromAuthEvent(ctx context.Context, event authEvents.AuthUserRegistered) error {
+func (svc *UserService) HandleAuthUserEmailVerificationCompleted(ctx context.Context, event authEvents.AuthUserEmailVerificationCompleted) error {
 
 	profile := &models.User{
 		UserID:      event.AuthUserID,

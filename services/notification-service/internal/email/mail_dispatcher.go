@@ -1,9 +1,10 @@
 package email
 
 const (
-	TemplateAuthVerification  = "auth/verification.html"
-	TemplateAuthResetPassword = "auth/reset_password.html"
-	TemplateAuthWelcome       = "auth/welcome.html"
+	TemplateAuthVerification    = "auth/verification.html"
+	TemplateAuthWelcome         = "auth/welcome.html"
+	TemplateAuthForgotPassword  = "auth/forgot_password.html"
+	TemplateAuthPasswordChanged = "auth/password_changed.html"
 )
 
 type SendEmailDTO struct {
@@ -14,8 +15,8 @@ type SendEmailDTO struct {
 }
 
 type MailDispatcher struct {
-	transporter   *Transport
-	renderer *Renderer
+	transporter *Transport
+	renderer    *Renderer
 }
 
 func NewMailDispatcher(host string, port int, from string, templateDir string) *MailDispatcher {

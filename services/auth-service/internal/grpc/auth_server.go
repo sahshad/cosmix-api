@@ -115,3 +115,29 @@ func (srv *AuthServer) UpdateUserPassword(ctx context.Context, req *authpb.Updat
 		Message: "password updated successfully",
 	}, nil
 }
+
+func (srv *AuthServer) ForgotPassword(ctx context.Context, req *authpb.ForgotPasswordRequest) (*authpb.ForgotPasswordResponse, error) {
+	err := srv.authService.ForgotPassword(ctx, req.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	return &authpb.ForgotPasswordResponse{
+		Message: "if an account with this email exists, you will receive a reset link shortly",
+	}, nil
+}
+
+func (srv *AuthServer) ResetPassword(ctx context.Context, req *authpb.ResetPasswordRequest) (*authpb.ResetPasswordResponse, error) {
+	err := srv.authService.ResetPassword(ctx, dto.ResetPasswordDTO{
+		Token:           req.Token,
+		CurrentPassword: req.CurrentPassword,
+		NewPassword:     req.NewPassword,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &authpb.ResetPasswordResponse{
+		Message: "password reset successfully",
+	}, nil
+}

@@ -28,7 +28,7 @@ func NewPostUserService(
 	}
 }
 
-func (svc *PostUserService) CreateFromAuthEvent(ctx context.Context, event authEvents.AuthUserRegistered) error {
+func (svc *PostUserService) HandleAuthUserEmailVerificationCompleted(ctx context.Context, event authEvents.AuthUserEmailVerificationCompleted) error {
 	postUser := &models.PostUser{
 		UserID:      event.AuthUserID,
 		Username:    event.Username,

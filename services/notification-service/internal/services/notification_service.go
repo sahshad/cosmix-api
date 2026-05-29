@@ -47,7 +47,7 @@ func (svc *NotificationService) HandleEmailVerification(ctx context.Context, eve
 	verificationLink := fmt.Sprintf("http://localhost:3000/verify-email?token=%s", event.Token)
 	templateData := map[string]any{
 		"Title":            "Verify Your Email",
-		"DisplayName":     event.DisplayName,
+		"DisplayName":      event.DisplayName,
 		"VerificationLink": verificationLink,
 	}
 
@@ -55,6 +55,51 @@ func (svc *NotificationService) HandleEmailVerification(ctx context.Context, eve
 		To:           event.Email,
 		Subject:      "Verify your email",
 		TemplateName: email.TemplateAuthVerification,
+		TemplateData: templateData,
+	}
+
+	err := svc.mailDispatcher.Send(mailDto)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (svc *NotificationService) HandleAuthUserForgotPasswordRequest(ctx context.Context, event authEvents.AuthUserForgotPasswordRequest) error {
+	resetLink := fmt.Sprintf("http://localhost:3000/reset-password?token=%s", event.Token)
+	templateData := map[string]any{
+		"Title":          "Forgot Password",
+		"DisplayName":    event.DisplayName,
+		"ResetLink":      resetLink,
+		"ExpiryDuration": "15 minutes",
+	}
+
+	mailDto := email.SendEmailDTO{
+		To:           event.Email,
+		Subject:      "Forgot Password",
+		TemplateName: email.TemplateAuthForgotPassword,
+		TemplateData: templateData,
+	}
+
+	err := svc.mailDispatcher.Send(mailDto)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (svc *NotificationService) HandleAuthUserPasswordChanged(ctx context.Context, event authEvents.AuthUserPasswordChanged) error {
+	templateData := map[string]any{
+		"Title":       "Password Changed",
+		"DisplayName": event.DisplayName,
+	}
+
+	mailDto := email.SendEmailDTO{
+		To:           event.Email,
+		Subject:      "Password Changed",
+		TemplateName: email.TemplateAuthPasswordChanged,
 		TemplateData: templateData,
 	}
 

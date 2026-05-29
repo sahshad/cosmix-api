@@ -33,7 +33,7 @@ func NewEventService(
 	}
 }
 
-func (svc *EventService) HandleUserRegistered(ctx context.Context, event authEvents.AuthUserRegistered) error {
+func (svc *EventService) HandleUserEmailVerificationCompleted(ctx context.Context, event authEvents.AuthUserEmailVerificationCompleted) error {
 	notificationUser := &models.NotificationUser{
 		UserID:      event.AuthUserID,
 		Username:    event.Username,

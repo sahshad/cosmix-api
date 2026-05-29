@@ -3,11 +3,14 @@ import {
     AUTH_PACKAGE_NAME,
     AUTH_SERVICE_NAME,
     AuthServiceClient,
+    ForgotPasswordResponse,
     LoginRequest,
     LoginResponse,
     RefreshResponse,
     RegisterRequest,
     RegisterResponse,
+    ResetPasswordRequest,
+    ResetPasswordResponse,
     VerifyEmailRequest,
     VerifyEmailResponse,
 } from '../generated/auth/auth';
@@ -55,5 +58,13 @@ export class AuthGrpcService {
 
     refresh(refreshToken: string): Promise<RefreshResponse> {
         return this.call(this.client.refresh({ refreshToken }))
+    }
+
+    forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+        return this.call(this.client.forgotPassword({ email }))
+    }
+
+    resetPassword(body: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+        return this.call(this.client.resetPassword(body))
     }
 }

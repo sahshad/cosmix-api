@@ -14,6 +14,7 @@ import { RegisterDTO } from './dto/register.dto';
 import type { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { VerifyEmailDTO } from './dto/verify-email.dto';
+import { ChangePasswordDTO } from './dto/change-password.dto';
 
 @Throttle({
     default: {
@@ -123,5 +124,19 @@ export class AuthController {
         return {
             message: 'logged out',
         };
+    }
+
+    @Post('forgot-password')
+    async forgotPassword(@Body() body: { email: string }) {
+        console.log("forgot-password body: ", body)
+        const result = await this.authGrpc.forgotPassword(body.email)
+        return result
+    }
+
+    @Post('reset-password')
+    async resetPassword(@Body() body: ChangePasswordDTO) {
+        console.log("reset-password body: ", body)
+        const result = await this.authGrpc.resetPassword(body)
+        return result
     }
 }

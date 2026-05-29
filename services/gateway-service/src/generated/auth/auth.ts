@@ -13,6 +13,24 @@ import { Timestamp } from "../google/protobuf/timestamp";
 
 export const protobufPackage = "auth";
 
+export interface ResetPasswordRequest {
+  token: string;
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
 export interface RegisterRequest {
   displayName: string;
   email: string;
@@ -72,6 +90,176 @@ export interface AuthUser {
 }
 
 export const AUTH_PACKAGE_NAME = "auth";
+
+function createBaseResetPasswordRequest(): ResetPasswordRequest {
+  return { token: "", currentPassword: "", newPassword: "" };
+}
+
+export const ResetPasswordRequest: MessageFns<ResetPasswordRequest> = {
+  encode(message: ResetPasswordRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.token !== "") {
+      writer.uint32(10).string(message.token);
+    }
+    if (message.currentPassword !== "") {
+      writer.uint32(18).string(message.currentPassword);
+    }
+    if (message.newPassword !== "") {
+      writer.uint32(26).string(message.newPassword);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ResetPasswordRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseResetPasswordRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.token = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.currentPassword = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.newPassword = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseResetPasswordResponse(): ResetPasswordResponse {
+  return { message: "" };
+}
+
+export const ResetPasswordResponse: MessageFns<ResetPasswordResponse> = {
+  encode(message: ResetPasswordResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.message !== "") {
+      writer.uint32(10).string(message.message);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ResetPasswordResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseResetPasswordResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseForgotPasswordRequest(): ForgotPasswordRequest {
+  return { email: "" };
+}
+
+export const ForgotPasswordRequest: MessageFns<ForgotPasswordRequest> = {
+  encode(message: ForgotPasswordRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.email !== "") {
+      writer.uint32(10).string(message.email);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ForgotPasswordRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseForgotPasswordRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.email = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseForgotPasswordResponse(): ForgotPasswordResponse {
+  return { message: "" };
+}
+
+export const ForgotPasswordResponse: MessageFns<ForgotPasswordResponse> = {
+  encode(message: ForgotPasswordResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.message !== "") {
+      writer.uint32(10).string(message.message);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ForgotPasswordResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseForgotPasswordResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
 
 function createBaseRegisterRequest(): RegisterRequest {
   return { displayName: "", email: "", password: "" };
@@ -651,6 +839,10 @@ export interface AuthServiceClient {
   refresh(request: RefreshRequest): Observable<RefreshResponse>;
 
   updateUserPassword(request: UpdateUserPasswordRequest): Observable<UpdateUserPasswordResponse>;
+
+  forgotPassword(request: ForgotPasswordRequest): Observable<ForgotPasswordResponse>;
+
+  resetPassword(request: ResetPasswordRequest): Observable<ResetPasswordResponse>;
 }
 
 export interface AuthServiceController {
@@ -667,11 +859,27 @@ export interface AuthServiceController {
   updateUserPassword(
     request: UpdateUserPasswordRequest,
   ): Promise<UpdateUserPasswordResponse> | Observable<UpdateUserPasswordResponse> | UpdateUserPasswordResponse;
+
+  forgotPassword(
+    request: ForgotPasswordRequest,
+  ): Promise<ForgotPasswordResponse> | Observable<ForgotPasswordResponse> | ForgotPasswordResponse;
+
+  resetPassword(
+    request: ResetPasswordRequest,
+  ): Promise<ResetPasswordResponse> | Observable<ResetPasswordResponse> | ResetPasswordResponse;
 }
 
 export function AuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["register", "verifyEmail", "login", "refresh", "updateUserPassword"];
+    const grpcMethods: string[] = [
+      "register",
+      "verifyEmail",
+      "login",
+      "refresh",
+      "updateUserPassword",
+      "forgotPassword",
+      "resetPassword",
+    ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);
@@ -735,6 +943,27 @@ export const AuthServiceService = {
       Buffer.from(UpdateUserPasswordResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): UpdateUserPasswordResponse => UpdateUserPasswordResponse.decode(value),
   },
+  forgotPassword: {
+    path: "/auth.AuthService/ForgotPassword" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: ForgotPasswordRequest): Buffer =>
+      Buffer.from(ForgotPasswordRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): ForgotPasswordRequest => ForgotPasswordRequest.decode(value),
+    responseSerialize: (value: ForgotPasswordResponse): Buffer =>
+      Buffer.from(ForgotPasswordResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): ForgotPasswordResponse => ForgotPasswordResponse.decode(value),
+  },
+  resetPassword: {
+    path: "/auth.AuthService/ResetPassword" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: ResetPasswordRequest): Buffer => Buffer.from(ResetPasswordRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): ResetPasswordRequest => ResetPasswordRequest.decode(value),
+    responseSerialize: (value: ResetPasswordResponse): Buffer =>
+      Buffer.from(ResetPasswordResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): ResetPasswordResponse => ResetPasswordResponse.decode(value),
+  },
 } as const;
 
 export interface AuthServiceServer extends UntypedServiceImplementation {
@@ -743,6 +972,8 @@ export interface AuthServiceServer extends UntypedServiceImplementation {
   login: handleUnaryCall<LoginRequest, LoginResponse>;
   refresh: handleUnaryCall<RefreshRequest, RefreshResponse>;
   updateUserPassword: handleUnaryCall<UpdateUserPasswordRequest, UpdateUserPasswordResponse>;
+  forgotPassword: handleUnaryCall<ForgotPasswordRequest, ForgotPasswordResponse>;
+  resetPassword: handleUnaryCall<ResetPasswordRequest, ResetPasswordResponse>;
 }
 
 function longToNumber(int64: { toString(): string }): number {

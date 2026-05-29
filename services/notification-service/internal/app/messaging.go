@@ -13,9 +13,9 @@ func RegisterSubscriptions(container *Container) error {
 	if err := eventbus.Subscribe(
 		container.Rabbit.Channel,
 		rabbitmq.ExchangeEvents,
-		rabbitmq.NotificationAuthUserRegistered,
-		rabbitmq.AuthUserRegistered,
-		container.EventService.HandleUserRegistered,
+		rabbitmq.NotificationAuthUserEmailVerificationCompletedQueue,
+		rabbitmq.AuthUserEmailVerificationCompleted,
+		container.EventService.HandleUserEmailVerificationCompleted,
 	); err != nil {
 		return err
 	}
@@ -23,9 +23,29 @@ func RegisterSubscriptions(container *Container) error {
 	if err := eventbus.Subscribe(
 		container.Rabbit.Channel,
 		rabbitmq.ExchangeEvents,
-		rabbitmq.NotificationAuthUserEmailVerification,
-		rabbitmq.AuthUserEmailVerification,
+		rabbitmq.NotificationAuthUserEmailVerificationRequestedQueue,
+		rabbitmq.AuthUserEmailVerificationRequested,
 		container.NotificationService.HandleEmailVerification,
+	); err != nil {
+		return err
+	}
+
+	if err := eventbus.Subscribe(
+		container.Rabbit.Channel,
+		rabbitmq.ExchangeEvents,
+		rabbitmq.NotificationAuthUserForgotPasswordRequestedQueue,
+		rabbitmq.AuthUserForgotPasswordRequested,
+		container.NotificationService.HandleAuthUserForgotPasswordRequest,
+	); err != nil {
+		return err
+	}
+
+	if err := eventbus.Subscribe(
+		container.Rabbit.Channel,
+		rabbitmq.ExchangeEvents,
+		rabbitmq.NotificationAuthUserPasswordChangedQueue,
+		rabbitmq.AuthUserPasswordChanged,
+		container.NotificationService.HandleAuthUserPasswordChanged,
 	); err != nil {
 		return err
 	}

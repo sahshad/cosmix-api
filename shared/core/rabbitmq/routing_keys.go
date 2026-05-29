@@ -1,39 +1,31 @@
 package rabbitmq
 
 const (
-	AuthUserEmailVerification  = "auth.user.email.verification"
-	AuthUserRegistered         = "auth.user.registered"
-	AuthUserEmailUpdated       = "auth.user.email.updated"
-	AuthPasswordResetRequested = "auth.password.reset.requested"
-	AuthPasswordChanged        = "auth.password.changed"
-)
 
-const (
-	UserProfileUpdated     = "user.profile.updated"
-	UserFollowed           = "user.followed"
-	UserUnfollowed         = "user.unfollowed"
-	UserAuthUserRegistered = "user.auth.user.registered"
-)
+	// Auth Routing Keys
+	AuthUserEmailVerificationRequested string = "auth.user.email_verification_requested"
+	AuthUserEmailVerificationCompleted string = "auth.user.email_verification_completed"
+	AuthUserEmailUpdated               string = "auth.user.email_updated"
+	AuthUserForgotPasswordRequested    string = "auth.user.forgot_password_requested"
+	AuthUserPasswordChanged            string = "auth.user.password_changed"
 
-const (
-	PostAuthUserRegistered = "post.auth.user.registered"
-	PostCreated            = "post.created"
-	PostUpdated            = "post.updated"
-	PostDeleted            = "post.deleted"
-	PostLiked              = "post.liked"
-	PostUnliked            = "post.unliked"
+	// User Routing Keys
+	UserProfileUpdated string = "user.profile.updated"
+	UserFollowed       string = "user.followed"
+	UserUnfollowed     string = "user.unfollowed"
 
-	CommentCreated = "comment.created"
-	CommentUpdated = "comment.updated"
-	CommentDeleted = "comment.deleted"
-)
+	// Post Routing Keys
+	PostCreated string = "post.created"
+	PostUpdated string = "post.updated"
+	PostDeleted string = "post.deleted"
+	PostLiked   string = "post.liked"
+	PostUnliked string = "post.unliked"
 
-const (
-	NotificationAuthUserRegistered = "notification.auth.user.registered"
-	NotificationCreated            = "notification.created"
-	NotificationAuthUserEmailVerification = "notification.auth.user.email.verification"
-)
+	// Comment Routing Keys
+	CommentCreated string = "comment.created"
+	CommentUpdated string = "comment.updated"
+	CommentDeleted string = "comment.deleted"
 
-const (
-	ChatMessageSent = "chat.message.sent"
+	// Chat Routing Keys
+	ChatMessageSent string = "chat.message.sent"
 )

@@ -13,9 +13,9 @@ func RegisterSubscriptions(container *Container) error {
 	if err := eventbus.Subscribe(
 		container.Rabbit.Channel,
 		rabbitmq.ExchangeEvents,
-		rabbitmq.PostAuthUserRegistered,
-		rabbitmq.AuthUserRegistered,
-		container.PostUserSvc.CreateFromAuthEvent,
+		rabbitmq.PostAuthUserEmailVerificationCompletedQueue,
+		rabbitmq.AuthUserEmailVerificationCompleted,
+		container.PostUserSvc.HandleAuthUserEmailVerificationCompleted,
 	); err != nil {
 		return err
 	}

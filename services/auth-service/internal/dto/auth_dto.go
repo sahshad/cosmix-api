@@ -40,3 +40,9 @@ type RefreshResponseDTO struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
+
+type ResetPasswordDTO struct {
+	Token           string `json:"token" binding:"required"`
+	CurrentPassword string `json:"current_password" binding:"required,min=8,max=64"`
+	NewPassword     string `json:"new_password" binding:"required,min=8,max=64"`
+}
