@@ -104,7 +104,7 @@ func (x *HealthCheckResponse) GetStatus() string {
 
 type GetUserNotificationsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Page          uint32                 `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
 	Limit         uint32                 `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -141,11 +141,11 @@ func (*GetUserNotificationsRequest) Descriptor() ([]byte, []int) {
 	return file_notification_notification_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetUserNotificationsRequest) GetUserId() uint64 {
+func (x *GetUserNotificationsRequest) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
-	return 0
+	return ""
 }
 
 func (x *GetUserNotificationsRequest) GetPage() uint32 {
@@ -216,14 +216,14 @@ func (x *UserNotificationsResponse) GetPagination() *Pagination {
 
 type Notification struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
-	Id               uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId           uint64                 `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	ActorId          *uint64                `protobuf:"varint,3,opt,name=actor_id,json=actorId,proto3,oneof" json:"actor_id,omitempty"`
+	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId           string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	ActorId          *string                `protobuf:"bytes,3,opt,name=actor_id,json=actorId,proto3,oneof" json:"actor_id,omitempty"`
 	ActorUsername    *string                `protobuf:"bytes,4,opt,name=actor_username,json=actorUsername,proto3,oneof" json:"actor_username,omitempty"`
 	ActorDisplayName *string                `protobuf:"bytes,5,opt,name=actor_display_name,json=actorDisplayName,proto3,oneof" json:"actor_display_name,omitempty"`
 	ActorAvatarUrl   *string                `protobuf:"bytes,6,opt,name=actor_avatar_url,json=actorAvatarUrl,proto3,oneof" json:"actor_avatar_url,omitempty"`
 	Type             string                 `protobuf:"bytes,7,opt,name=type,proto3" json:"type,omitempty"`
-	EntityId         *uint64                `protobuf:"varint,8,opt,name=entity_id,json=entityId,proto3,oneof" json:"entity_id,omitempty"`
+	EntityId         *string                `protobuf:"bytes,8,opt,name=entity_id,json=entityId,proto3,oneof" json:"entity_id,omitempty"`
 	EntityType       *string                `protobuf:"bytes,9,opt,name=entity_type,json=entityType,proto3,oneof" json:"entity_type,omitempty"`
 	Title            string                 `protobuf:"bytes,10,opt,name=title,proto3" json:"title,omitempty"`
 	Body             string                 `protobuf:"bytes,11,opt,name=body,proto3" json:"body,omitempty"`
@@ -266,25 +266,25 @@ func (*Notification) Descriptor() ([]byte, []int) {
 	return file_notification_notification_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *Notification) GetId() uint64 {
+func (x *Notification) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
-func (x *Notification) GetUserId() uint64 {
+func (x *Notification) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
-	return 0
+	return ""
 }
 
-func (x *Notification) GetActorId() uint64 {
+func (x *Notification) GetActorId() string {
 	if x != nil && x.ActorId != nil {
 		return *x.ActorId
 	}
-	return 0
+	return ""
 }
 
 func (x *Notification) GetActorUsername() string {
@@ -315,11 +315,11 @@ func (x *Notification) GetType() string {
 	return ""
 }
 
-func (x *Notification) GetEntityId() uint64 {
+func (x *Notification) GetEntityId() string {
 	if x != nil && x.EntityId != nil {
 		return *x.EntityId
 	}
-	return 0
+	return ""
 }
 
 func (x *Notification) GetEntityType() string {
@@ -455,7 +455,7 @@ const file_notification_notification_proto_rawDesc = "" +
 	"\x13HealthCheckResponse\x12\x16\n" +
 	"\x06status\x18\x01 \x01(\tR\x06status\"`\n" +
 	"\x1bGetUserNotificationsRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x12\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\rR\x04page\x12\x14\n" +
 	"\x05limit\x18\x03 \x01(\rR\x05limit\"\x97\x01\n" +
 	"\x19UserNotificationsResponse\x12@\n" +
@@ -464,14 +464,14 @@ const file_notification_notification_proto_rawDesc = "" +
 	"pagination\x18\x02 \x01(\v2\x18.notification.PaginationR\n" +
 	"pagination\"\xc1\x05\n" +
 	"\fNotification\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\x04R\x06userId\x12\x1e\n" +
-	"\bactor_id\x18\x03 \x01(\x04H\x00R\aactorId\x88\x01\x01\x12*\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1e\n" +
+	"\bactor_id\x18\x03 \x01(\tH\x00R\aactorId\x88\x01\x01\x12*\n" +
 	"\x0eactor_username\x18\x04 \x01(\tH\x01R\ractorUsername\x88\x01\x01\x121\n" +
 	"\x12actor_display_name\x18\x05 \x01(\tH\x02R\x10actorDisplayName\x88\x01\x01\x12-\n" +
 	"\x10actor_avatar_url\x18\x06 \x01(\tH\x03R\x0eactorAvatarUrl\x88\x01\x01\x12\x12\n" +
 	"\x04type\x18\a \x01(\tR\x04type\x12 \n" +
-	"\tentity_id\x18\b \x01(\x04H\x04R\bentityId\x88\x01\x01\x12$\n" +
+	"\tentity_id\x18\b \x01(\tH\x04R\bentityId\x88\x01\x01\x12$\n" +
 	"\ventity_type\x18\t \x01(\tH\x05R\n" +
 	"entityType\x88\x01\x01\x12\x14\n" +
 	"\x05title\x18\n" +

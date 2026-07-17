@@ -1,8 +1,8 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE email_logs (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NULL,
+    id UUID PRIMARY KEY,
+    user_id UUID NULL,
     recipient VARCHAR(255) NOT NULL,
     type VARCHAR(100) NOT NULL,
     subject TEXT NOT NULL,

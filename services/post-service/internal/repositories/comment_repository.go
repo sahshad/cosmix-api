@@ -6,15 +6,16 @@ import (
 	"post-service/internal/dto"
 	"post-service/internal/models"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 // type CommentRepositoryInterface interface {
 // 	Create(ctx context.Context, comment *models.Comment) error
-// 	GetCommentsByPostID(ctx context.Context, postID uint, params *dto.PaginationRequest) (*dto.CommentListResponse, error)
-// 	FindByID(ctx context.Context, id uint) (*models.Comment, error)
+// 	GetCommentsByPostID(ctx context.Context, postID uuid.UUID, params *dto.PaginationRequest) (*dto.CommentListResponse, error)
+// 	FindByID(ctx context.Context, id uuid.UUID) (*models.Comment, error)
 // 	Update(ctx context.Context, comment *models.Comment) error
-// 	Delete(ctx context.Context, id uint) error
+// 	Delete(ctx context.Context, id uuid.UUID) error
 // }
 
 type CommentRepository struct {
@@ -33,7 +34,7 @@ func NewCommentRepository(
 // 	return repo.db.WithContext(ctx).Create(comment).Error
 // }
 
-func (repo *CommentRepository) GetCommentsByPostID(ctx context.Context, postID uint, params *dto.PaginationRequest) (*dto.CommentListResponse, error) {
+func (repo *CommentRepository) GetCommentsByPostID(ctx context.Context, postID uuid.UUID, params *dto.PaginationRequest) (*dto.CommentListResponse, error) {
 	var comments []dto.CommentList
 	if err := repo.db.WithContext(ctx).
 		Table("comments").

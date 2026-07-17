@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 
 CREATE TABLE notification_users (
-    user_id BIGINT PRIMARY KEY,
+    user_id UUID PRIMARY KEY,
     username VARCHAR(100) NOT NULL,
     display_name VARCHAR(150) NOT NULL,
     avatar_url TEXT NULL,

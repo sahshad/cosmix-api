@@ -29,7 +29,7 @@ export class PostController {
   @UseGuards(AuthGuard)
   @Post()
   createPost(
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: { userId: string },
     @Body() body: CreatePostDto,
   ) {
     return this.postGrpc.createPost(
@@ -54,7 +54,7 @@ export class PostController {
     @Param('id') id: string,
   ) {
     return this.postGrpc.getPost(
-      Number(id),
+      id,
     );
   }
 
@@ -62,11 +62,11 @@ export class PostController {
   @Put(':id')
   updatePost(
     @Param('id') id: string,
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: { userId: string },
     @Body() body: UpdatePostDto,
   ) {
     return this.postGrpc.updatePost(
-      Number(id),
+      id,
       user.userId,
       body,
     );
@@ -76,10 +76,10 @@ export class PostController {
   @Delete(':id')
   deletePost(
     @Param('id') id: string,
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: { userId: string },
   ) {
     return this.postGrpc.deletePost(
-      Number(id),
+      id,
       user.userId,
     );
   }
@@ -88,10 +88,10 @@ export class PostController {
   @Post(':id/like')
   likePost(
     @Param('id') id: string,
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: { userId: string },
   ) {
     return this.postGrpc.likePost(
-      Number(id),
+      id,
       user.userId,
     );
   }
@@ -100,10 +100,10 @@ export class PostController {
   @Delete(':id/like')
   unlikePost(
     @Param('id') id: string,
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: { userId: string },
   ) {
     return this.postGrpc.unlikePost(
-      Number(id),
+      id,
       user.userId,
     );
   }
@@ -112,11 +112,11 @@ export class PostController {
   @Post(':id/comment')
   createComment(
     @Param('id') id: string,
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: { userId: string },
     @Body() body: CreateCommentDto,
   ) {
     return this.postGrpc.createComment(
-      Number(id),
+      id,
       user.userId,
       body.content,
     );
@@ -129,7 +129,7 @@ export class PostController {
     @Query('limit') limit = '10',
   ) {
     return this.postGrpc.getComments(
-      Number(id),
+      id,
       Number(page),
       Number(limit),
     );
@@ -139,11 +139,11 @@ export class PostController {
   @Put('comment/:commentId')
   updateComment(
     @Param('commentId') commentId: string,
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: { userId: string },
     @Body() body: UpdateCommentDto,
   ) {
     return this.postGrpc.updateComment(
-      Number(commentId),
+      commentId,
       user.userId,
       body.content,
     );
@@ -153,10 +153,10 @@ export class PostController {
   @Delete('comment/:commentId')
   deleteComment(
     @Param('commentId') commentId: string,
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: { userId: string },
   ) {
     return this.postGrpc.deleteComment(
-      Number(commentId),
+      commentId,
       user.userId,
     );
   }

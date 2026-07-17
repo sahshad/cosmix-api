@@ -47,6 +47,12 @@ importers:
       jsonwebtoken:
         specifier: ^9.0.3
         version: 9.0.3
+      long:
+        specifier: ^5.3.2
+        version: 5.3.2
+      protobufjs:
+        specifier: ^8.5.0
+        version: 8.5.0
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -84,6 +90,9 @@ importers:
       '@types/jsonwebtoken':
         specifier: ^9.0.10
         version: 9.0.10
+      '@types/long':
+        specifier: ^5.0.0
+        version: 5.0.0
       '@types/node':
         specifier: ^24.0.0
         version: 24.12.4
@@ -946,6 +955,10 @@ packages:
 
   '@types/jsonwebtoken@9.0.10':
     resolution: {integrity: sha512-asx5hIG9Qmf/1oStypjanR7iKTv0gXQ1Ov/jfrX6kS/EO0OFni8orbmGCn0672NHR3kXHwpAwR+B368ZGN/2rA==}
+
+  '@types/long@5.0.0':
+    resolution: {integrity: sha512-eQs9RsucA/LNjnMoJvWG/nXa7Pot/RbBzilF/QRIU/xRl+0ApxrSUFsV5lmf01SvSlqMzJ7Zwxe440wmz2SJGA==}
+    deprecated: This is a stub types definition. long provides its own type definitions, so you do not need this installed.
 
   '@types/methods@1.1.4':
     resolution: {integrity: sha512-ymXWVrDiCxTBE3+RIrrP533E70eA+9qu7zdWoHuOmGujkYtzf4HQF96b8nwHLqhuf4ykX61IGRIB38CC6/sImQ==}
@@ -2676,6 +2689,10 @@ packages:
     resolution: {integrity: sha512-4K0myLaWL5EteuSAro91EGFgcfVgxb64Jx+7oDAY6GOkXD4M69yuSEljNcInGVCA5sOPxmZ/EqDLj2x0Q0+Ygg==}
     engines: {node: '>=12.0.0'}
 
+  protobufjs@8.5.0:
+    resolution: {integrity: sha512-df1jWDPA5VIBNRtuAHjqr09f2qN5D4Vke1wYqOQg1XJ7ZDpA7BD6L7E4tyChgGRLB5hqk2m79Zsy0WHwV9a84A==}
+    engines: {node: '>=12.0.0'}
+
   proxy-addr@2.0.7:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
@@ -4232,6 +4249,10 @@ snapshots:
     dependencies:
       '@types/ms': 2.1.0
       '@types/node': 24.12.4
+
+  '@types/long@5.0.0':
+    dependencies:
+      long: 5.3.2
 
   '@types/methods@1.1.4': {}
 
@@ -6129,6 +6150,10 @@ snapshots:
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.1
       '@types/node': 24.12.4
+      long: 5.3.2
+
+  protobufjs@8.5.0:
+    dependencies:
       long: 5.3.2
 
   proxy-addr@2.0.7:

@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 
 CREATE TABLE auth_users (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     email VARCHAR(255) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,

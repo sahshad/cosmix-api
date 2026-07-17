@@ -7,13 +7,15 @@ import (
 	"post-service/internal/repositories"
 
 	authEvents "cosmix/shared/events/auth"
+
+	"github.com/google/uuid"
 )
 
 // type PostUserServiceInterface interface {
 // 	CreateFromAuthEvent(ctx context.Context, event authEvents.AuthUserRegistered) error
-// 	FindByUserID(ctx context.Context, userID uint) (*models.PostUser, error)
+// 	FindByUserID(ctx context.Context, userID uuid.UUID) (*models.PostUser, error)
 // 	Update(ctx context.Context, postUser *models.PostUser) error
-// 	Delete(ctx context.Context, userID uint) error
+// 	Delete(ctx context.Context, userID uuid.UUID) error
 // }
 
 type PostUserService struct {
@@ -43,7 +45,7 @@ func (svc *PostUserService) HandleAuthUserEmailVerificationCompleted(ctx context
 	return nil
 }
 
-func (svc *PostUserService) FindByUserID(ctx context.Context, userID uint) (*models.PostUser, error) {
+func (svc *PostUserService) FindByUserID(ctx context.Context, userID uuid.UUID) (*models.PostUser, error) {
 	return svc.repo.FindByUserID(ctx, userID)
 }
 
@@ -51,6 +53,6 @@ func (svc *PostUserService) Update(ctx context.Context, postUser *models.PostUse
 	return svc.repo.Update(ctx, postUser)
 }
 
-func (svc *PostUserService) Delete(ctx context.Context, userID uint) error {
+func (svc *PostUserService) Delete(ctx context.Context, userID uuid.UUID) error {
 	return svc.repo.DeleteByID(ctx, userID)
 }

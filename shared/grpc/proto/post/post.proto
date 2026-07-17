@@ -60,8 +60,8 @@ message MediaItem {
 }
 
 message Media {
-  uint64 id = 1;
-  uint64 post_id = 2;
+  string id = 1;
+  string post_id = 2;
   string public_id = 3;
   string url = 4;
   string type = 5;
@@ -71,7 +71,7 @@ message Media {
 }
 
 message User {
-  uint64 id = 1;
+  string id = 1;
   string email = 2;
   string username = 3;
   string display_name = 4;
@@ -80,7 +80,7 @@ message User {
 }
 
 message Post {
-  uint64 id = 1;
+  string id = 1;
   string content = 2;
   int32 likes_count = 3;
   int32 comments_count = 4;
@@ -91,9 +91,9 @@ message Post {
 }
 
 message Comment {
-  uint64 id = 1;
-  uint64 post_id = 2;
-  uint64 author_id = 3;
+  string id = 1;
+  string post_id = 2;
+  string author_id = 3;
   string content = 4;
   google.protobuf.Timestamp created_at = 5;
   google.protobuf.Timestamp updated_at = 6;
@@ -118,7 +118,7 @@ message CommentListResponse {
 }
 
 message GetPostRequest {
-  uint64 post_id = 1;
+  string post_id = 1;
 }
 
 message GetFeedRequest {
@@ -127,52 +127,52 @@ message GetFeedRequest {
 }
 
 message CreatePostRequest {
-  uint64 author_id = 1;
+  string author_id = 1;
   string content = 2;
   repeated MediaItem media = 3;
 }
 
 message UpdatePostRequest {
-  uint64 post_id = 1;
-  uint64 author_id = 2;
+  string post_id = 1;
+  string author_id = 2;
   string content = 3;
   repeated MediaItem media = 4;
 }
 
 message DeletePostRequest {
-  uint64 post_id = 1;
-  uint64 author_id = 2;
+  string post_id = 1;
+  string author_id = 2;
 }
 
 message LikePostRequest {
-  uint64 post_id = 1;
-  uint64 user_id = 2;
+  string post_id = 1;
+  string user_id = 2;
 }
 
 message UnlikePostRequest {
-  uint64 post_id = 1;
-  uint64 user_id = 2;
+  string post_id = 1;
+  string user_id = 2;
 }
 
 message CreateCommentRequest {
-  uint64 post_id = 1;
-  uint64 author_id = 2;
+  string post_id = 1;
+  string author_id = 2;
   string content = 3;
 }
 
 message GetCommentsRequest {
-  uint64 post_id = 1;
+  string post_id = 1;
   int64 page = 2;
   int64 limit = 3;
 }
 
 message UpdateCommentRequest {
-  uint64 comment_id = 1;
-  uint64 author_id = 2;
+  string comment_id = 1;
+  string author_id = 2;
   string content = 3;
 }
 
 message DeleteCommentRequest {
-  uint64 comment_id = 1;
-  uint64 author_id = 2;
+  string comment_id = 1;
+  string author_id = 2;
 }

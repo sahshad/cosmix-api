@@ -8,6 +8,8 @@ import (
 
 	// authEvents "cosmix/shared/events/auth"
 	userEvents "cosmix/shared/events/user"
+
+	"github.com/google/uuid"
 )
 
 type NotificationUserService struct {
@@ -58,7 +60,7 @@ func (svc *NotificationUserService) HandleUserDeleted(ctx context.Context, event
 	return svc.repo.DeleteByID(ctx, event.UserID)
 }
 
-func (svc *NotificationUserService) FindByUserID(ctx context.Context, userID uint) (*models.NotificationUser, error) {
+func (svc *NotificationUserService) FindByUserID(ctx context.Context, userID uuid.UUID) (*models.NotificationUser, error) {
 	return svc.repo.FindByUserID(ctx, userID)
 }
 

@@ -1,10 +1,14 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type AuthSession struct {
-	ID               uint       `gorm:"primaryKey;not null"`
-	AuthUserID       uint       `gorm:"not null"`
+	BaseModel
+	AuthUserID       uuid.UUID  `gorm:"not null"`
 	RefreshTokenHash string     `gorm:"not null"`
 	Device           string     `gorm:"not null"`
 	IPAddress        string     `gorm:"not null"`

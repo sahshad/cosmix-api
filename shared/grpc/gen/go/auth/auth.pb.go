@@ -23,12 +23,11 @@ const (
 )
 
 type ResetPasswordRequest struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Token           string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	CurrentPassword string                 `protobuf:"bytes,2,opt,name=current_password,json=currentPassword,proto3" json:"current_password,omitempty"`
-	NewPassword     string                 `protobuf:"bytes,3,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	NewPassword   string                 `protobuf:"bytes,2,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ResetPasswordRequest) Reset() {
@@ -64,13 +63,6 @@ func (*ResetPasswordRequest) Descriptor() ([]byte, []int) {
 func (x *ResetPasswordRequest) GetToken() string {
 	if x != nil {
 		return x.Token
-	}
-	return ""
-}
-
-func (x *ResetPasswordRequest) GetCurrentPassword() string {
-	if x != nil {
-		return x.CurrentPassword
 	}
 	return ""
 }
@@ -276,7 +268,7 @@ func (x *RegisterRequest) GetPassword() string {
 
 type RegisterResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -311,11 +303,11 @@ func (*RegisterResponse) Descriptor() ([]byte, []int) {
 	return file_auth_auth_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *RegisterResponse) GetUserId() uint64 {
+func (x *RegisterResponse) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
-	return 0
+	return ""
 }
 
 type VerifyEmailRequest struct {
@@ -632,7 +624,7 @@ func (x *RefreshResponse) GetRefreshToken() string {
 
 type UpdateUserPasswordRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	NewPassword   string                 `protobuf:"bytes,2,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -668,11 +660,11 @@ func (*UpdateUserPasswordRequest) Descriptor() ([]byte, []int) {
 	return file_auth_auth_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *UpdateUserPasswordRequest) GetUserId() uint64 {
+func (x *UpdateUserPasswordRequest) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
-	return 0
+	return ""
 }
 
 func (x *UpdateUserPasswordRequest) GetNewPassword() string {
@@ -814,11 +806,10 @@ var File_auth_auth_proto protoreflect.FileDescriptor
 
 const file_auth_auth_proto_rawDesc = "" +
 	"\n" +
-	"\x0fauth/auth.proto\x12\x04auth\x1a\x1fgoogle/protobuf/timestamp.proto\"z\n" +
+	"\x0fauth/auth.proto\x12\x04auth\x1a\x1fgoogle/protobuf/timestamp.proto\"O\n" +
 	"\x14ResetPasswordRequest\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\x12)\n" +
-	"\x10current_password\x18\x02 \x01(\tR\x0fcurrentPassword\x12!\n" +
-	"\fnew_password\x18\x03 \x01(\tR\vnewPassword\"1\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12!\n" +
+	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\"1\n" +
 	"\x15ResetPasswordResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\"-\n" +
 	"\x15ForgotPasswordRequest\x12\x14\n" +
@@ -830,7 +821,7 @@ const file_auth_auth_proto_rawDesc = "" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x03 \x01(\tR\bpassword\"+\n" +
 	"\x10RegisterResponse\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\"\\\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"\\\n" +
 	"\x12VerifyEmailRequest\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
@@ -850,7 +841,7 @@ const file_auth_auth_proto_rawDesc = "" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\"W\n" +
 	"\x19UpdateUserPasswordRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12!\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
 	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\"6\n" +
 	"\x1aUpdateUserPasswordResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\"\x9a\x02\n" +

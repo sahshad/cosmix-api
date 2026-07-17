@@ -2,8 +2,8 @@
 -- +goose StatementBegin
 
 CREATE TABLE auth_sessions (
-    id BIGSERIAL PRIMARY KEY,
-    auth_user_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY,
+    auth_user_id UUID NOT NULL,
     refresh_token_hash VARCHAR(500) NOT NULL,
     device VARCHAR(255) NULL,
     ip_address VARCHAR(100) NULL,

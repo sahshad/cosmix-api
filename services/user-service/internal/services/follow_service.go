@@ -6,6 +6,8 @@ import (
 
 	"user-service/internal/models"
 	"user-service/internal/repositories"
+
+	"github.com/google/uuid"
 )
 
 type FollowService struct {
@@ -20,7 +22,7 @@ func NewFollowService(
 	}
 }
 
-func (svc *FollowService) Follow(ctx context.Context, followerID, followingID uint) error {
+func (svc *FollowService) Follow(ctx context.Context, followerID, followingID uuid.UUID) error {
 	if followerID == followingID {
 		return errors.New("cannot follow yourself")
 	}
@@ -40,14 +42,14 @@ func (svc *FollowService) Follow(ctx context.Context, followerID, followingID ui
 	return svc.repo.Create(ctx, follow)
 }
 
-func (svc *FollowService) Unfollow(ctx context.Context, followerID, followingID uint) error {
+func (svc *FollowService) Unfollow(ctx context.Context, followerID, followingID uuid.UUID) error {
 	return svc.repo.Delete(ctx, followerID, followingID)
 }
 
-func (svc *FollowService) GetFollowers(ctx context.Context, userID uint) ([]uint, error) {
+func (svc *FollowService) GetFollowers(ctx context.Context, userID uuid.UUID) ([]uuid.UUID, error) {
 	return svc.repo.GetFollowers(ctx, userID)
 }
 
-func (svc *FollowService) GetFollowing(ctx context.Context, userID uint) ([]uint, error) {
+func (svc *FollowService) GetFollowing(ctx context.Context, userID uuid.UUID) ([]uuid.UUID, error) {
 	return svc.repo.GetFollowing(ctx, userID)
 }

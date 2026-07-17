@@ -2,8 +2,8 @@
 -- +goose StatementBegin
 
 CREATE TABLE post_media (
-    id BIGSERIAL PRIMARY KEY,
-    post_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY,
+    post_id UUID NOT NULL,
     public_id VARCHAR(255) NOT NULL,
     url TEXT NOT NULL,
     type VARCHAR(50) NOT NULL,

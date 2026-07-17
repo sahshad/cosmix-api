@@ -1,6 +1,10 @@
 package dto
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type UpdateProfileDTO struct {
 	DisplayName *string `json:"display_name"`
@@ -15,7 +19,7 @@ type UserProfileResponse struct {
 }
 
 type UserResponse struct {
-	UserID      uint       `json:"id"`
+	UserID      uuid.UUID  `json:"id"`
 	DisplayName string     `json:"display_name"`
 	Username    string     `json:"username"`
 	Email       string     `json:"email"`
@@ -29,7 +33,7 @@ type UserResponse struct {
 }
 
 type UserCreatedFromDTO struct {
-	AuthUserID uint
+	AuthUserID uuid.UUID
 	Email      string
 	FirstName  string
 	LastName   string

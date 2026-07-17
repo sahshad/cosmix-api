@@ -14,7 +14,7 @@ import { Timestamp } from "../google/protobuf/timestamp";
 export const protobufPackage = "user";
 
 export interface GetProfileRequest {
-  userId: number;
+  userId: string;
 }
 
 export interface GetProfileByUsernameRequest {
@@ -22,7 +22,7 @@ export interface GetProfileByUsernameRequest {
 }
 
 export interface UpdateProfileRequest {
-  userId: number;
+  userId: string;
   displayName?: string | undefined;
   username?: string | undefined;
   dateOfBirth?: string | undefined;
@@ -31,21 +31,21 @@ export interface UpdateProfileRequest {
 }
 
 export interface FollowRequest {
-  followerId: number;
-  followingId: number;
+  followerId: string;
+  followingId: string;
 }
 
 export interface UnfollowRequest {
-  followerId: number;
-  followingId: number;
+  followerId: string;
+  followingId: string;
 }
 
 export interface GetFollowersRequest {
-  userId: number;
+  userId: string;
 }
 
 export interface GetFollowingRequest {
-  userId: number;
+  userId: string;
 }
 
 export interface FollowResponse {
@@ -65,7 +65,7 @@ export interface UserListResponse {
 }
 
 export interface User {
-  id: number;
+  id: string;
   displayName: string;
   username: string;
   email: string;
@@ -81,13 +81,13 @@ export interface User {
 export const USER_PACKAGE_NAME = "user";
 
 function createBaseGetProfileRequest(): GetProfileRequest {
-  return { userId: 0 };
+  return { userId: "" };
 }
 
 export const GetProfileRequest: MessageFns<GetProfileRequest> = {
   encode(message: GetProfileRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.userId !== 0) {
-      writer.uint32(8).uint64(message.userId);
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
     }
     return writer;
   },
@@ -100,11 +100,11 @@ export const GetProfileRequest: MessageFns<GetProfileRequest> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.userId = longToNumber(reader.uint64());
+          message.userId = reader.string();
           continue;
         }
       }
@@ -155,13 +155,13 @@ export const GetProfileByUsernameRequest: MessageFns<GetProfileByUsernameRequest
 };
 
 function createBaseUpdateProfileRequest(): UpdateProfileRequest {
-  return { userId: 0 };
+  return { userId: "" };
 }
 
 export const UpdateProfileRequest: MessageFns<UpdateProfileRequest> = {
   encode(message: UpdateProfileRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.userId !== 0) {
-      writer.uint32(8).uint64(message.userId);
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
     }
     if (message.displayName !== undefined) {
       writer.uint32(18).string(message.displayName);
@@ -189,11 +189,11 @@ export const UpdateProfileRequest: MessageFns<UpdateProfileRequest> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.userId = longToNumber(reader.uint64());
+          message.userId = reader.string();
           continue;
         }
         case 2: {
@@ -247,16 +247,16 @@ export const UpdateProfileRequest: MessageFns<UpdateProfileRequest> = {
 };
 
 function createBaseFollowRequest(): FollowRequest {
-  return { followerId: 0, followingId: 0 };
+  return { followerId: "", followingId: "" };
 }
 
 export const FollowRequest: MessageFns<FollowRequest> = {
   encode(message: FollowRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.followerId !== 0) {
-      writer.uint32(8).uint64(message.followerId);
+    if (message.followerId !== "") {
+      writer.uint32(10).string(message.followerId);
     }
-    if (message.followingId !== 0) {
-      writer.uint32(16).uint64(message.followingId);
+    if (message.followingId !== "") {
+      writer.uint32(18).string(message.followingId);
     }
     return writer;
   },
@@ -269,19 +269,19 @@ export const FollowRequest: MessageFns<FollowRequest> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.followerId = longToNumber(reader.uint64());
+          message.followerId = reader.string();
           continue;
         }
         case 2: {
-          if (tag !== 16) {
+          if (tag !== 18) {
             break;
           }
 
-          message.followingId = longToNumber(reader.uint64());
+          message.followingId = reader.string();
           continue;
         }
       }
@@ -295,16 +295,16 @@ export const FollowRequest: MessageFns<FollowRequest> = {
 };
 
 function createBaseUnfollowRequest(): UnfollowRequest {
-  return { followerId: 0, followingId: 0 };
+  return { followerId: "", followingId: "" };
 }
 
 export const UnfollowRequest: MessageFns<UnfollowRequest> = {
   encode(message: UnfollowRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.followerId !== 0) {
-      writer.uint32(8).uint64(message.followerId);
+    if (message.followerId !== "") {
+      writer.uint32(10).string(message.followerId);
     }
-    if (message.followingId !== 0) {
-      writer.uint32(16).uint64(message.followingId);
+    if (message.followingId !== "") {
+      writer.uint32(18).string(message.followingId);
     }
     return writer;
   },
@@ -317,19 +317,19 @@ export const UnfollowRequest: MessageFns<UnfollowRequest> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.followerId = longToNumber(reader.uint64());
+          message.followerId = reader.string();
           continue;
         }
         case 2: {
-          if (tag !== 16) {
+          if (tag !== 18) {
             break;
           }
 
-          message.followingId = longToNumber(reader.uint64());
+          message.followingId = reader.string();
           continue;
         }
       }
@@ -343,13 +343,13 @@ export const UnfollowRequest: MessageFns<UnfollowRequest> = {
 };
 
 function createBaseGetFollowersRequest(): GetFollowersRequest {
-  return { userId: 0 };
+  return { userId: "" };
 }
 
 export const GetFollowersRequest: MessageFns<GetFollowersRequest> = {
   encode(message: GetFollowersRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.userId !== 0) {
-      writer.uint32(8).uint64(message.userId);
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
     }
     return writer;
   },
@@ -362,11 +362,11 @@ export const GetFollowersRequest: MessageFns<GetFollowersRequest> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.userId = longToNumber(reader.uint64());
+          message.userId = reader.string();
           continue;
         }
       }
@@ -380,13 +380,13 @@ export const GetFollowersRequest: MessageFns<GetFollowersRequest> = {
 };
 
 function createBaseGetFollowingRequest(): GetFollowingRequest {
-  return { userId: 0 };
+  return { userId: "" };
 }
 
 export const GetFollowingRequest: MessageFns<GetFollowingRequest> = {
   encode(message: GetFollowingRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.userId !== 0) {
-      writer.uint32(8).uint64(message.userId);
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
     }
     return writer;
   },
@@ -399,11 +399,11 @@ export const GetFollowingRequest: MessageFns<GetFollowingRequest> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.userId = longToNumber(reader.uint64());
+          message.userId = reader.string();
           continue;
         }
       }
@@ -566,7 +566,7 @@ export const UserListResponse: MessageFns<UserListResponse> = {
 
 function createBaseUser(): User {
   return {
-    id: 0,
+    id: "",
     displayName: "",
     username: "",
     email: "",
@@ -580,8 +580,8 @@ function createBaseUser(): User {
 
 export const User: MessageFns<User> = {
   encode(message: User, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.id !== 0) {
-      writer.uint32(8).uint64(message.id);
+    if (message.id !== "") {
+      writer.uint32(10).string(message.id);
     }
     if (message.displayName !== "") {
       writer.uint32(18).string(message.displayName);
@@ -624,11 +624,11 @@ export const User: MessageFns<User> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.id = longToNumber(reader.uint64());
+          message.id = reader.string();
           continue;
         }
         case 2: {
@@ -864,17 +864,6 @@ export interface UserServiceServer extends UntypedServiceImplementation {
   unfollow: handleUnaryCall<UnfollowRequest, UnfollowResponse>;
   getFollowers: handleUnaryCall<GetFollowersRequest, UserListResponse>;
   getFollowing: handleUnaryCall<GetFollowingRequest, UserListResponse>;
-}
-
-function longToNumber(int64: { toString(): string }): number {
-  const num = globalThis.Number(int64.toString());
-  if (num > globalThis.Number.MAX_SAFE_INTEGER) {
-    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
-  }
-  if (num < globalThis.Number.MIN_SAFE_INTEGER) {
-    throw new globalThis.Error("Value is smaller than Number.MIN_SAFE_INTEGER");
-  }
-  return num;
 }
 
 export interface MessageFns<T> {

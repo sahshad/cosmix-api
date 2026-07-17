@@ -5,16 +5,17 @@ import (
 	"post-service/internal/dto"
 	"post-service/internal/models"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 // type PostRepositoryInterface interface {
 // 	Create(ctx context.Context, post *models.Post) error
-// 	FindByID(ctx context.Context, id uint) (*models.Post, error)
+// 	FindByID(ctx context.Context, id uuid.UUID) (*models.Post, error)
 // 	GetFeed(ctx context.Context, params *dto.PaginationRequest) (*dto.PostListResponse, error)
-// 	GetUserPosts(ctx context.Context, userID uint, params *dto.PaginationRequest) (*dto.PostListResponse, error)
+// 	GetUserPosts(ctx context.Context, userID uuid.UUID, params *dto.PaginationRequest) (*dto.PostListResponse, error)
 // 	Update(ctx context.Context, post *models.Post) error
-// 	Delete(ctx context.Context, id uint) error
+// 	Delete(ctx context.Context, id uuid.UUID) error
 // }
 
 type PostRepository struct {
@@ -33,7 +34,7 @@ func NewPostRepository(
 // 	return repo.db.WithContext(ctx).Create(post).Error
 // }
 
-func (repo *PostRepository) FindByID(ctx context.Context, id uint) (*models.Post, error) {
+func (repo *PostRepository) FindByID(ctx context.Context, id uuid.UUID) (*models.Post, error) {
 	var post models.Post
 	if err := repo.db.WithContext(ctx).Preload("Media").Preload("Likes").Preload("Comments").First(&post, id).Error; err != nil {
 		return nil, err
@@ -105,7 +106,7 @@ func (repo *PostRepository) GetFeed(ctx context.Context, params *dto.PaginationR
 		}}, nil
 }
 
-func (repo *PostRepository) GetUserPosts(ctx context.Context, userID uint, params *dto.PaginationRequest) (*dto.PostListResponse, error) {
+func (repo *PostRepository) GetUserPosts(ctx context.Context, userID uuid.UUID, params *dto.PaginationRequest) (*dto.PostListResponse, error) {
 	var posts []dto.PostList
 	if err := repo.db.WithContext(ctx).
 		Table("posts").
@@ -142,6 +143,6 @@ func (repo *PostRepository) Update(ctx context.Context, post *models.Post) error
 	return repo.db.WithContext(ctx).Save(post).Error
 }
 
-func (repo *PostRepository) Delete(ctx context.Context, id uint) error {
+func (repo *PostRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return repo.db.WithContext(ctx).Delete(&models.Post{}, id).Error
 }

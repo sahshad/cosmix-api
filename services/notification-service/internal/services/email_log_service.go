@@ -7,6 +7,8 @@ import (
 
 	"notification-service/internal/models"
 	"notification-service/internal/repositories"
+
+	"github.com/google/uuid"
 )
 
 type EmailLogService struct {
@@ -21,7 +23,7 @@ func NewEmailLogService(
 	}
 }
 
-func (svc *EmailLogService) SendWelcomeEmail(ctx context.Context, userID uint, email string) error {
+func (svc *EmailLogService) SendWelcomeEmail(ctx context.Context, userID uuid.UUID, email string) error {
 	now := time.Now()
 
 	emailLog := &models.EmailLog{
@@ -39,7 +41,7 @@ func (svc *EmailLogService) SendWelcomeEmail(ctx context.Context, userID uint, e
 	return svc.repo.Create(ctx, emailLog)
 }
 
-func (svc *EmailLogService) SendForgotPasswordEmail(ctx context.Context, userID uint, email string) error {
+func (svc *EmailLogService) SendForgotPasswordEmail(ctx context.Context, userID uuid.UUID, email string) error {
 	now := time.Now()
 
 	emailLog := &models.EmailLog{

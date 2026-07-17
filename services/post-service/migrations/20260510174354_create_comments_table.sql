@@ -2,9 +2,9 @@
 -- +goose StatementBegin
 
 CREATE TABLE comments (
-    id BIGSERIAL PRIMARY KEY,
-    post_id BIGINT NOT NULL,
-    user_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY,
+    post_id UUID NOT NULL,
+    user_id UUID NOT NULL,
     content TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NULL,

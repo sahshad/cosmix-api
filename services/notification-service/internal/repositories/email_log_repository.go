@@ -3,6 +3,7 @@ package repositories
 import (
 	"notification-service/internal/models"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +19,7 @@ func NewEmailLogRepository(
 	}
 }
 
-func (repo *EmailLogRepository) UpdateStatus(id uint, status string, errorMessage *string) error {
+func (repo *EmailLogRepository) UpdateStatus(id uuid.UUID, status string, errorMessage *string) error {
 	updates := map[string]any{
 		"status": status,
 	}

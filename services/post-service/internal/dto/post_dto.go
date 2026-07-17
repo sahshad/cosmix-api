@@ -1,6 +1,10 @@
 package dto
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type MediaItem struct {
 	PublicID string `json:"public_id" binding:"required"`
@@ -10,8 +14,8 @@ type MediaItem struct {
 }
 
 type Media struct {
-	ID        uint       `json:"id"`
-	PostID    uint       `json:"post_id"`
+	ID        uuid.UUID  `json:"id"`
+	PostID    uuid.UUID  `json:"post_id"`
 	PublicID  string     `json:"public_id"`
 	URL       string     `json:"url"`
 	Type      string     `json:"type"`
@@ -21,7 +25,7 @@ type Media struct {
 }
 
 type User struct {
-	ID          uint       `json:"id"`
+	ID          uuid.UUID  `json:"id"`
 	Email       string     `json:"email"`
 	Username    string     `json:"username"`
 	DisplayName string     `json:"display_name"`
@@ -30,24 +34,24 @@ type User struct {
 }
 
 type Like struct {
-	ID        uint      `json:"id"`
-	PostID    uint      `json:"post_id"`
-	AuthorID  uint      `json:"author_id"`
+	ID        uuid.UUID `json:"id"`
+	PostID    uuid.UUID `json:"post_id"`
+	AuthorID  uuid.UUID `json:"author_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Comment struct {
-	ID        uint      `json:"id"`
-	PostID    uint      `json:"post_id"`
-	AuthorID  uint      `json:"author_id"`
+	ID        uuid.UUID `json:"id"`
+	PostID    uuid.UUID `json:"post_id"`
+	AuthorID  uuid.UUID `json:"author_id"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type PostList struct {
-	ID            uint       `json:"id"`
+	ID            uuid.UUID  `json:"id"`
 	Content       string     `json:"content"`
 	LikesCount    int        `json:"likes_count"`
 	CommentsCount int        `json:"comments_count"`
@@ -65,9 +69,9 @@ type PostListResponse struct {
 }
 
 type CommentList struct {
-	ID        uint      `json:"id"`
-	PostID    uint      `json:"post_id"`
-	AuthorID  uint      `json:"author_id"`
+	ID        uuid.UUID `json:"id"`
+	PostID    uuid.UUID `json:"post_id"`
+	AuthorID  uuid.UUID `json:"author_id"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

@@ -36,7 +36,7 @@ export class UserGrpcService {
     );
   }
 
-  getProfile(userId: number): Promise<UserProfileResponse> {
+  getProfile(userId: string): Promise<UserProfileResponse> {
     return this.call(this.client.getProfile({ userId }))
   }
 
@@ -44,23 +44,23 @@ export class UserGrpcService {
     return this.call(this.client.getProfileByUsername({ username }))
   }
 
-  updateProfile(userId: number, body: Partial<UpdateProfileRequest>): Promise<UserProfileResponse> {
+  updateProfile(userId: string, body: Partial<UpdateProfileRequest>): Promise<UserProfileResponse> {
     return this.call(this.client.updateProfile({ userId, ...body }))
   }
 
-  follow(followerId: number, followingId: number): Promise<FollowResponse> {
+  follow(followerId: string, followingId: string): Promise<FollowResponse> {
     return this.call(this.client.follow({ followerId, followingId }))
   }
 
-  unfollow(followerId: number, followingId: number): Promise<UnfollowResponse> {
+  unfollow(followerId: string, followingId: string): Promise<UnfollowResponse> {
     return this.call(this.client.unfollow({ followerId, followingId }))
   }
 
-  getFollowers(userId: number): Promise<UserListResponse> {
+  getFollowers(userId: string): Promise<UserListResponse> {
     return this.call(this.client.getFollowers({ userId }))
   }
 
-  getFollowing(userId: number): Promise<UserListResponse> {
+  getFollowing(userId: string): Promise<UserListResponse> {
     return this.call(this.client.getFollowing({ userId }))
   }
 }

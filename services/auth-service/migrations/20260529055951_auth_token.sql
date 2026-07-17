@@ -2,8 +2,8 @@
 -- +goose StatementBegin
 
 CREATE TABLE auth_tokens (
-    id BIGSERIAL PRIMARY KEY,
-    auth_user_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY,
+    auth_user_id UUID NOT NULL,
     token VARCHAR(255) NOT NULL UNIQUE,
     type VARCHAR(50) NOT NULL,
     expires_at TIMESTAMPTZ NOT NULL,

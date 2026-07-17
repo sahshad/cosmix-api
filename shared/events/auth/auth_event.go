@@ -1,6 +1,10 @@
 package auth
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 const (
 	EventVersionOne = "1.0.0"
@@ -8,7 +12,7 @@ const (
 
 type AuthUserEmailVerificationCompleted struct {
 	EventVersion string    `json:"event_version"`
-	AuthUserID   uint      `json:"auth_user_id"`
+	AuthUserID   uuid.UUID `json:"auth_user_id"`
 	Email        string    `json:"email"`
 	Username     string    `json:"username"`
 	DisplayName  string    `json:"display_name"`
@@ -36,7 +40,7 @@ type AuthUserForgotPasswordRequest struct {
 
 type AuthUserPasswordChanged struct {
 	EventVersion string    `json:"event_version"`
-	AuthUserID   uint      `json:"auth_user_id"`
+	AuthUserID   uuid.UUID `json:"auth_user_id"`
 	Email        string    `json:"email"`
 	DisplayName  string    `json:"display_name"`
 	UpdatedAt    time.Time `json:"updated_at"`

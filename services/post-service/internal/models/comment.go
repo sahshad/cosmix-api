@@ -1,11 +1,15 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Comment struct {
-	ID        uint       `gorm:"primaryKey"`
-	PostID    uint       `gorm:"not null;index"`
-	UserID    uint       `gorm:"not null;index"`
+	BaseModel
+	PostID    uuid.UUID  `gorm:"type:uuid;not null;index"`
+	UserID    uuid.UUID  `gorm:"type:uuid;not null;index"`
 	Content   string     `gorm:"type:text;not null"`
 	CreatedAt time.Time  `gorm:"not null"`
 	UpdatedAt *time.Time `gorm:"default:null"`

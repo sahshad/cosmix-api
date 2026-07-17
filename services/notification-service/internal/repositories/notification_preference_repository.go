@@ -3,6 +3,7 @@ package repositories
 import (
 	"notification-service/internal/models"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +19,7 @@ func NewNotificationPreferenceRepository(
 	}
 }
 
-func (repo *NotificationPreferenceRepository) GetByUserID(userID uint) (*models.NotificationPreference, error) {
+func (repo *NotificationPreferenceRepository) GetByUserID(userID uuid.UUID) (*models.NotificationPreference, error) {
 	var preference models.NotificationPreference
 
 	err := repo.db.

@@ -2,17 +2,19 @@ package dto
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type NotificationList struct {
-	ID               uint       `json:"id"`
-	UserID           uint       `json:"user_id"`
-	ActorID          *uint      `json:"actor_id"`
+	ID               uuid.UUID  `json:"id"`
+	UserID           uuid.UUID  `json:"user_id"`
+	ActorID          *uuid.UUID `json:"actor_id"`
 	ActorUsername    *string    `json:"actor_username"`
 	ActorDisplayName *string    `json:"actor_display_name"`
 	ActorAvatarURL   *string    `json:"actor_avatar_url"`
 	Type             string     `json:"type"`
-	EntityID         *uint      `json:"entity_id"`
+	EntityID         *uuid.UUID `json:"entity_id"`
 	EntityType       *string    `json:"entity_type"`
 	Title            string     `json:"title"`
 	Body             string     `json:"body"`

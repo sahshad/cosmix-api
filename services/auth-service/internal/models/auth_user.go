@@ -3,7 +3,7 @@ package models
 import "time"
 
 type AuthUser struct {
-	ID            uint       `gorm:"primaryKey;not null"`
+	BaseModel
 	Email         string     `gorm:"uniqueIndex; not null"`
 	PasswordHash  string     `gorm:"not null"`
 	IsActive      bool       `gorm:"not null;default:true"`

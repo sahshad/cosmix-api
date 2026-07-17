@@ -6,6 +6,7 @@ import (
 	"notification-service/internal/dto"
 	"notification-service/internal/models"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +22,7 @@ func NewNotificationRepository(
 	}
 }
 
-func (repo *NotificationRepository) GetUserNotifications(ctx context.Context, userID uint, params dto.PaginationRequest) (*dto.UserNotificationsResponse, error) {
+func (repo *NotificationRepository) GetUserNotifications(ctx context.Context, userID uuid.UUID, params dto.PaginationRequest) (*dto.UserNotificationsResponse, error) {
 	var notifications []dto.NotificationList
 
 	err := repo.db.WithContext(ctx).
@@ -47,7 +48,7 @@ func (repo *NotificationRepository) GetUserNotifications(ctx context.Context, us
 	}}, nil
 }
 
-func (repo *NotificationRepository) GetUnreadCount(userID uint) (int64, error) {
+func (repo *NotificationRepository) GetUnreadCount(userID uuid.UUID) (int64, error) {
 	var count int64
 
 	err := repo.db.
@@ -58,7 +59,7 @@ func (repo *NotificationRepository) GetUnreadCount(userID uint) (int64, error) {
 	return count, err
 }
 
-func (repo *NotificationRepository) MarkAsRead(notificationID uint, userID uint) error {
+func (repo *NotificationRepository) MarkAsRead(notificationID uuid.UUID, userID uuid.UUID) error {
 	return repo.db.
 		Model(&models.Notification{}).
 		Where("id = ? AND user_id = ?", notificationID, userID).

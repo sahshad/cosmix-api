@@ -7,15 +7,17 @@ import (
 	"post-service/internal/dto"
 	"post-service/internal/models"
 	"post-service/internal/repositories"
+
+	"github.com/google/uuid"
 )
 
 // type PostServiceInterface interface {
-// 	CreatePost(ctx context.Context, userID uint, req *dto.CreatePostRequest) (*models.Post, error)
-// 	GetPostByID(ctx context.Context, id uint) (*models.Post, error)
+// 	CreatePost(ctx context.Context, userID uuid.UUID, req *dto.CreatePostRequest) (*models.Post, error)
+// 	GetPostByID(ctx context.Context, id uuid.UUID) (*models.Post, error)
 // 	GetFeed(ctx context.Context, params *dto.PaginationRequest) (*dto.PostListResponse, error)
-// 	GetUserPosts(ctx context.Context, userID uint, params *dto.PaginationRequest) (*dto.PostListResponse, error)
-// 	UpdatePost(ctx context.Context, id uint, userID uint, req *dto.UpdatePostRequest) (*models.Post, error)
-// 	DeletePost(ctx context.Context, id uint, userID uint) error
+// 	GetUserPosts(ctx context.Context, userID uuid.UUID, params *dto.PaginationRequest) (*dto.PostListResponse, error)
+// 	UpdatePost(ctx context.Context, id uuid.UUID, userID uuid.UUID, req *dto.UpdatePostRequest) (*models.Post, error)
+// 	DeletePost(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 // }
 
 type PostService struct {
@@ -30,7 +32,7 @@ func NewPostService(
 	}
 }
 
-func (svc *PostService) CreatePost(ctx context.Context, userID uint, req *dto.CreatePostRequest) (*models.Post, error) {
+func (svc *PostService) CreatePost(ctx context.Context, userID uuid.UUID, req *dto.CreatePostRequest) (*models.Post, error) {
 	var media []models.PostMedia
 	for _, m := range req.Media {
 		media = append(media, models.PostMedia{
@@ -53,7 +55,7 @@ func (svc *PostService) CreatePost(ctx context.Context, userID uint, req *dto.Cr
 	return post, nil
 }
 
-func (svc *PostService) GetPostByID(ctx context.Context, id uint) (*models.Post, error) {
+func (svc *PostService) GetPostByID(ctx context.Context, id uuid.UUID) (*models.Post, error) {
 	return svc.repo.FindByID(ctx, id)
 }
 
@@ -61,11 +63,11 @@ func (svc *PostService) GetFeed(ctx context.Context, params *dto.PaginationReque
 	return svc.repo.GetFeed(ctx, params)
 }
 
-func (svc *PostService) GetUserPosts(ctx context.Context, userID uint, params *dto.PaginationRequest) (*dto.PostListResponse, error) {
+func (svc *PostService) GetUserPosts(ctx context.Context, userID uuid.UUID, params *dto.PaginationRequest) (*dto.PostListResponse, error) {
 	return svc.repo.GetUserPosts(ctx, userID, params)
 }
 
-func (svc *PostService) UpdatePost(ctx context.Context, id uint, userID uint, req *dto.UpdatePostRequest) (*models.Post, error) {
+func (svc *PostService) UpdatePost(ctx context.Context, id uuid.UUID, userID uuid.UUID, req *dto.UpdatePostRequest) (*models.Post, error) {
 	post, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -95,7 +97,7 @@ func (svc *PostService) UpdatePost(ctx context.Context, id uint, userID uint, re
 	return post, nil
 }
 
-func (svc *PostService) DeletePost(ctx context.Context, id uint, userID uint) error {
+func (svc *PostService) DeletePost(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
 	post, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return err

@@ -1,10 +1,14 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type NotificationPreference struct {
-	ID                     uint       `gorm:"primaryKey" json:"id"`
-	UserID                 uint       `gorm:"uniqueIndex;not null" json:"user_id"`
+	BaseModel
+	UserID                 uuid.UUID  `gorm:"type:uuid;uniqueIndex;not null" json:"user_id"`
 	EmailEnabled           bool       `gorm:"not null;default:true" json:"email_enabled"`
 	PushEnabled            bool       `gorm:"not null;default:true" json:"push_enabled"`
 	InternalEnabled        bool       `gorm:"not null;default:true" json:"internal_enabled"`

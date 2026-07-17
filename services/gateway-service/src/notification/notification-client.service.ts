@@ -26,7 +26,7 @@ export class NotificationGrpcService {
       );
   }
 
-  getUserNotifications(userId: number, page = 1, limit = 10): Promise<UserNotificationsResponse> {
+  getUserNotifications(userId: string, page = 1, limit = 10): Promise<UserNotificationsResponse> {
     return firstValueFrom(this.client.getUserNotifications({ userId, page, limit }))
   }
 }

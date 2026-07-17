@@ -21,7 +21,7 @@ export interface HealthCheckResponse {
 }
 
 export interface GetUserNotificationsRequest {
-  userId: number;
+  userId: string;
   page: number;
   limit: number;
 }
@@ -32,14 +32,14 @@ export interface UserNotificationsResponse {
 }
 
 export interface Notification {
-  id: number;
-  userId: number;
-  actorId?: number | undefined;
+  id: string;
+  userId: string;
+  actorId?: string | undefined;
   actorUsername?: string | undefined;
   actorDisplayName?: string | undefined;
   actorAvatarUrl?: string | undefined;
   type: string;
-  entityId?: number | undefined;
+  entityId?: string | undefined;
   entityType?: string | undefined;
   title: string;
   body: string;
@@ -123,13 +123,13 @@ export const HealthCheckResponse: MessageFns<HealthCheckResponse> = {
 };
 
 function createBaseGetUserNotificationsRequest(): GetUserNotificationsRequest {
-  return { userId: 0, page: 0, limit: 0 };
+  return { userId: "", page: 0, limit: 0 };
 }
 
 export const GetUserNotificationsRequest: MessageFns<GetUserNotificationsRequest> = {
   encode(message: GetUserNotificationsRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.userId !== 0) {
-      writer.uint32(8).uint64(message.userId);
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
     }
     if (message.page !== 0) {
       writer.uint32(16).uint32(message.page);
@@ -148,11 +148,11 @@ export const GetUserNotificationsRequest: MessageFns<GetUserNotificationsRequest
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.userId = longToNumber(reader.uint64());
+          message.userId = reader.string();
           continue;
         }
         case 2: {
@@ -230,19 +230,19 @@ export const UserNotificationsResponse: MessageFns<UserNotificationsResponse> = 
 };
 
 function createBaseNotification(): Notification {
-  return { id: 0, userId: 0, type: "", title: "", body: "", isRead: false, readAt: undefined, createdAt: undefined };
+  return { id: "", userId: "", type: "", title: "", body: "", isRead: false, readAt: undefined, createdAt: undefined };
 }
 
 export const Notification: MessageFns<Notification> = {
   encode(message: Notification, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.id !== 0) {
-      writer.uint32(8).uint64(message.id);
+    if (message.id !== "") {
+      writer.uint32(10).string(message.id);
     }
-    if (message.userId !== 0) {
-      writer.uint32(16).uint64(message.userId);
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
     }
     if (message.actorId !== undefined) {
-      writer.uint32(24).uint64(message.actorId);
+      writer.uint32(26).string(message.actorId);
     }
     if (message.actorUsername !== undefined) {
       writer.uint32(34).string(message.actorUsername);
@@ -257,7 +257,7 @@ export const Notification: MessageFns<Notification> = {
       writer.uint32(58).string(message.type);
     }
     if (message.entityId !== undefined) {
-      writer.uint32(64).uint64(message.entityId);
+      writer.uint32(66).string(message.entityId);
     }
     if (message.entityType !== undefined) {
       writer.uint32(74).string(message.entityType);
@@ -294,27 +294,27 @@ export const Notification: MessageFns<Notification> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.id = longToNumber(reader.uint64());
+          message.id = reader.string();
           continue;
         }
         case 2: {
-          if (tag !== 16) {
+          if (tag !== 18) {
             break;
           }
 
-          message.userId = longToNumber(reader.uint64());
+          message.userId = reader.string();
           continue;
         }
         case 3: {
-          if (tag !== 24) {
+          if (tag !== 26) {
             break;
           }
 
-          message.actorId = longToNumber(reader.uint64());
+          message.actorId = reader.string();
           continue;
         }
         case 4: {
@@ -350,11 +350,11 @@ export const Notification: MessageFns<Notification> = {
           continue;
         }
         case 8: {
-          if (tag !== 64) {
+          if (tag !== 66) {
             break;
           }
 
-          message.entityId = longToNumber(reader.uint64());
+          message.entityId = reader.string();
           continue;
         }
         case 9: {
@@ -561,17 +561,6 @@ export const NotificationServiceService = {
 export interface NotificationServiceServer extends UntypedServiceImplementation {
   getUserNotifications: handleUnaryCall<GetUserNotificationsRequest, UserNotificationsResponse>;
   healthCheck: handleUnaryCall<HealthCheckRequest, HealthCheckResponse>;
-}
-
-function longToNumber(int64: { toString(): string }): number {
-  const num = globalThis.Number(int64.toString());
-  if (num > globalThis.Number.MAX_SAFE_INTEGER) {
-    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
-  }
-  if (num < globalThis.Number.MIN_SAFE_INTEGER) {
-    throw new globalThis.Error("Value is smaller than Number.MIN_SAFE_INTEGER");
-  }
-  return num;
 }
 
 export interface MessageFns<T> {

@@ -1,10 +1,14 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type EmailLog struct {
-	ID           uint     `gorm:"primaryKey" json:"id"`
-	UserID       *uint    `gorm:"index" json:"user_id"`
+	BaseModel
+	UserID       *uuid.UUID `gorm:"type:uuid;index" json:"user_id"`
 	Recipient    string     `gorm:"size:255;not null" json:"recipient"`
 	Type         string     `gorm:"size:100;not null" json:"type"`
 	Subject      string     `gorm:"type:text;not null" json:"subject"`

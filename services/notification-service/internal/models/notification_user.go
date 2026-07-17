@@ -1,9 +1,13 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type NotificationUser struct {
-	UserID      uint       `gorm:"primaryKey"`
+	UserID      uuid.UUID  `gorm:"type:uuid;primaryKey"`
 	Username    string     `gorm:"type:varchar(100);not null"`
 	DisplayName string     `gorm:"type:varchar(150);not null"`
 	AvatarURL   *string    `gorm:"type:text;default:null"`

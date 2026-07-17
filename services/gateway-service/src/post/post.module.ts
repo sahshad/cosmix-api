@@ -13,7 +13,7 @@ import { join } from 'path';
         name: POST_PACKAGE_NAME,
         transport: Transport.GRPC,
         options: {
-          url: process.env.POST_GRPC_ADDR ?? 'localhost:50053',
+          url: process.env.POST_GRPC_ADDR ?? 'localhost:50054',
           package: 'post',
           protoPath: join(
             __dirname,

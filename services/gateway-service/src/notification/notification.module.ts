@@ -13,7 +13,7 @@ import { join } from 'path';
         name: NOTIFICATION_PACKAGE_NAME,
         transport: Transport.GRPC,
         options: {
-          url: process.env.NOTIFICATION_GRPC_ADDR ?? 'localhost:50054',
+          url: process.env.NOTIFICATION_GRPC_ADDR ?? 'localhost:50053',
           package: 'notification',
           protoPath: join(
             __dirname,

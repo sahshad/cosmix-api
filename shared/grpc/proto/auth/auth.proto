@@ -31,8 +31,7 @@ service AuthService {
 
 message ResetPasswordRequest {
   string token = 1;
-  string current_password = 2;
-  string new_password = 3;
+  string new_password = 2;
 }
 
 message ResetPasswordResponse {
@@ -54,7 +53,7 @@ message RegisterRequest {
 }
 
 message RegisterResponse {
-  uint64 user_id = 1;
+  string user_id = 1;
 }
 
 message VerifyEmailRequest {
@@ -88,7 +87,7 @@ message RefreshResponse {
 }
 
 message UpdateUserPasswordRequest {
-  uint64 user_id = 1;
+  string user_id = 1;
   string new_password = 2;
 }
 

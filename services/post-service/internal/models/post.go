@@ -1,10 +1,14 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Post struct {
-	ID            uint       `gorm:"primaryKey"`
-	UserID        uint       `gorm:"not null;index"`
+	BaseModel
+	UserID        uuid.UUID  `gorm:"type:uuid;not null;index"`
 	LikesCount    int        `gorm:"default:0"`
 	CommentsCount int        `gorm:"default:0"`
 	Content       string     `gorm:"type:text;not null"`

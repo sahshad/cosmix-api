@@ -16,6 +16,7 @@ import (
 	appErr "cosmix/shared/core/errors"
 	authEvents "cosmix/shared/events/auth"
 
+	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"gorm.io/gorm"
 )
@@ -253,7 +254,7 @@ func (svc *AuthUserService) Refresh(ctx context.Context, refreshToken string) (*
 	}, nil
 }
 
-func (svc *AuthUserService) GetByID(ctx context.Context, id uint) (*models.AuthUser, error) {
+func (svc *AuthUserService) GetByID(ctx context.Context, id uuid.UUID) (*models.AuthUser, error) {
 	user, err := svc.authUserRepo.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -264,7 +265,7 @@ func (svc *AuthUserService) GetByID(ctx context.Context, id uint) (*models.AuthU
 	return user, nil
 }
 
-func (svc *AuthUserService) UpdateUserPassword(ctx context.Context, userID uint, newPassword string) error {
+func (svc *AuthUserService) UpdateUserPassword(ctx context.Context, userID uuid.UUID, newPassword string) error {
 	user, err := svc.GetByID(ctx, userID)
 	if err != nil {
 		return err
@@ -345,10 +346,6 @@ func (svc *AuthUserService) ResetPassword(ctx context.Context, req dto.ResetPass
 	user, err := svc.authUserRepo.FindByID(ctx, tokenRecord.AuthUserID)
 	if err != nil {
 		return appErr.NewNotFound("user")
-	}
-
-	if err := utils.VerifyPassword(req.CurrentPassword, user.PasswordHash); err != nil {
-		return appErr.NewBadRequest("current_password", "Incorrect current password")
 	}
 
 	pwHash, err := utils.HashPassword(req.NewPassword)

@@ -6,12 +6,14 @@ import (
 
 	"post-service/internal/models"
 	"post-service/internal/repositories"
+
+	"github.com/google/uuid"
 )
 
 // type LikeServiceInterface interface {
-// 	LikePost(ctx context.Context, postID uint, userID uint) error
-// 	UnlikePost(ctx context.Context, postID uint, userID uint) error
-// 	GetLikesCount(ctx context.Context, postID uint) (int64, error)
+// 	LikePost(ctx context.Context, postID uuid.UUID, userID uuid.UUID) error
+// 	UnlikePost(ctx context.Context, postID uuid.UUID, userID uuid.UUID) error
+// 	GetLikesCount(ctx context.Context, postID uuid.UUID) (int64, error)
 // }
 
 type LikeService struct {
@@ -29,7 +31,7 @@ func NewLikeService(
 	}
 }
 
-func (svc *LikeService) LikePost(ctx context.Context, postID uint, userID uint) error {
+func (svc *LikeService) LikePost(ctx context.Context, postID uuid.UUID, userID uuid.UUID) error {
 	_, err := svc.postRepo.FindByID(ctx, postID)
 	if err != nil {
 		return errors.New("post not found")
@@ -50,10 +52,10 @@ func (svc *LikeService) LikePost(ctx context.Context, postID uint, userID uint) 
 	return svc.repo.Create(ctx, like)
 }
 
-func (svc *LikeService) UnlikePost(ctx context.Context, postID uint, userID uint) error {
+func (svc *LikeService) UnlikePost(ctx context.Context, postID uuid.UUID, userID uuid.UUID) error {
 	return svc.repo.Delete(ctx, postID, userID)
 }
 
-func (svc *LikeService) GetLikesCount(ctx context.Context, postID uint) (int64, error) {
+func (svc *LikeService) GetLikesCount(ctx context.Context, postID uuid.UUID) (int64, error) {
 	return svc.repo.CountByPostID(ctx, postID)
 }

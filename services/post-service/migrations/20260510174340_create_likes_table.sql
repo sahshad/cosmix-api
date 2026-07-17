@@ -2,9 +2,9 @@
 -- +goose StatementBegin
 
 CREATE TABLE likes (
-    id BIGSERIAL PRIMARY KEY,
-    post_id BIGINT NOT NULL,
-    user_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY,
+    post_id UUID NOT NULL,
+    user_id UUID NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT fk_likes_post_id

@@ -1,11 +1,11 @@
 import {
-    Body,
-    Controller,
-    Get,
-    Post,
-    Req,
-    Res,
-    UnauthorizedException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 
 import { AuthGrpcService } from './auth-client.service';
@@ -17,126 +17,100 @@ import { VerifyEmailDTO } from './dto/verify-email.dto';
 import { ChangePasswordDTO } from './dto/change-password.dto';
 
 @Throttle({
-    default: {
-        limit: 20,
-        ttl: 60000,
-    },
+  default: {
+    limit: 20,
+    ttl: 60000,
+  },
 })
 @Controller('auth')
 export class AuthController {
-    constructor(
-        private readonly authGrpc: AuthGrpcService,
-    ) { }
+  constructor(private readonly authGrpc: AuthGrpcService) {}
 
-    @Post('register')
-    async register(@Body() body: RegisterDTO) {
-        console.log("register body: ", body)
-        const result = await this.authGrpc.register(body)
-        return result
+  @Post('register')
+  async register(@Body() body: RegisterDTO) {
+    console.log('register body: ', body);
+    const result = await this.authGrpc.register(body);
+    return result;
+  }
+
+  @Post('verify-email')
+  async verifyEmail(@Body() body: VerifyEmailDTO) {
+    console.log('verify-email body: ', body);
+    const result = await this.authGrpc.verifyEmail(body);
+    return result;
+  }
+
+  @Post('login')
+  async login(
+    @Body() body: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authGrpc.login(body);
+
+    res.cookie('refresh_token', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    return {
+      access_token: result.accessToken,
+      user: result.user,
+    };
+  }
+
+  @Get('refresh')
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies?.refresh_token;
+
+    if (!refreshToken) {
+      throw new UnauthorizedException('No refresh token');
     }
 
-    @Post('verify-email')
-    async verifyEmail(@Body() body: VerifyEmailDTO) {
-        console.log("verify-email body: ", body)
-        const result = await this.authGrpc.verifyEmail(body)
-        return result
-    }
+    const result = await this.authGrpc.refresh(refreshToken);
 
-    @Post('login')
-    async login(@Body() body: LoginDto, @Res({ passthrough: true }) res: Response) {
-        const result = await this.authGrpc.login(body);
+    res.cookie('refresh_token', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
 
-        res.cookie(
-            'refresh_token',
-            result.refreshToken,
-            {
-                httpOnly: true,
-                secure:
-                    process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge:
-                    30 * 24 * 60 * 60 * 1000,
-            },
-        );
+    return {
+      access_token: result.accessToken,
+    };
+  }
 
-        return {
-            access_token: result.accessToken,
-            user: result.user,
-        };
-    }
+  @Post('logout')
+  async logout(
+    @Res({ passthrough: true })
+    res: Response,
+  ) {
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      sameSite: 'strict',
+    });
 
-    @Get('refresh')
-    async refresh(
-        @Req() req: Request,
-        @Res({ passthrough: true })
-        res: Response,
-    ) {
+    return {
+      message: 'logged out',
+    };
+  }
 
-        const refreshToken =
-            req.cookies?.refresh_token;
+  @Post('forgot-password')
+  async forgotPassword(@Body() body: { email: string }) {
+    console.log('forgot-password body: ', body);
+    const result = await this.authGrpc.forgotPassword(body.email);
+    return result;
+  }
 
-        if (!refreshToken) {
-            throw new UnauthorizedException(
-                'No refresh token',
-            );
-        }
-
-        const result =
-            await this.authGrpc.refresh(
-                refreshToken,
-            );
-
-        res.cookie(
-            'refresh_token',
-            result.refreshToken,
-            {
-                httpOnly: true,
-                secure:
-                    process.env.NODE_ENV ===
-                    'production',
-                sameSite: 'strict',
-                maxAge:
-                    30 * 24 * 60 * 60 * 1000,
-            },
-        );
-
-        return {
-            access_token:
-                result.accessToken,
-        };
-    }
-
-
-    @Post('logout')
-    async logout(
-        @Res({ passthrough: true })
-        res: Response,
-    ) {
-
-        res.clearCookie(
-            'refresh_token',
-            {
-                httpOnly: true,
-                sameSite: 'strict',
-            },
-        );
-
-        return {
-            message: 'logged out',
-        };
-    }
-
-    @Post('forgot-password')
-    async forgotPassword(@Body() body: { email: string }) {
-        console.log("forgot-password body: ", body)
-        const result = await this.authGrpc.forgotPassword(body.email)
-        return result
-    }
-
-    @Post('reset-password')
-    async resetPassword(@Body() body: ChangePasswordDTO) {
-        console.log("reset-password body: ", body)
-        const result = await this.authGrpc.resetPassword(body)
-        return result
-    }
+  @Post('reset-password')
+  async resetPassword(@Body() body: ChangePasswordDTO) {
+    console.log('reset-password body: ', body);
+    const result = await this.authGrpc.resetPassword(body);
+    return result;
+  }
 }

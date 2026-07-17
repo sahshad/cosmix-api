@@ -8,6 +8,7 @@ import (
 
 	userpb "cosmix/shared/grpc/gen/go/user"
 
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -29,7 +30,12 @@ func NewUserServer(
 }
 
 func (srv *UserServer) GetProfile(ctx context.Context, req *userpb.GetProfileRequest) (*userpb.UserProfileResponse, error) {
-	profile, err := srv.userService.GetProfile(ctx, uint(req.UserId))
+	userId, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	profile, err := srv.userService.GetProfile(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -51,9 +57,14 @@ func (srv *UserServer) GetProfileByUsername(ctx context.Context, req *userpb.Get
 }
 
 func (srv *UserServer) UpdateProfile(ctx context.Context, req *userpb.UpdateProfileRequest) (*userpb.UserProfileResponse, error) {
+	userId, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
 	profile, err := srv.userService.UpdateProfile(
 		ctx,
-		uint(req.UserId),
+		userId,
 		dto.UpdateProfileDTO{
 			DisplayName: req.DisplayName,
 			Username:    req.Username,
@@ -72,10 +83,20 @@ func (srv *UserServer) UpdateProfile(ctx context.Context, req *userpb.UpdateProf
 }
 
 func (srv *UserServer) Follow(ctx context.Context, req *userpb.FollowRequest) (*userpb.FollowResponse, error) {
-	err := srv.followService.Follow(
+	followerID, err := uuid.Parse(req.FollowerId)
+	if err != nil {
+		return nil, err
+	}
+
+	followingID, err := uuid.Parse(req.FollowingId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = srv.followService.Follow(
 		ctx,
-		uint(req.FollowerId),
-		uint(req.FollowingId),
+		followerID,
+		followingID,
 	)
 	if err != nil {
 		return nil, err
@@ -87,10 +108,20 @@ func (srv *UserServer) Follow(ctx context.Context, req *userpb.FollowRequest) (*
 }
 
 func (srv *UserServer) Unfollow(ctx context.Context, req *userpb.UnfollowRequest) (*userpb.UnfollowResponse, error) {
-	err := srv.followService.Unfollow(
+	followerID, err := uuid.Parse(req.FollowerId)
+	if err != nil {
+		return nil, err
+	}
+
+	followingID, err := uuid.Parse(req.FollowingId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = srv.followService.Unfollow(
 		ctx,
-		uint(req.FollowerId),
-		uint(req.FollowingId),
+		followerID,
+		followingID,
 	)
 	if err != nil {
 		return nil, err
@@ -169,7 +200,7 @@ func mapUser(user dto.UserResponse) *userpb.User {
 	}
 
 	return &userpb.User{
-		Id:          uint64(user.UserID),
+		Id:          user.UserID.String(),
 		DisplayName: user.DisplayName,
 		Username:    user.Username,
 		Email:       user.Email,

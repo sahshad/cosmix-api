@@ -1,70 +1,71 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-    AUTH_PACKAGE_NAME,
-    AUTH_SERVICE_NAME,
-    AuthServiceClient,
-    ForgotPasswordResponse,
-    LoginRequest,
-    LoginResponse,
-    RefreshResponse,
-    RegisterRequest,
-    RegisterResponse,
-    ResetPasswordRequest,
-    ResetPasswordResponse,
-    VerifyEmailRequest,
-    VerifyEmailResponse,
+  AUTH_PACKAGE_NAME,
+  AUTH_SERVICE_NAME,
+  AuthServiceClient,
+  ForgotPasswordResponse,
+  LoginRequest,
+  LoginResponse,
+  RefreshResponse,
+  RegisterRequest,
+  RegisterResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
+  VerifyEmailRequest,
+  VerifyEmailResponse,
 } from '../generated/auth/auth';
 import { RpcException, type ClientGrpc } from '@nestjs/microservices';
 import { catchError, firstValueFrom, Observable } from 'rxjs';
 
 @Injectable()
 export class AuthGrpcService {
-    private client!: AuthServiceClient;
+  private client!: AuthServiceClient;
 
-    constructor(
-        @Inject(AUTH_PACKAGE_NAME)
-        private readonly grpcClient: ClientGrpc,
-    ) { }
+  constructor(
+    @Inject(AUTH_PACKAGE_NAME)
+    private readonly grpcClient: ClientGrpc,
+  ) {}
 
-    onModuleInit() {
-        this.client =
-            this.grpcClient.getService<AuthServiceClient>(
-                AUTH_SERVICE_NAME,
-            );
-    }
+  onModuleInit() {
+    this.client =
+      this.grpcClient.getService<AuthServiceClient>(AUTH_SERVICE_NAME);
+  }
 
-    private call<T>(observable: Observable<T>): Promise<T> {
-        return firstValueFrom(
-            observable.pipe(
-                catchError(err => { throw new RpcException(err); })
-            )
-        );
-    }
+  private call<T>(observable: Observable<T>): Promise<T> {
+    return firstValueFrom(
+      observable.pipe(
+        catchError((err) => {
+          throw new RpcException(err);
+        }),
+      ),
+    );
+  }
 
-    register(body: RegisterRequest): Promise<RegisterResponse> {
-        return this.call(this.client.register(body)).then(res => ({
-            ...res,
-            userId: Number(res.userId)
-        }));
-    }
+  register(body: RegisterRequest): Promise<RegisterResponse> {
+    return this.call(this.client.register(body)).then((res) => ({
+      ...res,
+      userId: res.userId,
+    }));
+  }
 
-    verifyEmail(body: VerifyEmailRequest): Promise<VerifyEmailResponse> {
-        return this.call(this.client.verifyEmail(body))
-    }
+  verifyEmail(body: VerifyEmailRequest): Promise<VerifyEmailResponse> {
+    return this.call(this.client.verifyEmail(body));
+  }
 
-    login(body: LoginRequest): Promise<LoginResponse> {
-        return this.call(this.client.login(body))
-    }
+  login(body: LoginRequest): Promise<LoginResponse> {
+    return this.call(this.client.login(body));
+  }
 
-    refresh(refreshToken: string): Promise<RefreshResponse> {
-        return this.call(this.client.refresh({ refreshToken }))
-    }
+  refresh(refreshToken: string): Promise<RefreshResponse> {
+    return this.call(this.client.refresh({ refreshToken }));
+  }
 
-    forgotPassword(email: string): Promise<ForgotPasswordResponse> {
-        return this.call(this.client.forgotPassword({ email }))
-    }
+  forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+    return this.call(this.client.forgotPassword({ email }));
+  }
 
-    resetPassword(body: ResetPasswordRequest): Promise<ResetPasswordResponse> {
-        return this.call(this.client.resetPassword(body))
-    }
+  resetPassword(body: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+    console.log("pass", body.newPassword)
+    return this.call(this.client.resetPassword(body));
+  }
 }

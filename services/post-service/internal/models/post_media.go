@@ -1,10 +1,14 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type PostMedia struct {
-	ID        uint      `gorm:"primaryKey"`
-	PostID    uint      `gorm:"not null;index"`
+	BaseModel
+	PostID    uuid.UUID `gorm:"type:uuid;not null;index"`
 	PublicID  string    `gorm:"type:varchar(255);not null"`
 	URL       string    `gorm:"type:text;not null"`
 	Type      string    `gorm:"type:varchar(50);not null"`

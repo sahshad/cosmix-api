@@ -5,6 +5,8 @@ import (
 
 	"auth-service/internal/models"
 	"auth-service/internal/repositories"
+
+	"github.com/google/uuid"
 )
 
 type AuthSessionService struct {
@@ -19,10 +21,10 @@ func NewAuthSessionService(
 	}
 }
 
-func (svc *AuthSessionService) Create(ctx context.Context, authSession *models.AuthSession) (uint, error) {
+func (svc *AuthSessionService) Create(ctx context.Context, authSession *models.AuthSession) (uuid.UUID, error) {
 	err := svc.repo.Create(ctx, authSession)
 	if err != nil {
-		return 0, err
+		return uuid.Nil, err
 	}
 
 	return authSession.ID, nil

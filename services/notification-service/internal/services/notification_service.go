@@ -10,6 +10,8 @@ import (
 	"notification-service/internal/repositories"
 
 	authEvents "cosmix/shared/events/auth"
+
+	"github.com/google/uuid"
 )
 
 type NotificationService struct {
@@ -31,15 +33,15 @@ func (svc *NotificationService) Create(ctx context.Context, notification *models
 	return svc.repo.Create(ctx, notification)
 }
 
-func (svc *NotificationService) GetUserNotifications(ctx context.Context, userID uint, paginationRequest dto.PaginationRequest) (*dto.UserNotificationsResponse, error) {
+func (svc *NotificationService) GetUserNotifications(ctx context.Context, userID uuid.UUID, paginationRequest dto.PaginationRequest) (*dto.UserNotificationsResponse, error) {
 	return svc.repo.GetUserNotifications(ctx, userID, paginationRequest)
 }
 
-func (svc *NotificationService) GetUnreadCount(userID uint) (int64, error) {
+func (svc *NotificationService) GetUnreadCount(userID uuid.UUID) (int64, error) {
 	return svc.repo.GetUnreadCount(userID)
 }
 
-func (svc *NotificationService) MarkAsRead(notificationID uint, userID uint) error {
+func (svc *NotificationService) MarkAsRead(notificationID uuid.UUID, userID uuid.UUID) error {
 	return svc.repo.MarkAsRead(notificationID, userID)
 }
 

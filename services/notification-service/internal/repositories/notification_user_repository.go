@@ -5,6 +5,7 @@ import (
 
 	"notification-service/internal/models"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +21,7 @@ func NewNotificationUserRepository(
 	}
 }
 
-func (repo *NotificationUserRepository) FindByUserID(ctx context.Context, userID uint) (*models.NotificationUser, error) {
+func (repo *NotificationUserRepository) FindByUserID(ctx context.Context, userID uuid.UUID) (*models.NotificationUser, error) {
 	var notificationUser models.NotificationUser
 	if err := repo.DB().
 		WithContext(ctx).

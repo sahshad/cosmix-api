@@ -8,6 +8,7 @@ import (
 
 	postpb "cosmix/shared/grpc/gen/go/post"
 
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -48,9 +49,14 @@ func (srv *PostServer) CreatePost(ctx context.Context, req *postpb.CreatePostReq
 		)
 	}
 
-	_, err := srv.postService.CreatePost(
+	authorID, err := uuid.Parse(req.AuthorId)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = srv.postService.CreatePost(
 		ctx,
-		uint(req.AuthorId),
+		authorID,
 		input,
 	)
 	if err != nil {
@@ -63,9 +69,14 @@ func (srv *PostServer) CreatePost(ctx context.Context, req *postpb.CreatePostReq
 }
 
 func (srv *PostServer) GetPost(ctx context.Context, req *postpb.GetPostRequest) (*postpb.PostResponse, error) {
-	_, err := srv.postService.GetPostByID(
+	postID, err := uuid.Parse(req.PostId)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = srv.postService.GetPostByID(
 		ctx,
-		uint(req.PostId),
+		postID,
 	)
 	if err != nil {
 		return nil, err
@@ -109,7 +120,7 @@ func (srv *PostServer) GetFeed(ctx context.Context, req *postpb.GetFeedRequest) 
 
 func mapPost(post dto.PostList) *postpb.Post {
 	result := &postpb.Post{
-		Id:            uint64(post.ID),
+		Id:            post.ID.String(),
 		Content:       post.Content,
 		LikesCount:    int32(post.LikesCount),
 		CommentsCount: int32(post.CommentsCount),
@@ -136,9 +147,9 @@ func mapPost(post dto.PostList) *postpb.Post {
 
 func mapComment(comment dto.CommentList) *postpb.Comment {
 	return &postpb.Comment{
-		Id:        uint64(comment.ID),
-		PostId:    uint64(comment.PostID),
-		AuthorId:  uint64(comment.AuthorID),
+		Id:        comment.ID.String(),
+		PostId:    comment.PostID.String(),
+		AuthorId:  comment.AuthorID.String(),
 		Content:   comment.Content,
 		CreatedAt: timestamppb.New(comment.CreatedAt),
 		UpdatedAt: timestamppb.New(comment.UpdatedAt),
@@ -147,8 +158,8 @@ func mapComment(comment dto.CommentList) *postpb.Comment {
 
 func mapMedia(media dto.Media) *postpb.Media {
 	result := &postpb.Media{
-		Id:        uint64(media.ID),
-		PostId:    uint64(media.PostID),
+		Id:        media.ID.String(),
+		PostId:    media.PostID.String(),
 		PublicId:  media.PublicID,
 		Url:       media.URL,
 		Type:      media.Type,
@@ -169,7 +180,7 @@ func mapMedia(media dto.Media) *postpb.Media {
 
 func mapUser(user dto.User) *postpb.User {
 	result := &postpb.User{
-		Id:          uint64(user.ID),
+		Id:          user.ID.String(),
 		Email:       user.Email,
 		Username:    user.Username,
 		DisplayName: user.DisplayName,

@@ -33,7 +33,7 @@ service UserService {
 }
 
 message GetProfileRequest {
-  uint64 user_id = 1;
+  string user_id = 1;
 }
 
 message GetProfileByUsernameRequest {
@@ -41,7 +41,7 @@ message GetProfileByUsernameRequest {
 }
 
 message UpdateProfileRequest {
-  uint64 user_id = 1;
+  string user_id = 1;
 
   optional string display_name = 2;
   optional string username = 3;
@@ -51,21 +51,21 @@ message UpdateProfileRequest {
 }
 
 message FollowRequest {
-  uint64 follower_id = 1;
-  uint64 following_id = 2;
+  string follower_id = 1;
+  string following_id = 2;
 }
 
 message UnfollowRequest {
-  uint64 follower_id = 1;
-  uint64 following_id = 2;
+  string follower_id = 1;
+  string following_id = 2;
 }
 
 message GetFollowersRequest {
-  uint64 user_id = 1;
+  string user_id = 1;
 }
 
 message GetFollowingRequest {
-  uint64 user_id = 1;
+  string user_id = 1;
 }
 
 message FollowResponse {
@@ -85,7 +85,7 @@ message UserListResponse {
 }
 
 message User {
-  uint64 id = 1;
+  string id = 1;
   string display_name = 2;
   string username = 3;
   string email = 4;

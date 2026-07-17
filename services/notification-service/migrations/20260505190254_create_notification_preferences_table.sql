@@ -1,8 +1,8 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE notification_preferences (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL UNIQUE,
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL UNIQUE,
     email_enabled BOOLEAN NOT NULL DEFAULT TRUE,
     push_enabled BOOLEAN NOT NULL DEFAULT TRUE,
     internal_enabled BOOLEAN NOT NULL DEFAULT TRUE,

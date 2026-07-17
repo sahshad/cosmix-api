@@ -24,7 +24,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Get('me')
   async getMyProfile(
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: { userId: string },
   ) {
     return this.userGrpc.getProfile(
       user.userId,
@@ -34,7 +34,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Put('me')
   async updateMyProfile(
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: { userId: string },
     @Body() body: UpdateProfileDto,
   ) {
     return this.userGrpc.updateProfile(
@@ -55,24 +55,24 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Post('follow/:id')
   async follow(
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: { userId: string },
     @Param('id') followingId: string,
   ) {
     return this.userGrpc.follow(
       user.userId,
-      Number(followingId),
+      followingId,
     );
   }
 
   @UseGuards(AuthGuard)
   @Delete('unfollow/:id')
   async unfollow(
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: { userId: string },
     @Param('id') followingId: string,
   ) {
     return this.userGrpc.unfollow(
       user.userId,
-      Number(followingId),
+      followingId,
     );
   }
 
@@ -81,7 +81,7 @@ export class UserController {
     @Param('id') userId: string,
   ) {
     return this.userGrpc.getFollowers(
-      Number(userId),
+      userId,
     );
   }
 
@@ -90,7 +90,7 @@ export class UserController {
     @Param('id') userId: string,
   ) {
     return this.userGrpc.getFollowing(
-      Number(userId),
+      userId,
     );
   }
 }

@@ -10,6 +10,8 @@ import (
 	"user-service/internal/repositories"
 
 	authEvents "cosmix/shared/events/auth"
+
+	"github.com/google/uuid"
 )
 
 type UserService struct {
@@ -24,7 +26,7 @@ func NewUserService(
 	}
 }
 
-func (svc *UserService) GetProfile(ctx context.Context, userID uint) (*dto.UserProfileResponse, error) {
+func (svc *UserService) GetProfile(ctx context.Context, userID uuid.UUID) (*dto.UserProfileResponse, error) {
 	profile, err := svc.repo.FindByUserID(ctx, userID)
 	if err != nil {
 		return nil, errors.New("profile not found")
@@ -32,7 +34,7 @@ func (svc *UserService) GetProfile(ctx context.Context, userID uint) (*dto.UserP
 	return svc.toResponse(profile), nil
 }
 
-func (svc *UserService) GetProfileByID(ctx context.Context, id uint) (*dto.UserProfileResponse, error) {
+func (svc *UserService) GetProfileByID(ctx context.Context, id uuid.UUID) (*dto.UserProfileResponse, error) {
 	profile, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("profile not found")
@@ -40,7 +42,7 @@ func (svc *UserService) GetProfileByID(ctx context.Context, id uint) (*dto.UserP
 	return svc.toResponse(profile), nil
 }
 
-func (svc *UserService) UpdateProfile(ctx context.Context, userID uint, input dto.UpdateProfileDTO) (*dto.UserProfileResponse, error) {
+func (svc *UserService) UpdateProfile(ctx context.Context, userID uuid.UUID, input dto.UpdateProfileDTO) (*dto.UserProfileResponse, error) {
 	profile, err := svc.repo.FindByUserID(ctx, userID)
 	if err != nil {
 		return nil, errors.New("profile not found")

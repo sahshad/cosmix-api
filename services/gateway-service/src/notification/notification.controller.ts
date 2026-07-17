@@ -23,7 +23,7 @@ export class NotificationController {
   @Get('me')
   async getMyNotifications(
     @CurrentUser()
-    user: { userId: number },
+    user: { userId: string },
 
     @Query()
     query: GetUserNotificationsDto,

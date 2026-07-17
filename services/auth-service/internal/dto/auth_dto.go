@@ -1,6 +1,10 @@
 package dto
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type RegisterDTO struct {
 	DisplayName string `json:"display_name" binding:"required"`
@@ -20,14 +24,14 @@ type LoginDTO struct {
 }
 
 type UserUpdatedFromDTO struct {
-	AuthUserID uint
+	AuthUserID uuid.UUID
 	Email      string
 	UpdatedAt  time.Time
 }
 
 type UpdateUserPasswordDTO struct {
-	UserID      uint   `json:"user_id" binding:"required"`
-	NewPassword string `json:"new_password" binding:"required,min=6"`
+	UserID      uuid.UUID `json:"user_id" binding:"required"`
+	NewPassword string    `json:"new_password" binding:"required,min=6"`
 }
 
 type LoginResponseDTO struct {
@@ -42,7 +46,6 @@ type RefreshResponseDTO struct {
 }
 
 type ResetPasswordDTO struct {
-	Token           string `json:"token" binding:"required"`
-	CurrentPassword string `json:"current_password" binding:"required,min=8,max=64"`
-	NewPassword     string `json:"new_password" binding:"required,min=8,max=64"`
+	Token       string `json:"token" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=8,max=64"`
 }

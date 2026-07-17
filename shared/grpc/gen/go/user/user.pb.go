@@ -24,7 +24,7 @@ const (
 
 type GetProfileRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -59,11 +59,11 @@ func (*GetProfileRequest) Descriptor() ([]byte, []int) {
 	return file_user_user_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *GetProfileRequest) GetUserId() uint64 {
+func (x *GetProfileRequest) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
-	return 0
+	return ""
 }
 
 type GetProfileByUsernameRequest struct {
@@ -112,7 +112,7 @@ func (x *GetProfileByUsernameRequest) GetUsername() string {
 
 type UpdateProfileRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	DisplayName   *string                `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3,oneof" json:"display_name,omitempty"`
 	Username      *string                `protobuf:"bytes,3,opt,name=username,proto3,oneof" json:"username,omitempty"`
 	DateOfBirth   *string                `protobuf:"bytes,4,opt,name=date_of_birth,json=dateOfBirth,proto3,oneof" json:"date_of_birth,omitempty"`
@@ -152,11 +152,11 @@ func (*UpdateProfileRequest) Descriptor() ([]byte, []int) {
 	return file_user_user_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *UpdateProfileRequest) GetUserId() uint64 {
+func (x *UpdateProfileRequest) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
-	return 0
+	return ""
 }
 
 func (x *UpdateProfileRequest) GetDisplayName() string {
@@ -196,8 +196,8 @@ func (x *UpdateProfileRequest) GetBio() string {
 
 type FollowRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	FollowerId    uint64                 `protobuf:"varint,1,opt,name=follower_id,json=followerId,proto3" json:"follower_id,omitempty"`
-	FollowingId   uint64                 `protobuf:"varint,2,opt,name=following_id,json=followingId,proto3" json:"following_id,omitempty"`
+	FollowerId    string                 `protobuf:"bytes,1,opt,name=follower_id,json=followerId,proto3" json:"follower_id,omitempty"`
+	FollowingId   string                 `protobuf:"bytes,2,opt,name=following_id,json=followingId,proto3" json:"following_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -232,24 +232,24 @@ func (*FollowRequest) Descriptor() ([]byte, []int) {
 	return file_user_user_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *FollowRequest) GetFollowerId() uint64 {
+func (x *FollowRequest) GetFollowerId() string {
 	if x != nil {
 		return x.FollowerId
 	}
-	return 0
+	return ""
 }
 
-func (x *FollowRequest) GetFollowingId() uint64 {
+func (x *FollowRequest) GetFollowingId() string {
 	if x != nil {
 		return x.FollowingId
 	}
-	return 0
+	return ""
 }
 
 type UnfollowRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	FollowerId    uint64                 `protobuf:"varint,1,opt,name=follower_id,json=followerId,proto3" json:"follower_id,omitempty"`
-	FollowingId   uint64                 `protobuf:"varint,2,opt,name=following_id,json=followingId,proto3" json:"following_id,omitempty"`
+	FollowerId    string                 `protobuf:"bytes,1,opt,name=follower_id,json=followerId,proto3" json:"follower_id,omitempty"`
+	FollowingId   string                 `protobuf:"bytes,2,opt,name=following_id,json=followingId,proto3" json:"following_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -284,23 +284,23 @@ func (*UnfollowRequest) Descriptor() ([]byte, []int) {
 	return file_user_user_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *UnfollowRequest) GetFollowerId() uint64 {
+func (x *UnfollowRequest) GetFollowerId() string {
 	if x != nil {
 		return x.FollowerId
 	}
-	return 0
+	return ""
 }
 
-func (x *UnfollowRequest) GetFollowingId() uint64 {
+func (x *UnfollowRequest) GetFollowingId() string {
 	if x != nil {
 		return x.FollowingId
 	}
-	return 0
+	return ""
 }
 
 type GetFollowersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -335,16 +335,16 @@ func (*GetFollowersRequest) Descriptor() ([]byte, []int) {
 	return file_user_user_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *GetFollowersRequest) GetUserId() uint64 {
+func (x *GetFollowersRequest) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
-	return 0
+	return ""
 }
 
 type GetFollowingRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -379,11 +379,11 @@ func (*GetFollowingRequest) Descriptor() ([]byte, []int) {
 	return file_user_user_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *GetFollowingRequest) GetUserId() uint64 {
+func (x *GetFollowingRequest) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
-	return 0
+	return ""
 }
 
 type FollowResponse struct {
@@ -564,7 +564,7 @@ func (x *UserListResponse) GetUsers() []*User {
 
 type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	DisplayName   string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	Username      string                 `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
 	Email         string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
@@ -609,11 +609,11 @@ func (*User) Descriptor() ([]byte, []int) {
 	return file_user_user_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *User) GetId() uint64 {
+func (x *User) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *User) GetDisplayName() string {
@@ -692,11 +692,11 @@ const file_user_user_proto_rawDesc = "" +
 	"\n" +
 	"\x0fuser/user.proto\x12\x04user\x1a\x1fgoogle/protobuf/timestamp.proto\",\n" +
 	"\x11GetProfileRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\"9\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"9\n" +
 	"\x1bGetProfileByUsernameRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\"\xa3\x02\n" +
 	"\x14UpdateProfileRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12&\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12&\n" +
 	"\fdisplay_name\x18\x02 \x01(\tH\x00R\vdisplayName\x88\x01\x01\x12\x1f\n" +
 	"\busername\x18\x03 \x01(\tH\x01R\busername\x88\x01\x01\x12'\n" +
 	"\rdate_of_birth\x18\x04 \x01(\tH\x02R\vdateOfBirth\x88\x01\x01\x12\"\n" +
@@ -709,17 +709,17 @@ const file_user_user_proto_rawDesc = "" +
 	"\v_avatar_urlB\x06\n" +
 	"\x04_bio\"S\n" +
 	"\rFollowRequest\x12\x1f\n" +
-	"\vfollower_id\x18\x01 \x01(\x04R\n" +
+	"\vfollower_id\x18\x01 \x01(\tR\n" +
 	"followerId\x12!\n" +
-	"\ffollowing_id\x18\x02 \x01(\x04R\vfollowingId\"U\n" +
+	"\ffollowing_id\x18\x02 \x01(\tR\vfollowingId\"U\n" +
 	"\x0fUnfollowRequest\x12\x1f\n" +
-	"\vfollower_id\x18\x01 \x01(\x04R\n" +
+	"\vfollower_id\x18\x01 \x01(\tR\n" +
 	"followerId\x12!\n" +
-	"\ffollowing_id\x18\x02 \x01(\x04R\vfollowingId\".\n" +
+	"\ffollowing_id\x18\x02 \x01(\tR\vfollowingId\".\n" +
 	"\x13GetFollowersRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\".\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\".\n" +
 	"\x13GetFollowingRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\"*\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"*\n" +
 	"\x0eFollowResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\",\n" +
 	"\x10UnfollowResponse\x12\x18\n" +
@@ -731,7 +731,7 @@ const file_user_user_proto_rawDesc = "" +
 	"\x05users\x18\x01 \x03(\v2\n" +
 	".user.UserR\x05users\"\xaf\x03\n" +
 	"\x04User\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x04R\x02id\x12!\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\x1a\n" +
 	"\busername\x18\x03 \x01(\tR\busername\x12\x14\n" +
 	"\x05email\x18\x04 \x01(\tR\x05email\x12\x1d\n" +

@@ -7,13 +7,15 @@ import (
 	"post-service/internal/dto"
 	"post-service/internal/models"
 	"post-service/internal/repositories"
+
+	"github.com/google/uuid"
 )
 
 // type CommentServiceInterface interface {
-// 	CreateComment(ctx context.Context, postID uint, userID uint, req *dto.CreateCommentRequest) (*models.Comment, error)
-// 	GetCommentsByPostID(ctx context.Context, postID uint, params *dto.PaginationRequest) (*dto.CommentListResponse, error)
-// 	UpdateComment(ctx context.Context, id uint, userID uint, req *dto.UpdateCommentRequest) (*models.Comment, error)
-// 	DeleteComment(ctx context.Context, id uint, userID uint) error
+// 	CreateComment(ctx context.Context, postID uuid.UUID, userID uuid.UUID, req *dto.CreateCommentRequest) (*models.Comment, error)
+// 	GetCommentsByPostID(ctx context.Context, postID uuid.UUID, params *dto.PaginationRequest) (*dto.CommentListResponse, error)
+// 	UpdateComment(ctx context.Context, id uuid.UUID, userID uuid.UUID, req *dto.UpdateCommentRequest) (*models.Comment, error)
+// 	DeleteComment(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 // }
 
 type CommentService struct {
@@ -31,7 +33,7 @@ func NewCommentService(
 	}
 }
 
-func (svc *CommentService) CreateComment(ctx context.Context, postID uint, userID uint, req *dto.CreateCommentRequest) (*models.Comment, error) {
+func (svc *CommentService) CreateComment(ctx context.Context, postID uuid.UUID, userID uuid.UUID, req *dto.CreateCommentRequest) (*models.Comment, error) {
 	_, err := svc.postRepo.FindByID(ctx, postID)
 	if err != nil {
 		return nil, errors.New("post not found")
@@ -49,11 +51,11 @@ func (svc *CommentService) CreateComment(ctx context.Context, postID uint, userI
 	return comment, nil
 }
 
-func (svc *CommentService) GetCommentsByPostID(ctx context.Context, postID uint, params *dto.PaginationRequest) (*dto.CommentListResponse, error) {
+func (svc *CommentService) GetCommentsByPostID(ctx context.Context, postID uuid.UUID, params *dto.PaginationRequest) (*dto.CommentListResponse, error) {
 	return svc.repo.GetCommentsByPostID(ctx, postID, params)
 }
 
-func (svc *CommentService) UpdateComment(ctx context.Context, id uint, userID uint, req *dto.UpdateCommentRequest) (*models.Comment, error) {
+func (svc *CommentService) UpdateComment(ctx context.Context, id uuid.UUID, userID uuid.UUID, req *dto.UpdateCommentRequest) (*models.Comment, error) {
 	comment, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -71,7 +73,7 @@ func (svc *CommentService) UpdateComment(ctx context.Context, id uint, userID ui
 	return comment, nil
 }
 
-func (svc *CommentService) DeleteComment(ctx context.Context, id uint, userID uint) error {
+func (svc *CommentService) DeleteComment(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
 	comment, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return err

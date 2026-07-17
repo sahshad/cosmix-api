@@ -8,6 +8,7 @@ import (
 
 	notificationpb "cosmix/shared/grpc/gen/go/notification"
 
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -31,9 +32,14 @@ func (srv *NotificationServer) HealthCheck(ctx context.Context, req *notificatio
 }
 
 func (srv *NotificationServer) GetUserNotifications(ctx context.Context, req *notificationpb.GetUserNotificationsRequest) (*notificationpb.UserNotificationsResponse, error) {
+	userID, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
 	result, err := srv.notificationService.GetUserNotifications(
 		ctx,
-		uint(req.UserId),
+		userID,
 		dto.PaginationRequest{
 			Page:  uint(req.Page),
 			Limit: uint(req.Limit),
@@ -63,14 +69,14 @@ func (srv *NotificationServer) GetUserNotifications(ctx context.Context, req *no
 }
 
 func mapNotification(item dto.NotificationList) *notificationpb.Notification {
-	var actorID uint64
+	var actorID string
 	if item.ActorID != nil {
-		actorID = uint64(*item.ActorID)
+		actorID = item.ActorID.String()
 	}
 
-	var entityID uint64
+	var entityID string
 	if item.EntityID != nil {
-		entityID = uint64(*item.EntityID)
+		entityID = item.EntityID.String()
 	}
 
 	var readAt *timestamppb.Timestamp
@@ -79,8 +85,8 @@ func mapNotification(item dto.NotificationList) *notificationpb.Notification {
 	}
 
 	return &notificationpb.Notification{
-		Id:               uint64(item.ID),
-		UserId:           uint64(item.UserID),
+		Id:               item.ID.String(),
+		UserId:           item.UserID.String(),
 		ActorId:          &actorID,
 		ActorUsername:    item.ActorUsername,
 		ActorDisplayName: item.ActorDisplayName,

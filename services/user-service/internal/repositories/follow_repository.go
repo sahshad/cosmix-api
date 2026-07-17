@@ -5,6 +5,7 @@ import (
 
 	"user-service/internal/models"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -20,12 +21,12 @@ func NewFollowRepository(
 	}
 }
 
-func (repo *FollowRepository) Delete(ctx context.Context, followerID, followingID uint) error {
+func (repo *FollowRepository) Delete(ctx context.Context, followerID, followingID uuid.UUID) error {
 	return repo.db.WithContext(ctx).Where("follower_id = ? AND following_id = ?", followerID, followingID).
 		Delete(&models.Follow{}).Error
 }
 
-func (repo *FollowRepository) IsFollowing(ctx context.Context, followerID, followingID uint) (bool, error) {
+func (repo *FollowRepository) IsFollowing(ctx context.Context, followerID, followingID uuid.UUID) (bool, error) {
 	var count int64
 	err := repo.db.WithContext(ctx).Model(&models.Follow{}).
 		Where("follower_id = ? AND following_id = ?", followerID, followingID).
@@ -33,23 +34,23 @@ func (repo *FollowRepository) IsFollowing(ctx context.Context, followerID, follo
 	return count > 0, err
 }
 
-func (repo *FollowRepository) GetFollowers(ctx context.Context, userID uint) ([]uint, error) {
-	var followers []uint
+func (repo *FollowRepository) GetFollowers(ctx context.Context, userID uuid.UUID) ([]uuid.UUID, error) {
+	var followers []uuid.UUID
 	err := repo.db.WithContext(ctx).Model(&models.Follow{}).
 		Where("following_id = ?", userID).
 		Pluck("follower_id", &followers).Error
 	return followers, err
 }
 
-func (repo *FollowRepository) GetFollowing(ctx context.Context, userID uint) ([]uint, error) {
-	var following []uint
+func (repo *FollowRepository) GetFollowing(ctx context.Context, userID uuid.UUID) ([]uuid.UUID, error) {
+	var following []uuid.UUID
 	err := repo.db.WithContext(ctx).Model(&models.Follow{}).
 		Where("follower_id = ?", userID).
 		Pluck("following_id", &following).Error
 	return following, err
 }
 
-func (repo *FollowRepository) GetFollowerCount(ctx context.Context, userID uint) (int64, error) {
+func (repo *FollowRepository) GetFollowerCount(ctx context.Context, userID uuid.UUID) (int64, error) {
 	var count int64
 	err := repo.db.WithContext(ctx).Model(&models.Follow{}).
 		Where("following_id = ?", userID).
@@ -57,7 +58,7 @@ func (repo *FollowRepository) GetFollowerCount(ctx context.Context, userID uint)
 	return count, err
 }
 
-func (repo *FollowRepository) GetFollowingCount(ctx context.Context, userID uint) (int64, error) {
+func (repo *FollowRepository) GetFollowingCount(ctx context.Context, userID uuid.UUID) (int64, error) {
 	var count int64
 	err := repo.db.WithContext(ctx).Model(&models.Follow{}).
 		Where("follower_id = ?", userID).

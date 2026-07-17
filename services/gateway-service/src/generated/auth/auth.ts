@@ -15,7 +15,6 @@ export const protobufPackage = "auth";
 
 export interface ResetPasswordRequest {
   token: string;
-  currentPassword: string;
   newPassword: string;
 }
 
@@ -38,7 +37,7 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
-  userId: number;
+  userId: string;
 }
 
 export interface VerifyEmailRequest {
@@ -72,7 +71,7 @@ export interface RefreshResponse {
 }
 
 export interface UpdateUserPasswordRequest {
-  userId: number;
+  userId: string;
   newPassword: string;
 }
 
@@ -92,7 +91,7 @@ export interface AuthUser {
 export const AUTH_PACKAGE_NAME = "auth";
 
 function createBaseResetPasswordRequest(): ResetPasswordRequest {
-  return { token: "", currentPassword: "", newPassword: "" };
+  return { token: "", newPassword: "" };
 }
 
 export const ResetPasswordRequest: MessageFns<ResetPasswordRequest> = {
@@ -100,11 +99,8 @@ export const ResetPasswordRequest: MessageFns<ResetPasswordRequest> = {
     if (message.token !== "") {
       writer.uint32(10).string(message.token);
     }
-    if (message.currentPassword !== "") {
-      writer.uint32(18).string(message.currentPassword);
-    }
     if (message.newPassword !== "") {
-      writer.uint32(26).string(message.newPassword);
+      writer.uint32(18).string(message.newPassword);
     }
     return writer;
   },
@@ -126,14 +122,6 @@ export const ResetPasswordRequest: MessageFns<ResetPasswordRequest> = {
         }
         case 2: {
           if (tag !== 18) {
-            break;
-          }
-
-          message.currentPassword = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
             break;
           }
 
@@ -321,13 +309,13 @@ export const RegisterRequest: MessageFns<RegisterRequest> = {
 };
 
 function createBaseRegisterResponse(): RegisterResponse {
-  return { userId: 0 };
+  return { userId: "" };
 }
 
 export const RegisterResponse: MessageFns<RegisterResponse> = {
   encode(message: RegisterResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.userId !== 0) {
-      writer.uint32(8).uint64(message.userId);
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
     }
     return writer;
   },
@@ -340,11 +328,11 @@ export const RegisterResponse: MessageFns<RegisterResponse> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.userId = longToNumber(reader.uint64());
+          message.userId = reader.string();
           continue;
         }
       }
@@ -646,13 +634,13 @@ export const RefreshResponse: MessageFns<RefreshResponse> = {
 };
 
 function createBaseUpdateUserPasswordRequest(): UpdateUserPasswordRequest {
-  return { userId: 0, newPassword: "" };
+  return { userId: "", newPassword: "" };
 }
 
 export const UpdateUserPasswordRequest: MessageFns<UpdateUserPasswordRequest> = {
   encode(message: UpdateUserPasswordRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.userId !== 0) {
-      writer.uint32(8).uint64(message.userId);
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
     }
     if (message.newPassword !== "") {
       writer.uint32(18).string(message.newPassword);
@@ -668,11 +656,11 @@ export const UpdateUserPasswordRequest: MessageFns<UpdateUserPasswordRequest> = 
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.userId = longToNumber(reader.uint64());
+          message.userId = reader.string();
           continue;
         }
         case 2: {
@@ -974,17 +962,6 @@ export interface AuthServiceServer extends UntypedServiceImplementation {
   updateUserPassword: handleUnaryCall<UpdateUserPasswordRequest, UpdateUserPasswordResponse>;
   forgotPassword: handleUnaryCall<ForgotPasswordRequest, ForgotPasswordResponse>;
   resetPassword: handleUnaryCall<ResetPasswordRequest, ResetPasswordResponse>;
-}
-
-function longToNumber(int64: { toString(): string }): number {
-  const num = globalThis.Number(int64.toString());
-  if (num > globalThis.Number.MAX_SAFE_INTEGER) {
-    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
-  }
-  if (num < globalThis.Number.MIN_SAFE_INTEGER) {
-    throw new globalThis.Error("Value is smaller than Number.MIN_SAFE_INTEGER");
-  }
-  return num;
 }
 
 export interface MessageFns<T> {

@@ -5,6 +5,8 @@ import (
 
 	"notification-service/internal/models"
 	"notification-service/internal/repositories"
+
+	"github.com/google/uuid"
 )
 
 type NotificationPreferenceService struct {
@@ -19,7 +21,7 @@ func NewNotificationPreferenceService(
 	}
 }
 
-func (svc *NotificationPreferenceService) CreateDefault(ctx context.Context, userID uint) error {
+func (svc *NotificationPreferenceService) CreateDefault(ctx context.Context, userID uuid.UUID) error {
 	preference := &models.NotificationPreference{
 		UserID:                 userID,
 		EmailEnabled:           true,
@@ -36,7 +38,7 @@ func (svc *NotificationPreferenceService) CreateDefault(ctx context.Context, use
 	return svc.repo.Create(ctx, preference)
 }
 
-func (svc *NotificationPreferenceService) GetByUserID(userID uint) (*models.NotificationPreference, error) {
+func (svc *NotificationPreferenceService) GetByUserID(userID uuid.UUID) (*models.NotificationPreference, error) {
 	return svc.repo.GetByUserID(userID)
 }
 

@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -48,14 +49,14 @@ func (repo *BaseRepository[T]) Delete(ctx context.Context, entity *T) error {
 		Error
 }
 
-func (repo *BaseRepository[T]) DeleteByID(ctx context.Context, id uint) error {
+func (repo *BaseRepository[T]) DeleteByID(ctx context.Context, id uuid.UUID) error {
 	return repo.db.
 		WithContext(ctx).
 		Delete(new(T), id).
 		Error
 }
 
-func (repo *BaseRepository[T]) FindByID(ctx context.Context, id uint) (*T, error) {
+func (repo *BaseRepository[T]) FindByID(ctx context.Context, id uuid.UUID) (*T, error) {
 	var entity T
 
 	err := repo.db.

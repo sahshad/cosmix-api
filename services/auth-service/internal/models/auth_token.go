@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type AuthTokenType string
 
@@ -10,12 +14,12 @@ const (
 )
 
 type AuthToken struct {
-	ID         uint          `gorm:"primaryKey;not null"`
-	AuthUserID uint          `gorm:"not null"`
-	Token      string        `gorm:"not null;unique"`
-	Type       AuthTokenType `gorm:"not null"`
-	ExpiresAt  time.Time     `gorm:"not null"`
-	CreatedAt  time.Time     `gorm:"not null"`
+	BaseModel
+	AuthUserID       uuid.UUID  `gorm:"not null"`
+	Token            string     `gorm:"not null;unique"`
+	Type             AuthTokenType `gorm:"not null"`
+	ExpiresAt        time.Time  `gorm:"not null"`
+	CreatedAt        time.Time  `gorm:"not null"`
 
 	AuthUser AuthUser `gorm:"foreignKey:AuthUserID"`
 }

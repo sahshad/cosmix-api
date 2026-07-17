@@ -7,6 +7,8 @@ import (
 	"auth-service/internal/services"
 
 	authpb "cosmix/shared/grpc/gen/go/auth"
+
+	"github.com/google/uuid"
 )
 
 type AuthServer struct {
@@ -36,7 +38,7 @@ func (srv *AuthServer) Register(ctx context.Context, req *authpb.RegisterRequest
 	}
 
 	return &authpb.RegisterResponse{
-		UserId: uint64(user.ID),
+		UserId: user.ID.String(),
 	}, nil
 }
 
@@ -102,9 +104,14 @@ func (srv *AuthServer) Refresh(ctx context.Context, req *authpb.RefreshRequest) 
 }
 
 func (srv *AuthServer) UpdateUserPassword(ctx context.Context, req *authpb.UpdateUserPasswordRequest) (*authpb.UpdateUserPasswordResponse, error) {
-	err := srv.authService.UpdateUserPassword(
+	userID, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = srv.authService.UpdateUserPassword(
 		ctx,
-		uint(req.UserId),
+		userID,
 		req.NewPassword,
 	)
 	if err != nil {
@@ -129,9 +136,8 @@ func (srv *AuthServer) ForgotPassword(ctx context.Context, req *authpb.ForgotPas
 
 func (srv *AuthServer) ResetPassword(ctx context.Context, req *authpb.ResetPasswordRequest) (*authpb.ResetPasswordResponse, error) {
 	err := srv.authService.ResetPassword(ctx, dto.ResetPasswordDTO{
-		Token:           req.Token,
-		CurrentPassword: req.CurrentPassword,
-		NewPassword:     req.NewPassword,
+		Token:       req.Token,
+		NewPassword: req.NewPassword,
 	})
 	if err != nil {
 		return nil, err

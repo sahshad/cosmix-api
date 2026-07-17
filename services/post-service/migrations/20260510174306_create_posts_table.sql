@@ -2,8 +2,8 @@
 -- +goose StatementBegin
 
 CREATE TABLE posts (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
     content TEXT NOT NULL,
     likes_count INT DEFAULT 0,
     comments_count INT DEFAULT 0,
