@@ -55,7 +55,7 @@ export class AuthController {
     });
 
     return {
-      access_token: result.accessToken,
+      accessToken: result.accessToken,
       user: result.user,
     };
   }
@@ -81,7 +81,7 @@ export class AuthController {
     });
 
     return {
-      access_token: result.accessToken,
+      accessToken: result.accessToken,
     };
   }
 
