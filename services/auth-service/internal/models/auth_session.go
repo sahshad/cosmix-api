@@ -8,11 +8,11 @@ import (
 
 type AuthSession struct {
 	BaseModel
-	AuthUserID       uuid.UUID  `gorm:"not null"`
-	RefreshTokenHash string     `gorm:"not null"`
-	Device           string     `gorm:"not null"`
-	IPAddress        string     `gorm:"not null"`
-	UserAgent        string     `gorm:"not null"`
+	AuthUserID       uuid.UUID  `gorm:"type:uuid;not null"`
+	RefreshTokenHash string     `gorm:"type:varchar(500);not null"`
+	Device           string     `gorm:"type:varchar(255)"`
+	IPAddress        string     `gorm:"type:varchar(100)"`
+	UserAgent        string     `gorm:"type:varchar(500)"`
 	ExpiresAt        time.Time  `gorm:"not null"`
 	Revoked          bool       `gorm:"not null"`
 	CreatedAt        time.Time  `gorm:"not null"`

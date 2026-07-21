@@ -7,20 +7,20 @@ import (
 )
 
 type RegisterDTO struct {
-	DisplayName string `json:"display_name" binding:"required"`
-	Email       string `json:"email" binding:"required,email"`
-	Password    string `json:"password" binding:"required,min=6"`
+	DisplayName string
+	Email       string
+	Password    string
 }
 
 type VerifyEmailDTO struct {
-	Token    string `json:"token" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=8,max=64"`
+	Token    string
+	Email    string
+	Password string
 }
 
 type LoginDTO struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Email    string
+	Password string
 }
 
 type UserUpdatedFromDTO struct {
@@ -30,22 +30,22 @@ type UserUpdatedFromDTO struct {
 }
 
 type UpdateUserPasswordDTO struct {
-	UserID      uuid.UUID `json:"user_id" binding:"required"`
-	NewPassword string    `json:"new_password" binding:"required,min=6"`
+	UserID      uuid.UUID
+	NewPassword string
 }
 
 type LoginResponseDTO struct {
-	AccessToken  string       `json:"access_token"`
-	RefreshToken string       `json:"refresh_token"`
-	AuthUser     *AuthUserDTO `json:"auth_user"`
+	AccessToken  string
+	RefreshToken string
+	AuthUser     *AuthUserDTO
 }
 
 type RefreshResponseDTO struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	AccessToken  string
+	RefreshToken string
 }
 
 type ResetPasswordDTO struct {
-	Token       string `json:"token" binding:"required"`
-	NewPassword string `json:"new_password" binding:"required,min=8,max=64"`
+	Token       string
+	NewPassword string
 }

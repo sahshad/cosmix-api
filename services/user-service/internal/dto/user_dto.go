@@ -7,37 +7,37 @@ import (
 )
 
 type UpdateProfileDTO struct {
-	DisplayName   *string `json:"display_name"`
-	Username      *string `json:"username"`
-	DateOfBirth   *string `json:"date_of_birth"`
-	AvatarURL     *string `json:"avatar_url"`
-	CoverImageURL *string `json:"cover_image_url"`
-	Website       *string `json:"website" binding:"max=255"`
-	Location      *string `json:"location" binding:"max=255"`
-	Bio           *string `json:"bio" binding:"max=500"`
+	DisplayName   *string
+	Username      *string
+	DateOfBirth   *string
+	AvatarURL     *string
+	CoverImageURL *string
+	Website       *string
+	Location      *string
+	Bio           *string
 }
 
 type UserProfileResponse struct {
-	User UserResponse `json:"user"`
+	User UserResponse
 }
 
 type UserResponse struct {
-	UserID        uuid.UUID  `json:"id"`
-	DisplayName   string     `json:"display_name"`
-	Username      string     `json:"username"`
-	Email         string     `json:"email"`
-	IsPrivate     bool       `json:"is_private"`
-	IsVerified    bool       `json:"is_verified"`
-	IsActive      bool       `json:"is_active"`
-	DateOfBirth   *time.Time `json:"date_of_birth"`
-	AvatarURL     *string    `json:"avatar_url"`
-	CoverImageURL *string    `json:"cover_image_url"`
-	Website       *string    `json:"website"`
-	Location      *string    `json:"location"`
-	Bio           *string    `json:"bio"`
-	LastSeenAt    *time.Time `json:"last_seen_at"`
-	CreatedAt     time.Time  `json:"created_at"`
-	UpdatedAt     *time.Time `json:"updated_at"`
+	UserID        uuid.UUID
+	DisplayName   string
+	Username      string
+	Email         string
+	IsPrivate     bool
+	IsVerified    bool
+	IsActive      bool
+	DateOfBirth   *time.Time
+	AvatarURL     *string
+	CoverImageURL *string
+	Website       *string
+	Location      *string
+	Bio           *string
+	LastSeenAt    *time.Time
+	CreatedAt     time.Time
+	UpdatedAt     *time.Time
 }
 
 type UserCreatedFromDTO struct {

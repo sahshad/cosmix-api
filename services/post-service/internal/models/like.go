@@ -8,8 +8,8 @@ import (
 
 type Like struct {
 	BaseModel
-	PostID    uuid.UUID `gorm:"type:uuid;not null;index"`
-	UserID    uuid.UUID `gorm:"type:uuid;not null;index"`
+	PostID    uuid.UUID `gorm:"type:uuid;not null;index:idx_likes_post_user,unique"`
+	UserID    uuid.UUID `gorm:"type:uuid;not null;index:idx_likes_post_user,unique"`
 	CreatedAt time.Time `gorm:"not null"`
 
 	Post Post     `gorm:"foreignKey:PostID"`

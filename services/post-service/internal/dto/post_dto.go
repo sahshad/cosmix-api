@@ -7,74 +7,74 @@ import (
 )
 
 type MediaItem struct {
-	PublicID string `json:"public_id" binding:"required"`
-	URL      string `json:"url" binding:"required"`
-	Type     string `json:"type" binding:"required"`
-	Duration int    `json:"duration"`
+	PublicID string
+	URL      string
+	Type     string
+	Duration int
 }
 
 type Media struct {
-	ID        uuid.UUID  `json:"id"`
-	PostID    uuid.UUID  `json:"post_id"`
-	PublicID  string     `json:"public_id"`
-	URL       string     `json:"url"`
-	Type      string     `json:"type"`
-	Duration  *int        `json:"duration"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at"`
+	ID        uuid.UUID
+	PostID    uuid.UUID
+	PublicID  string
+	URL       string
+	Type      string
+	Duration  *int
+	CreatedAt time.Time
+	UpdatedAt *time.Time
 }
 
 type User struct {
-	ID          uuid.UUID  `json:"id"`
-	Email       string     `json:"email"`
-	Username    string     `json:"username"`
-	DisplayName string     `json:"display_name"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   *time.Time `json:"updated_at"`
+	ID          uuid.UUID
+	Email       string
+	Username    string
+	DisplayName string
+	CreatedAt   time.Time
+	UpdatedAt   *time.Time
 }
 
 type Like struct {
-	ID        uuid.UUID `json:"id"`
-	PostID    uuid.UUID `json:"post_id"`
-	AuthorID  uuid.UUID `json:"author_id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uuid.UUID
+	PostID    uuid.UUID
+	AuthorID  uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type Comment struct {
-	ID        uuid.UUID `json:"id"`
-	PostID    uuid.UUID `json:"post_id"`
-	AuthorID  uuid.UUID `json:"author_id"`
-	Content   string    `json:"content"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uuid.UUID
+	PostID    uuid.UUID
+	AuthorID  uuid.UUID
+	Content   string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type PostList struct {
-	ID            uuid.UUID  `json:"id"`
-	Content       string     `json:"content"`
-	LikesCount    int        `json:"likes_count"`
-	CommentsCount int        `json:"comments_count"`
-	CreatedAt     time.Time  `json:"created_at"`
-	UpdatedAt     *time.Time `json:"updated_at"`
-	User          User       `json:"user"`
-	Media     []Media    `json:"media"`
-	// Likes     []Like      `json:"likes"`
-	// Comments  []Comment   `json:"comments"`
+	ID            uuid.UUID
+	Content       string
+	LikesCount    int
+	CommentsCount int
+	CreatedAt     time.Time
+	UpdatedAt     *time.Time
+	User          User
+	Media         []Media
+	// Likes     []Like
+	// Comments  []Comment
 }
 
 type PostListResponse struct {
-	Posts      []PostList         `json:"posts"`
-	Pagination PaginationResponse `json:"pagination"`
+	Posts      []PostList
+	Pagination PaginationResponse
 }
 
 type CommentList struct {
-	ID        uuid.UUID `json:"id"`
-	PostID    uuid.UUID `json:"post_id"`
-	AuthorID  uuid.UUID `json:"author_id"`
-	Content   string    `json:"content"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uuid.UUID
+	PostID    uuid.UUID
+	AuthorID  uuid.UUID
+	Content   string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type CommentListResponse struct {
@@ -83,31 +83,31 @@ type CommentListResponse struct {
 }
 
 type CreatePostRequest struct {
-	Content string      `json:"content" binding:"required"`
-	Media   []MediaItem `json:"media"`
+	Content string
+	Media   []MediaItem
 }
 
 type UpdatePostRequest struct {
-	Content string      `json:"content" binding:"required"`
-	Media   []MediaItem `json:"media"`
+	Content string
+	Media   []MediaItem
 }
 
 type CreateCommentRequest struct {
-	Content string `json:"content" binding:"required"`
+	Content string
 }
 
 type UpdateCommentRequest struct {
-	Content string `json:"content" binding:"required"`
+	Content string
 }
 
 type PaginationRequest struct {
-	Page  int64 `json:"page"`
-	Limit int64 `json:"limit"`
+	Page  int64
+	Limit int64
 }
 
 type PaginationResponse struct {
-	TotalCount int64 `json:"total_count"`
-	Page       int64 `json:"page"`
-	Limit      int64 `json:"limit"`
-	TotalPages int64 `json:"total_pages"`
+	TotalCount int64
+	Page       int64
+	Limit      int64
+	TotalPages int64
 }
