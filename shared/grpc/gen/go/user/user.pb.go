@@ -9,7 +9,6 @@ package user
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -118,6 +117,9 @@ type UpdateProfileRequest struct {
 	DateOfBirth   *string                `protobuf:"bytes,4,opt,name=date_of_birth,json=dateOfBirth,proto3,oneof" json:"date_of_birth,omitempty"`
 	AvatarUrl     *string                `protobuf:"bytes,5,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
 	Bio           *string                `protobuf:"bytes,6,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
+	CoverImageUrl *string                `protobuf:"bytes,7,opt,name=cover_image_url,json=coverImageUrl,proto3,oneof" json:"cover_image_url,omitempty"`
+	Website       *string                `protobuf:"bytes,8,opt,name=website,proto3,oneof" json:"website,omitempty"`
+	Location      *string                `protobuf:"bytes,9,opt,name=location,proto3,oneof" json:"location,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -190,6 +192,27 @@ func (x *UpdateProfileRequest) GetAvatarUrl() string {
 func (x *UpdateProfileRequest) GetBio() string {
 	if x != nil && x.Bio != nil {
 		return *x.Bio
+	}
+	return ""
+}
+
+func (x *UpdateProfileRequest) GetCoverImageUrl() string {
+	if x != nil && x.CoverImageUrl != nil {
+		return *x.CoverImageUrl
+	}
+	return ""
+}
+
+func (x *UpdateProfileRequest) GetWebsite() string {
+	if x != nil && x.Website != nil {
+		return *x.Website
+	}
+	return ""
+}
+
+func (x *UpdateProfileRequest) GetLocation() string {
+	if x != nil && x.Location != nil {
+		return *x.Location
 	}
 	return ""
 }
@@ -570,11 +593,16 @@ type User struct {
 	Email         string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
 	IsPrivate     bool                   `protobuf:"varint,5,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
 	IsActive      bool                   `protobuf:"varint,6,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
-	DateOfBirth   *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=date_of_birth,json=dateOfBirth,proto3" json:"date_of_birth,omitempty"`
+	DateOfBirth   string                 `protobuf:"bytes,7,opt,name=date_of_birth,json=dateOfBirth,proto3" json:"date_of_birth,omitempty"`
 	AvatarUrl     *string                `protobuf:"bytes,8,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
 	Bio           *string                `protobuf:"bytes,9,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	CoverImageUrl *string                `protobuf:"bytes,12,opt,name=cover_image_url,json=coverImageUrl,proto3,oneof" json:"cover_image_url,omitempty"`
+	Website       *string                `protobuf:"bytes,13,opt,name=website,proto3,oneof" json:"website,omitempty"`
+	Location      *string                `protobuf:"bytes,14,opt,name=location,proto3,oneof" json:"location,omitempty"`
+	IsVerified    bool                   `protobuf:"varint,15,opt,name=is_verified,json=isVerified,proto3" json:"is_verified,omitempty"`
+	LastSeenAt    *string                `protobuf:"bytes,16,opt,name=last_seen_at,json=lastSeenAt,proto3,oneof" json:"last_seen_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -651,11 +679,11 @@ func (x *User) GetIsActive() bool {
 	return false
 }
 
-func (x *User) GetDateOfBirth() *timestamppb.Timestamp {
+func (x *User) GetDateOfBirth() string {
 	if x != nil {
 		return x.DateOfBirth
 	}
-	return nil
+	return ""
 }
 
 func (x *User) GetAvatarUrl() string {
@@ -672,29 +700,64 @@ func (x *User) GetBio() string {
 	return ""
 }
 
-func (x *User) GetCreatedAt() *timestamppb.Timestamp {
+func (x *User) GetCreatedAt() string {
 	if x != nil {
 		return x.CreatedAt
 	}
-	return nil
+	return ""
 }
 
-func (x *User) GetUpdatedAt() *timestamppb.Timestamp {
+func (x *User) GetUpdatedAt() string {
 	if x != nil {
 		return x.UpdatedAt
 	}
-	return nil
+	return ""
+}
+
+func (x *User) GetCoverImageUrl() string {
+	if x != nil && x.CoverImageUrl != nil {
+		return *x.CoverImageUrl
+	}
+	return ""
+}
+
+func (x *User) GetWebsite() string {
+	if x != nil && x.Website != nil {
+		return *x.Website
+	}
+	return ""
+}
+
+func (x *User) GetLocation() string {
+	if x != nil && x.Location != nil {
+		return *x.Location
+	}
+	return ""
+}
+
+func (x *User) GetIsVerified() bool {
+	if x != nil {
+		return x.IsVerified
+	}
+	return false
+}
+
+func (x *User) GetLastSeenAt() string {
+	if x != nil && x.LastSeenAt != nil {
+		return *x.LastSeenAt
+	}
+	return ""
 }
 
 var File_user_user_proto protoreflect.FileDescriptor
 
 const file_user_user_proto_rawDesc = "" +
 	"\n" +
-	"\x0fuser/user.proto\x12\x04user\x1a\x1fgoogle/protobuf/timestamp.proto\",\n" +
+	"\x0fuser/user.proto\x12\x04user\",\n" +
 	"\x11GetProfileRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"9\n" +
 	"\x1bGetProfileByUsernameRequest\x12\x1a\n" +
-	"\busername\x18\x01 \x01(\tR\busername\"\xa3\x02\n" +
+	"\busername\x18\x01 \x01(\tR\busername\"\xbd\x03\n" +
 	"\x14UpdateProfileRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12&\n" +
 	"\fdisplay_name\x18\x02 \x01(\tH\x00R\vdisplayName\x88\x01\x01\x12\x1f\n" +
@@ -702,12 +765,19 @@ const file_user_user_proto_rawDesc = "" +
 	"\rdate_of_birth\x18\x04 \x01(\tH\x02R\vdateOfBirth\x88\x01\x01\x12\"\n" +
 	"\n" +
 	"avatar_url\x18\x05 \x01(\tH\x03R\tavatarUrl\x88\x01\x01\x12\x15\n" +
-	"\x03bio\x18\x06 \x01(\tH\x04R\x03bio\x88\x01\x01B\x0f\n" +
+	"\x03bio\x18\x06 \x01(\tH\x04R\x03bio\x88\x01\x01\x12+\n" +
+	"\x0fcover_image_url\x18\a \x01(\tH\x05R\rcoverImageUrl\x88\x01\x01\x12\x1d\n" +
+	"\awebsite\x18\b \x01(\tH\x06R\awebsite\x88\x01\x01\x12\x1f\n" +
+	"\blocation\x18\t \x01(\tH\aR\blocation\x88\x01\x01B\x0f\n" +
 	"\r_display_nameB\v\n" +
 	"\t_usernameB\x10\n" +
 	"\x0e_date_of_birthB\r\n" +
 	"\v_avatar_urlB\x06\n" +
-	"\x04_bio\"S\n" +
+	"\x04_bioB\x12\n" +
+	"\x10_cover_image_urlB\n" +
+	"\n" +
+	"\b_websiteB\v\n" +
+	"\t_location\"S\n" +
 	"\rFollowRequest\x12\x1f\n" +
 	"\vfollower_id\x18\x01 \x01(\tR\n" +
 	"followerId\x12!\n" +
@@ -729,7 +799,7 @@ const file_user_user_proto_rawDesc = "" +
 	".user.UserR\x04user\"4\n" +
 	"\x10UserListResponse\x12 \n" +
 	"\x05users\x18\x01 \x03(\v2\n" +
-	".user.UserR\x05users\"\xaf\x03\n" +
+	".user.UserR\x05users\"\xce\x04\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\x1a\n" +
@@ -737,18 +807,30 @@ const file_user_user_proto_rawDesc = "" +
 	"\x05email\x18\x04 \x01(\tR\x05email\x12\x1d\n" +
 	"\n" +
 	"is_private\x18\x05 \x01(\bR\tisPrivate\x12\x1b\n" +
-	"\tis_active\x18\x06 \x01(\bR\bisActive\x12>\n" +
-	"\rdate_of_birth\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\vdateOfBirth\x12\"\n" +
+	"\tis_active\x18\x06 \x01(\bR\bisActive\x12\"\n" +
+	"\rdate_of_birth\x18\a \x01(\tR\vdateOfBirth\x12\"\n" +
 	"\n" +
 	"avatar_url\x18\b \x01(\tH\x00R\tavatarUrl\x88\x01\x01\x12\x15\n" +
-	"\x03bio\x18\t \x01(\tH\x01R\x03bio\x88\x01\x01\x129\n" +
+	"\x03bio\x18\t \x01(\tH\x01R\x03bio\x88\x01\x01\x12\x1d\n" +
 	"\n" +
 	"created_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	" \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\r\n" +
+	"updated_at\x18\v \x01(\tR\tupdatedAt\x12+\n" +
+	"\x0fcover_image_url\x18\f \x01(\tH\x02R\rcoverImageUrl\x88\x01\x01\x12\x1d\n" +
+	"\awebsite\x18\r \x01(\tH\x03R\awebsite\x88\x01\x01\x12\x1f\n" +
+	"\blocation\x18\x0e \x01(\tH\x04R\blocation\x88\x01\x01\x12\x1f\n" +
+	"\vis_verified\x18\x0f \x01(\bR\n" +
+	"isVerified\x12%\n" +
+	"\flast_seen_at\x18\x10 \x01(\tH\x05R\n" +
+	"lastSeenAt\x88\x01\x01B\r\n" +
 	"\v_avatar_urlB\x06\n" +
-	"\x04_bio2\xe3\x03\n" +
+	"\x04_bioB\x12\n" +
+	"\x10_cover_image_urlB\n" +
+	"\n" +
+	"\b_websiteB\v\n" +
+	"\t_locationB\x0f\n" +
+	"\r_last_seen_at2\xe3\x03\n" +
 	"\vUserService\x12@\n" +
 	"\n" +
 	"GetProfile\x12\x17.user.GetProfileRequest\x1a\x19.user.UserProfileResponse\x12T\n" +
@@ -785,33 +867,29 @@ var file_user_user_proto_goTypes = []any{
 	(*UserProfileResponse)(nil),         // 9: user.UserProfileResponse
 	(*UserListResponse)(nil),            // 10: user.UserListResponse
 	(*User)(nil),                        // 11: user.User
-	(*timestamppb.Timestamp)(nil),       // 12: google.protobuf.Timestamp
 }
 var file_user_user_proto_depIdxs = []int32{
 	11, // 0: user.UserProfileResponse.user:type_name -> user.User
 	11, // 1: user.UserListResponse.users:type_name -> user.User
-	12, // 2: user.User.date_of_birth:type_name -> google.protobuf.Timestamp
-	12, // 3: user.User.created_at:type_name -> google.protobuf.Timestamp
-	12, // 4: user.User.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 5: user.UserService.GetProfile:input_type -> user.GetProfileRequest
-	1,  // 6: user.UserService.GetProfileByUsername:input_type -> user.GetProfileByUsernameRequest
-	2,  // 7: user.UserService.UpdateProfile:input_type -> user.UpdateProfileRequest
-	3,  // 8: user.UserService.Follow:input_type -> user.FollowRequest
-	4,  // 9: user.UserService.Unfollow:input_type -> user.UnfollowRequest
-	5,  // 10: user.UserService.GetFollowers:input_type -> user.GetFollowersRequest
-	6,  // 11: user.UserService.GetFollowing:input_type -> user.GetFollowingRequest
-	9,  // 12: user.UserService.GetProfile:output_type -> user.UserProfileResponse
-	9,  // 13: user.UserService.GetProfileByUsername:output_type -> user.UserProfileResponse
-	9,  // 14: user.UserService.UpdateProfile:output_type -> user.UserProfileResponse
-	7,  // 15: user.UserService.Follow:output_type -> user.FollowResponse
-	8,  // 16: user.UserService.Unfollow:output_type -> user.UnfollowResponse
-	10, // 17: user.UserService.GetFollowers:output_type -> user.UserListResponse
-	10, // 18: user.UserService.GetFollowing:output_type -> user.UserListResponse
-	12, // [12:19] is the sub-list for method output_type
-	5,  // [5:12] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	0,  // 2: user.UserService.GetProfile:input_type -> user.GetProfileRequest
+	1,  // 3: user.UserService.GetProfileByUsername:input_type -> user.GetProfileByUsernameRequest
+	2,  // 4: user.UserService.UpdateProfile:input_type -> user.UpdateProfileRequest
+	3,  // 5: user.UserService.Follow:input_type -> user.FollowRequest
+	4,  // 6: user.UserService.Unfollow:input_type -> user.UnfollowRequest
+	5,  // 7: user.UserService.GetFollowers:input_type -> user.GetFollowersRequest
+	6,  // 8: user.UserService.GetFollowing:input_type -> user.GetFollowingRequest
+	9,  // 9: user.UserService.GetProfile:output_type -> user.UserProfileResponse
+	9,  // 10: user.UserService.GetProfileByUsername:output_type -> user.UserProfileResponse
+	9,  // 11: user.UserService.UpdateProfile:output_type -> user.UserProfileResponse
+	7,  // 12: user.UserService.Follow:output_type -> user.FollowResponse
+	8,  // 13: user.UserService.Unfollow:output_type -> user.UnfollowResponse
+	10, // 14: user.UserService.GetFollowers:output_type -> user.UserListResponse
+	10, // 15: user.UserService.GetFollowing:output_type -> user.UserListResponse
+	9,  // [9:16] is the sub-list for method output_type
+	2,  // [2:9] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_user_user_proto_init() }

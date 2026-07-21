@@ -68,6 +68,18 @@ func (svc *UserService) UpdateProfile(ctx context.Context, userID uuid.UUID, inp
 		profile.AvatarURL = input.AvatarURL
 	}
 
+	if input.CoverImageURL != nil {
+		profile.CoverImageURL = input.CoverImageURL
+	}
+
+	if input.Website != nil {
+		profile.Website = input.Website
+	}
+
+	if input.Location != nil {
+		profile.Location = input.Location
+	}
+
 	if input.Bio != nil {
 		profile.Bio = input.Bio
 	}
@@ -106,17 +118,22 @@ func (svc *UserService) GetProfileByUsername(ctx context.Context, username strin
 func (svc *UserService) toResponse(profile *models.User) *dto.UserProfileResponse {
 	return &dto.UserProfileResponse{
 		User: dto.UserResponse{
-			UserID:      profile.UserID,
-			DisplayName: profile.DisplayName,
-			Username:    profile.Username,
-			Email:       profile.Email,
-			IsPrivate:   profile.IsPrivate,
-			IsActive:    profile.IsActive,
-			DateOfBirth: profile.DateOfBirth,
-			AvatarURL:   profile.AvatarURL,
-			Bio:         profile.Bio,
-			CreatedAt:   profile.CreatedAt,
-			UpdatedAt:   profile.UpdatedAt,
+			UserID:        profile.UserID,
+			DisplayName:   profile.DisplayName,
+			Username:      profile.Username,
+			Email:         profile.Email,
+			IsPrivate:     profile.IsPrivate,
+			IsVerified:    profile.IsVerified,
+			IsActive:      profile.IsActive,
+			DateOfBirth:   profile.DateOfBirth,
+			AvatarURL:     profile.AvatarURL,
+			CoverImageURL: profile.CoverImageURL,
+			Website:       profile.Website,
+			Location:      profile.Location,
+			Bio:           profile.Bio,
+			LastSeenAt:    profile.LastSeenAt,
+			CreatedAt:     profile.CreatedAt,
+			UpdatedAt:     profile.UpdatedAt,
 		},
 	}
 }

@@ -9,7 +9,6 @@ import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 import type { handleUnaryCall, UntypedServiceImplementation } from "@grpc/grpc-js";
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
 import { Observable } from "rxjs";
-import { Timestamp } from "../google/protobuf/timestamp";
 
 export const protobufPackage = "user";
 
@@ -28,6 +27,9 @@ export interface UpdateProfileRequest {
   dateOfBirth?: string | undefined;
   avatarUrl?: string | undefined;
   bio?: string | undefined;
+  coverImageUrl?: string | undefined;
+  website?: string | undefined;
+  location?: string | undefined;
 }
 
 export interface FollowRequest {
@@ -71,11 +73,16 @@ export interface User {
   email: string;
   isPrivate: boolean;
   isActive: boolean;
-  dateOfBirth: Timestamp | undefined;
+  dateOfBirth: string;
   avatarUrl?: string | undefined;
   bio?: string | undefined;
-  createdAt: Timestamp | undefined;
-  updatedAt: Timestamp | undefined;
+  createdAt: string;
+  updatedAt: string;
+  coverImageUrl?: string | undefined;
+  website?: string | undefined;
+  location?: string | undefined;
+  isVerified: boolean;
+  lastSeenAt?: string | undefined;
 }
 
 export const USER_PACKAGE_NAME = "user";
@@ -178,6 +185,15 @@ export const UpdateProfileRequest: MessageFns<UpdateProfileRequest> = {
     if (message.bio !== undefined) {
       writer.uint32(50).string(message.bio);
     }
+    if (message.coverImageUrl !== undefined) {
+      writer.uint32(58).string(message.coverImageUrl);
+    }
+    if (message.website !== undefined) {
+      writer.uint32(66).string(message.website);
+    }
+    if (message.location !== undefined) {
+      writer.uint32(74).string(message.location);
+    }
     return writer;
   },
 
@@ -234,6 +250,30 @@ export const UpdateProfileRequest: MessageFns<UpdateProfileRequest> = {
           }
 
           message.bio = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.coverImageUrl = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.website = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.location = reader.string();
           continue;
         }
       }
@@ -572,9 +612,10 @@ function createBaseUser(): User {
     email: "",
     isPrivate: false,
     isActive: false,
-    dateOfBirth: undefined,
-    createdAt: undefined,
-    updatedAt: undefined,
+    dateOfBirth: "",
+    createdAt: "",
+    updatedAt: "",
+    isVerified: false,
   };
 }
 
@@ -598,8 +639,8 @@ export const User: MessageFns<User> = {
     if (message.isActive !== false) {
       writer.uint32(48).bool(message.isActive);
     }
-    if (message.dateOfBirth !== undefined) {
-      Timestamp.encode(message.dateOfBirth, writer.uint32(58).fork()).join();
+    if (message.dateOfBirth !== "") {
+      writer.uint32(58).string(message.dateOfBirth);
     }
     if (message.avatarUrl !== undefined) {
       writer.uint32(66).string(message.avatarUrl);
@@ -607,11 +648,26 @@ export const User: MessageFns<User> = {
     if (message.bio !== undefined) {
       writer.uint32(74).string(message.bio);
     }
-    if (message.createdAt !== undefined) {
-      Timestamp.encode(message.createdAt, writer.uint32(82).fork()).join();
+    if (message.createdAt !== "") {
+      writer.uint32(82).string(message.createdAt);
     }
-    if (message.updatedAt !== undefined) {
-      Timestamp.encode(message.updatedAt, writer.uint32(90).fork()).join();
+    if (message.updatedAt !== "") {
+      writer.uint32(90).string(message.updatedAt);
+    }
+    if (message.coverImageUrl !== undefined) {
+      writer.uint32(98).string(message.coverImageUrl);
+    }
+    if (message.website !== undefined) {
+      writer.uint32(106).string(message.website);
+    }
+    if (message.location !== undefined) {
+      writer.uint32(114).string(message.location);
+    }
+    if (message.isVerified !== false) {
+      writer.uint32(120).bool(message.isVerified);
+    }
+    if (message.lastSeenAt !== undefined) {
+      writer.uint32(130).string(message.lastSeenAt);
     }
     return writer;
   },
@@ -676,7 +732,7 @@ export const User: MessageFns<User> = {
             break;
           }
 
-          message.dateOfBirth = Timestamp.decode(reader, reader.uint32());
+          message.dateOfBirth = reader.string();
           continue;
         }
         case 8: {
@@ -700,7 +756,7 @@ export const User: MessageFns<User> = {
             break;
           }
 
-          message.createdAt = Timestamp.decode(reader, reader.uint32());
+          message.createdAt = reader.string();
           continue;
         }
         case 11: {
@@ -708,7 +764,47 @@ export const User: MessageFns<User> = {
             break;
           }
 
-          message.updatedAt = Timestamp.decode(reader, reader.uint32());
+          message.updatedAt = reader.string();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.coverImageUrl = reader.string();
+          continue;
+        }
+        case 13: {
+          if (tag !== 106) {
+            break;
+          }
+
+          message.website = reader.string();
+          continue;
+        }
+        case 14: {
+          if (tag !== 114) {
+            break;
+          }
+
+          message.location = reader.string();
+          continue;
+        }
+        case 15: {
+          if (tag !== 120) {
+            break;
+          }
+
+          message.isVerified = reader.bool();
+          continue;
+        }
+        case 16: {
+          if (tag !== 130) {
+            break;
+          }
+
+          message.lastSeenAt = reader.string();
           continue;
         }
       }

@@ -9,7 +9,6 @@ import (
 	userpb "cosmix/shared/grpc/gen/go/user"
 
 	"github.com/google/uuid"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type UserServer struct {
@@ -66,11 +65,14 @@ func (srv *UserServer) UpdateProfile(ctx context.Context, req *userpb.UpdateProf
 		ctx,
 		userId,
 		dto.UpdateProfileDTO{
-			DisplayName: req.DisplayName,
-			Username:    req.Username,
-			DateOfBirth: req.DateOfBirth,
-			AvatarURL:   req.AvatarUrl,
-			Bio:         req.Bio,
+			DisplayName:   req.DisplayName,
+			Username:      req.Username,
+			DateOfBirth:   req.DateOfBirth,
+			AvatarURL:     req.AvatarUrl,
+			CoverImageURL: req.CoverImageUrl,
+			Website:       req.Website,
+			Location:      req.Location,
+			Bio:           req.Bio,
 		},
 	)
 	if err != nil {
@@ -185,31 +187,38 @@ func (srv *UserServer) Unfollow(ctx context.Context, req *userpb.UnfollowRequest
 // }
 
 func mapUser(user dto.UserResponse) *userpb.User {
-	var dateOfBirth *timestamppb.Timestamp
+	dateOfBirth := ""
 	if user.DateOfBirth != nil {
-		dateOfBirth = timestamppb.New(
-			*user.DateOfBirth,
-		)
+		dateOfBirth = user.DateOfBirth.String()
 	}
 
-	var updatedAt *timestamppb.Timestamp
+	updatedAt := ""
 	if user.UpdatedAt != nil {
-		updatedAt = timestamppb.New(
-			*user.UpdatedAt,
-		)
+		updatedAt = user.UpdatedAt.String()
+	}
+
+	var lastSeenAt *string
+	if user.LastSeenAt != nil {
+		s := user.LastSeenAt.String()
+		lastSeenAt = &s
 	}
 
 	return &userpb.User{
-		Id:          user.UserID.String(),
-		DisplayName: user.DisplayName,
-		Username:    user.Username,
-		Email:       user.Email,
-		IsPrivate:   user.IsPrivate,
-		IsActive:    user.IsActive,
-		DateOfBirth: dateOfBirth,
-		AvatarUrl:   user.AvatarURL,
-		Bio:         user.Bio,
-		CreatedAt:   timestamppb.New(user.CreatedAt),
-		UpdatedAt:   updatedAt,
+		Id:            user.UserID.String(),
+		DisplayName:   user.DisplayName,
+		Username:      user.Username,
+		Email:         user.Email,
+		IsPrivate:     user.IsPrivate,
+		IsVerified:    user.IsVerified,
+		IsActive:      user.IsActive,
+		DateOfBirth:   dateOfBirth,
+		AvatarUrl:     user.AvatarURL,
+		CoverImageUrl: user.CoverImageURL,
+		Website:       user.Website,
+		Location:      user.Location,
+		Bio:           user.Bio,
+		LastSeenAt:    lastSeenAt,
+		CreatedAt:     user.CreatedAt.String(),
+		UpdatedAt:     updatedAt,
 	}
 }
