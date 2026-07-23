@@ -11,13 +11,13 @@ import (
 	"notification-service/internal/email"
 
 	"cosmix/shared/core/eventbus"
+	"cosmix/shared/core/logger"
 	"cosmix/shared/core/rabbitmq"
 	"cosmix/shared/grpc/interceptors"
 
 	notificationpb "cosmix/shared/grpc/gen/go/notification"
 
 	"github.com/joho/godotenv"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -31,13 +31,13 @@ func main() {
 		grpcPort = "50053"
 	}
 
-	logger, err := zap.NewProduction()
+	zapLogger, err := logger.New("notification-service")
 	if err != nil {
 		log.Fatalf("failed to initialize logger: %v", err)
 	}
-	defer logger.Sync()
+	defer zapLogger.Sync()
 
-	eventbus.SetLogger(logger)
+	eventbus.SetLogger(zapLogger)
 
 	db, err := database.ConnectDB()
 	if err != nil {
@@ -73,8 +73,8 @@ func main() {
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			interceptors.RequestIDInterceptor,
-			interceptors.LoggingInterceptor(logger),
-			interceptors.RecoveryInterceptor(logger),
+			interceptors.LoggingInterceptor(zapLogger),
+			interceptors.RecoveryInterceptor(zapLogger),
 			interceptors.ErrorInterceptor,
 		),
 	)

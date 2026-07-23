@@ -50,5 +50,15 @@ func RegisterSubscriptions(container *Container) error {
 		return err
 	}
 
+	if err := eventbus.Subscribe(
+		container.Rabbit.Channel,
+		rabbitmq.ExchangeEvents,
+		rabbitmq.NotificationUserProfileUpdatedQueue,
+		rabbitmq.UserProfileUpdated,
+		container.NotificationUserService.HandleUserUpdated,
+	); err != nil {
+		return err
+	}
+
 	return nil
 }

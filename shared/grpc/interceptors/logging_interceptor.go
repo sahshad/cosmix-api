@@ -2,10 +2,12 @@ package interceptors
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 func LoggingInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
@@ -21,14 +23,47 @@ func LoggingInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		duration := time.Since(start)
 		requestID, _ := ctx.Value(RequestIDKey).(string)
 
-		logger.Info(
-			"grpc request",
+		service, method := splitFullMethod(info.FullMethod)
+
+		fields := []zap.Field{
+			zap.String("service", service),
+			zap.String("method", method),
 			zap.String("request_id", requestID),
-			zap.String("method", info.FullMethod),
 			zap.Duration("duration", duration),
-			zap.Error(err),
-		)
+		}
+
+		if err != nil {
+			st, _ := status.FromError(err)
+
+			fields = append(
+				fields,
+				zap.String("full_method", info.FullMethod),
+				zap.String("error", st.Message()),
+			)
+
+			logger.Error("gRPC Request", fields...)
+		} else {
+			logger.Info("gRPC Request", fields...)
+		}
 
 		return resp, err
 	}
+}
+
+// splitFullMethod turns "/pkg.Service/Method" into ("Service", "Method").
+func splitFullMethod(full string) (service, method string) {
+	trimmed := strings.TrimPrefix(full, "/")
+
+	parts := strings.SplitN(trimmed, "/", 2)
+	if len(parts) != 2 {
+		return "", full
+	}
+
+	pkgService, methodName := parts[0], parts[1]
+
+	if idx := strings.LastIndex(pkgService, "."); idx != -1 {
+		return pkgService[idx+1:], methodName
+	}
+
+	return pkgService, methodName
 }

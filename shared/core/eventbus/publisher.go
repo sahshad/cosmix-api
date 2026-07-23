@@ -45,9 +45,9 @@ func Publish(
 	if err != nil {
 
 		getLogger().Error(
-			"event publish failed",
+			"Event Publish Failed",
 			zap.String("routing_key", routingKey),
-			zap.Error(err),
+			zap.String("error", err.Error()),
 		)
 
 		return fmt.Errorf(
@@ -58,7 +58,7 @@ func Publish(
 	}
 
 	getLogger().Info(
-		"event published",
+		"Event Published",
 		zap.String("routing_key", routingKey),
 		zap.String(
 			"correlation_id",

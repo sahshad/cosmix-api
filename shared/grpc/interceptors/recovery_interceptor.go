@@ -22,8 +22,12 @@ func RecoveryInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 
 			if r := recover(); r != nil {
 
+				service, method := splitFullMethod(info.FullMethod)
+
 				logger.Error(
-					"panic recovered",
+					"Panic Recovered",
+					zap.String("service", service),
+					zap.String("method", method),
 					zap.Any("panic", r),
 				)
 

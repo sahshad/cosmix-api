@@ -59,10 +59,6 @@ func (svc *EventService) HandleUserEmailVerificationCompleted(ctx context.Contex
 		return err
 	}
 
-	// if err := svc.EmailLogSvc.SendWelcomeEmail(ctx, event.AuthUserID, event.Email); err != nil {
-	// 	return err
-	// }
-
 	appLink := "http://localhost:3000"
 
 	templateData := map[string]any{

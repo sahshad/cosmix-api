@@ -9,13 +9,13 @@ import (
 	"auth-service/internal/database"
 
 	"cosmix/shared/core/eventbus"
+	"cosmix/shared/core/logger"
 	"cosmix/shared/core/rabbitmq"
 	"cosmix/shared/grpc/interceptors"
 
 	authpb "cosmix/shared/grpc/gen/go/auth"
 
 	"github.com/joho/godotenv"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -29,13 +29,13 @@ func main() {
 		grpcPort = "50051"
 	}
 
-	logger, err := zap.NewProduction()
+	zapLogger, err := logger.New("auth-service")
 	if err != nil {
 		log.Fatalf("failed to initialize logger: %v", err)
 	}
-	defer logger.Sync()
+	defer zapLogger.Sync()
 
-	eventbus.SetLogger(logger)
+	eventbus.SetLogger(zapLogger)
 
 	db, err := database.ConnectDB()
 	if err != nil {
@@ -57,8 +57,8 @@ func main() {
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			interceptors.RequestIDInterceptor,
-			interceptors.LoggingInterceptor(logger),
-			interceptors.RecoveryInterceptor(logger),
+			interceptors.LoggingInterceptor(zapLogger),
+			interceptors.RecoveryInterceptor(zapLogger),
 			interceptors.ErrorInterceptor,
 		),
 	)

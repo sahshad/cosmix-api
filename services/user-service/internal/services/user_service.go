@@ -9,20 +9,28 @@ import (
 	"user-service/internal/models"
 	"user-service/internal/repositories"
 
+	"cosmix/shared/core/eventbus"
+	"cosmix/shared/core/rabbitmq"
+
 	authEvents "cosmix/shared/events/auth"
+	userEvents "cosmix/shared/events/user"
 
 	"github.com/google/uuid"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type UserService struct {
-	repo *repositories.UserRepository
+	repo     *repositories.UserRepository
+	rabbitCh *amqp.Channel
 }
 
 func NewUserService(
 	repo *repositories.UserRepository,
+	rabbitCh *amqp.Channel,
 ) *UserService {
 	return &UserService{
-		repo: repo,
+		repo:     repo,
+		rabbitCh: rabbitCh,
 	}
 }
 
@@ -84,7 +92,34 @@ func (svc *UserService) UpdateProfile(ctx context.Context, userID uuid.UUID, inp
 		profile.Bio = input.Bio
 	}
 
+	now := time.Now().UTC()
+	profile.UpdatedAt = &now
+
 	if err := svc.repo.Update(ctx, profile); err != nil {
+		return nil, err
+	}
+
+	requestID := eventbus.RequestID(ctx)
+	ctx = eventbus.WithCorrelationID(ctx, requestID)
+
+	event := userEvents.UserUpdated{
+		EventVersion: userEvents.EventVersionOne,
+		UserID:       profile.UserID,
+		Username:     profile.Username,
+		DisplayName:  profile.DisplayName,
+		AvatarURL:    profile.AvatarURL,
+		IsVerified:   profile.IsVerified,
+		UpdatedAt:    now,
+	}
+
+	// @Publish - user profile updated
+	if err := eventbus.Publish(
+		ctx,
+		svc.rabbitCh,
+		rabbitmq.ExchangeEvents,
+		rabbitmq.UserProfileUpdated,
+		event,
+	); err != nil {
 		return nil, err
 	}
 

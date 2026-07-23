@@ -23,17 +23,14 @@ services:
     networks:
       - cosmix-net
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: cosmix-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@cosmix.dev
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_SERVER_MODE: 'True'
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: cosmix-cloudbeaver
+    restart: unless-stopped
     ports:
-      - "5050:80"
+      - "8978:8978"
     volumes:
-      - ./infrastructure/pgadmin/servers.json:/pgadmin4/servers.json
+      - cloudbeaver-data:/opt/cloudbeaver/workspace
     depends_on:
       - db
     networks:
@@ -58,3 +55,4 @@ networks:
 volumes:
   pgdata:
   mailpit-data:
+  cloudbeaver-data:

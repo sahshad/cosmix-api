@@ -6,7 +6,6 @@ import (
 	"notification-service/internal/models"
 	"notification-service/internal/repositories"
 
-	// authEvents "cosmix/shared/events/auth"
 	userEvents "cosmix/shared/events/user"
 
 	"github.com/google/uuid"
@@ -24,23 +23,8 @@ func NewNotificationUserService(
 	}
 }
 
-// func (svc *NotificationUserService) HandleAuthUserEmailVerificationCompleted(ctx context.Context, event authEvents.AuthUserEmailVerificationCompleted) error {
-// 	NotificationUser := &models.NotificationUser{
-// 		UserID:      event.AuthUserID,
-// 		Username:    event.Username,
-// 		DisplayName: event.DisplayName,
-// 		CreatedAt:   event.CreatedAt,
-// 	}
-
-// 	if err := svc.repo.Create(ctx, NotificationUser); err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
 func (svc *NotificationUserService) HandleUserUpdated(ctx context.Context, event userEvents.UserUpdated) error {
-	user, err := svc.repo.FindByID(ctx, event.UserID)
+	user, err := svc.repo.FindByUserID(ctx, event.UserID)
 	if err != nil {
 		return err
 	}
@@ -48,6 +32,7 @@ func (svc *NotificationUserService) HandleUserUpdated(ctx context.Context, event
 	user.DisplayName = event.DisplayName
 	user.Username = event.Username
 	user.AvatarURL = event.AvatarURL
+	user.IsVerified = event.IsVerified
 	user.UpdatedAt = &event.UpdatedAt
 
 	if err := svc.repo.Update(ctx, user); err != nil {

@@ -74,12 +74,12 @@ func Subscribe[T any](
 			); err != nil {
 
 				getLogger().Error(
-					"event unmarshal failed",
+					"Event Unmarshal Failed",
 					zap.String(
 						"routing_key",
 						routingKey,
 					),
-					zap.Error(err),
+					zap.String("error", err.Error()),
 				)
 
 				continue
@@ -96,7 +96,7 @@ func Subscribe[T any](
 			}
 
 			getLogger().Info(
-				"event received",
+				"Event Received",
 				zap.String(
 					"routing_key",
 					routingKey,
@@ -115,7 +115,7 @@ func Subscribe[T any](
 			if err != nil {
 
 				getLogger().Error(
-					"event processing failed",
+					"Event Processing Failed",
 					zap.String(
 						"routing_key",
 						routingKey,
@@ -124,14 +124,14 @@ func Subscribe[T any](
 						"correlation_id",
 						CorrelationID(ctx),
 					),
-					zap.Error(err),
+					zap.String("error", err.Error()),
 				)
 
 				continue
 			}
 
 			getLogger().Info(
-				"event processed",
+				"Event Processed",
 				zap.String(
 					"routing_key",
 					routingKey,

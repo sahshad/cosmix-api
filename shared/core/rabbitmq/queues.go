@@ -15,4 +15,8 @@ const (
 
 	// Post Service Queues
 	PostAuthUserEmailVerificationCompletedQueue string = "post.auth.user.email_verification_completed"
+	PostUserProfileUpdatedQueue                 string = "post.user.profile.updated"
+
+	// Notification Service Queues (user)
+	NotificationUserProfileUpdatedQueue string = "notification.user.profile.updated"
 )

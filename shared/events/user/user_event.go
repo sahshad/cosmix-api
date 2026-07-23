@@ -6,17 +6,21 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	EventVersionOne = "1.0.0"
+)
+
 type UserUpdated struct {
-	EventVersion string    `json:"event_version"`
-	UserID       uuid.UUID `json:"user_id"`
-	Username     string    `json:"username"`
-	DisplayName  string    `json:"display_name"`
-	AvatarURL    *string   `json:"avatar_url"`
-	Bio          *string   `json:"bio"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	EventVersion string
+	UserID       uuid.UUID
+	Username     string
+	DisplayName  string
+	AvatarURL    *string
+	IsVerified   bool
+	UpdatedAt    time.Time
 }
 
 type UserDeleted struct {
-	EventVersion string    `json:"event_version"`
-	UserID       uuid.UUID `json:"user_id"`
+	EventVersion string
+	UserID       uuid.UUID
 }
