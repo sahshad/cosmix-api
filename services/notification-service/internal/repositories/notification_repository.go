@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"time"
 
 	"notification-service/internal/dto"
 	"notification-service/internal/models"
@@ -23,10 +24,10 @@ func NewNotificationRepository(
 }
 
 func (repo *NotificationRepository) GetUserNotifications(ctx context.Context, userID uuid.UUID, params dto.PaginationRequest) (*dto.UserNotificationsResponse, error) {
-	var notifications []dto.NotificationList
+	var notifications []models.Notification
 
 	err := repo.db.WithContext(ctx).
-		Table("notifications").
+		Model(&models.Notification{}).
 		Where("user_id = ?", userID).
 		Order("created_at DESC").
 		Limit(int(params.Limit)).
@@ -40,7 +41,29 @@ func (repo *NotificationRepository) GetUserNotifications(ctx context.Context, us
 	totalCount := uint(len(notifications))
 	totalPages := (uint(len(notifications)) + params.Limit - 1) / params.Limit
 
-	return &dto.UserNotificationsResponse{Notifications: notifications, Pagination: dto.PaginationResponse{
+	notificationList := make([]dto.NotificationList, 0, len(notifications))
+	for _, n := range notifications {
+		notificationList = append(notificationList, dto.NotificationList{
+			ID:               n.ID,
+			UserID:           n.UserID,
+			ActorID:          n.ActorID,
+			ActorUsername:    n.ActorUsername,
+			ActorDisplayName: n.ActorDisplayName,
+			ActorAvatarURL:   n.ActorAvatarURL,
+			Type:             n.Type,
+			EntityID:         n.EntityID,
+			EntityType:       n.EntityType,
+			Title:            n.Title,
+			Body:             n.Body,
+			ImageURL:         n.ImageURL,
+			ActionURL:        n.ActionURL,
+			IsRead:           n.IsRead,
+			ReadAt:           n.ReadAt,
+			CreatedAt:        n.CreatedAt.Format(time.RFC3339),
+		})
+	}
+
+	return &dto.UserNotificationsResponse{Notifications: notificationList, Pagination: dto.PaginationResponse{
 		Page:       params.Page,
 		Limit:      params.Limit,
 		TotalCount: totalCount,

@@ -224,8 +224,8 @@ func (svc *AuthUserService) Login(ctx context.Context, input dto.LoginDTO) (*dto
 			IsActive:      authUser.IsActive,
 			EmailVerified: authUser.EmailVerified,
 			LastLoginAt:   authUser.LastLoginAt,
-			CreatedAt:     authUser.CreatedAt,
-			UpdatedAt:     authUser.UpdatedAt,
+			CreatedAt:     authUser.CreatedAt.Format(time.RFC3339),
+			UpdatedAt:     formatTimePtr(authUser.UpdatedAt),
 		},
 	}, nil
 }
@@ -388,4 +388,11 @@ func (svc *AuthUserService) ResetPassword(ctx context.Context, req dto.ResetPass
 	}
 
 	return nil
+}
+
+func formatTimePtr(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+	return t.Format(time.RFC3339)
 }

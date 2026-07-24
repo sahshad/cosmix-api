@@ -61,7 +61,7 @@ message Notification {
   bool is_read = 14;
 
   google.protobuf.Timestamp read_at = 15;
-  google.protobuf.Timestamp created_at = 16;
+  string created_at = 16;
 }
 
 message Pagination {

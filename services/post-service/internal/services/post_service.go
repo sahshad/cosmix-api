@@ -59,12 +59,12 @@ func (svc *PostService) GetPostByID(ctx context.Context, id uuid.UUID) (*models.
 	return svc.repo.FindByID(ctx, id)
 }
 
-func (svc *PostService) GetFeed(ctx context.Context, params *dto.PaginationRequest) (*dto.PostListResponse, error) {
-	return svc.repo.GetFeed(ctx, params)
+func (svc *PostService) GetFeed(ctx context.Context, viewerID uuid.UUID, params *dto.PaginationRequest) (*dto.PostListResponse, error) {
+	return svc.repo.GetFeed(ctx, viewerID, params)
 }
 
-func (svc *PostService) GetUserPosts(ctx context.Context, userID uuid.UUID, params *dto.PaginationRequest) (*dto.PostListResponse, error) {
-	return svc.repo.GetUserPosts(ctx, userID, params)
+func (svc *PostService) GetUserPosts(ctx context.Context, userID uuid.UUID, viewerID uuid.UUID, params *dto.PaginationRequest) (*dto.PostListResponse, error) {
+	return svc.repo.GetUserPosts(ctx, userID, viewerID, params)
 }
 
 func (svc *PostService) UpdatePost(ctx context.Context, id uuid.UUID, userID uuid.UUID, req *dto.UpdatePostRequest) (*models.Post, error) {

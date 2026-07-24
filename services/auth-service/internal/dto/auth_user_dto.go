@@ -7,6 +7,6 @@ type AuthUserDTO struct {
 	IsActive      bool
 	EmailVerified bool
 	LastLoginAt   *time.Time
-	CreatedAt     time.Time
-	UpdatedAt     *time.Time
+	CreatedAt     string
+	UpdatedAt     string
 }

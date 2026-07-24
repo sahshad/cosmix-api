@@ -101,6 +101,6 @@ message AuthUser {
   bool email_verified = 3;
 
   google.protobuf.Timestamp last_login_at = 4;
-  google.protobuf.Timestamp created_at = 5;
-  google.protobuf.Timestamp updated_at = 6;
+  string created_at = 5;
+  string updated_at = 6;
 }

@@ -192,11 +192,6 @@ func mapUser(user dto.UserResponse) *userpb.User {
 		dateOfBirth = user.DateOfBirth.String()
 	}
 
-	updatedAt := ""
-	if user.UpdatedAt != nil {
-		updatedAt = user.UpdatedAt.String()
-	}
-
 	var lastSeenAt *string
 	if user.LastSeenAt != nil {
 		s := user.LastSeenAt.String()
@@ -218,7 +213,7 @@ func mapUser(user dto.UserResponse) *userpb.User {
 		Location:      user.Location,
 		Bio:           user.Bio,
 		LastSeenAt:    lastSeenAt,
-		CreatedAt:     user.CreatedAt.String(),
-		UpdatedAt:     updatedAt,
+		CreatedAt:     user.CreatedAt,
+		UpdatedAt:     user.UpdatedAt,
 	}
 }

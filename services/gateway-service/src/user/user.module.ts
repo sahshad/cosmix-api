@@ -19,6 +19,9 @@ import { join } from 'path';
             __dirname,
             '../../../../shared/grpc/proto/user/user.proto',
           ),
+          loader: {
+            defaults: true,
+          },
         },
       },
     ]),

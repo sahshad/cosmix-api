@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"post-service/internal/models"
 	"post-service/internal/repositories"
@@ -32,6 +33,7 @@ func NewLikeService(
 }
 
 func (svc *LikeService) LikePost(ctx context.Context, postID uuid.UUID, userID uuid.UUID) error {
+	fmt.Println("in the like service")
 	_, err := svc.postRepo.FindByID(ctx, postID)
 	if err != nil {
 		return errors.New("post not found")
@@ -49,11 +51,23 @@ func (svc *LikeService) LikePost(ctx context.Context, postID uuid.UUID, userID u
 		PostID: postID,
 		UserID: userID,
 	}
-	return svc.repo.Create(ctx, like)
+	if err := svc.repo.Create(ctx, like); err != nil {
+		return err
+	}
+
+	return svc.postRepo.IncrementLikesCount(ctx, postID, 1)
 }
 
 func (svc *LikeService) UnlikePost(ctx context.Context, postID uuid.UUID, userID uuid.UUID) error {
-	return svc.repo.Delete(ctx, postID, userID)
+	rows, err := svc.repo.Delete(ctx, postID, userID)
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return nil
+	}
+
+	return svc.postRepo.IncrementLikesCount(ctx, postID, -1)
 }
 
 func (svc *LikeService) GetLikesCount(ctx context.Context, postID uuid.UUID) (int64, error) {

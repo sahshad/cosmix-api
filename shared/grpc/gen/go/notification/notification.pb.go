@@ -231,7 +231,7 @@ type Notification struct {
 	ActionUrl        *string                `protobuf:"bytes,13,opt,name=action_url,json=actionUrl,proto3,oneof" json:"action_url,omitempty"`
 	IsRead           bool                   `protobuf:"varint,14,opt,name=is_read,json=isRead,proto3" json:"is_read,omitempty"`
 	ReadAt           *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=read_at,json=readAt,proto3" json:"read_at,omitempty"`
-	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	CreatedAt        string                 `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -371,11 +371,11 @@ func (x *Notification) GetReadAt() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *Notification) GetCreatedAt() *timestamppb.Timestamp {
+func (x *Notification) GetCreatedAt() string {
 	if x != nil {
 		return x.CreatedAt
 	}
-	return nil
+	return ""
 }
 
 type Pagination struct {
@@ -462,7 +462,7 @@ const file_notification_notification_proto_rawDesc = "" +
 	"\rnotifications\x18\x01 \x03(\v2\x1a.notification.NotificationR\rnotifications\x128\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x18.notification.PaginationR\n" +
-	"pagination\"\xc1\x05\n" +
+	"pagination\"\xa5\x05\n" +
 	"\fNotification\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1e\n" +
@@ -481,9 +481,9 @@ const file_notification_notification_proto_rawDesc = "" +
 	"\n" +
 	"action_url\x18\r \x01(\tH\aR\tactionUrl\x88\x01\x01\x12\x17\n" +
 	"\ais_read\x18\x0e \x01(\bR\x06isRead\x123\n" +
-	"\aread_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\x06readAt\x129\n" +
+	"\aread_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\x06readAt\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\v\n" +
+	"created_at\x18\x10 \x01(\tR\tcreatedAtB\v\n" +
 	"\t_actor_idB\x11\n" +
 	"\x0f_actor_usernameB\x15\n" +
 	"\x13_actor_display_nameB\x13\n" +
@@ -532,16 +532,15 @@ var file_notification_notification_proto_depIdxs = []int32{
 	4, // 0: notification.UserNotificationsResponse.notifications:type_name -> notification.Notification
 	5, // 1: notification.UserNotificationsResponse.pagination:type_name -> notification.Pagination
 	6, // 2: notification.Notification.read_at:type_name -> google.protobuf.Timestamp
-	6, // 3: notification.Notification.created_at:type_name -> google.protobuf.Timestamp
-	2, // 4: notification.NotificationService.GetUserNotifications:input_type -> notification.GetUserNotificationsRequest
-	0, // 5: notification.NotificationService.HealthCheck:input_type -> notification.HealthCheckRequest
-	3, // 6: notification.NotificationService.GetUserNotifications:output_type -> notification.UserNotificationsResponse
-	1, // 7: notification.NotificationService.HealthCheck:output_type -> notification.HealthCheckResponse
-	6, // [6:8] is the sub-list for method output_type
-	4, // [4:6] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	2, // 3: notification.NotificationService.GetUserNotifications:input_type -> notification.GetUserNotificationsRequest
+	0, // 4: notification.NotificationService.HealthCheck:input_type -> notification.HealthCheckRequest
+	3, // 5: notification.NotificationService.GetUserNotifications:output_type -> notification.UserNotificationsResponse
+	1, // 6: notification.NotificationService.HealthCheck:output_type -> notification.HealthCheckResponse
+	5, // [5:7] is the sub-list for method output_type
+	3, // [3:5] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_notification_notification_proto_init() }

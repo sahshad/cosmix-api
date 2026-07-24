@@ -1,8 +1,6 @@
 package dto
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 )
 
@@ -20,8 +18,8 @@ type Media struct {
 	URL       string
 	Type      string
 	Duration  *int
-	CreatedAt time.Time
-	UpdatedAt *time.Time
+	CreatedAt string
+	UpdatedAt string
 }
 
 type User struct {
@@ -29,16 +27,17 @@ type User struct {
 	Email       string
 	Username    string
 	DisplayName string
-	CreatedAt   time.Time
-	UpdatedAt   *time.Time
+	AvatarURL   string
+	CreatedAt   string
+	UpdatedAt   string
 }
 
 type Like struct {
 	ID        uuid.UUID
 	PostID    uuid.UUID
 	AuthorID  uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt string
+	UpdatedAt string
 }
 
 type Comment struct {
@@ -46,8 +45,8 @@ type Comment struct {
 	PostID    uuid.UUID
 	AuthorID  uuid.UUID
 	Content   string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt string
+	UpdatedAt string
 }
 
 type PostList struct {
@@ -55,8 +54,11 @@ type PostList struct {
 	Content       string
 	LikesCount    int
 	CommentsCount int
-	CreatedAt     time.Time
-	UpdatedAt     *time.Time
+	SharesCount   int
+	IsLiked       bool
+	IsOwner       bool
+	CreatedAt     string
+	UpdatedAt     string
 	User          User
 	Media         []Media
 	// Likes     []Like
@@ -69,12 +71,18 @@ type PostListResponse struct {
 }
 
 type CommentList struct {
-	ID        uuid.UUID
-	PostID    uuid.UUID
-	AuthorID  uuid.UUID
-	Content   string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID              uuid.UUID
+	PostID          uuid.UUID
+	AuthorID        uuid.UUID
+	ParentCommentID *uuid.UUID
+	Content         string
+	LikesCount      int
+	RepliesCount    int
+	IsLiked         bool
+	IsOwner         bool
+	CreatedAt       string
+	UpdatedAt       string
+	User            User
 }
 
 type CommentListResponse struct {
@@ -93,7 +101,8 @@ type UpdatePostRequest struct {
 }
 
 type CreateCommentRequest struct {
-	Content string
+	Content         string
+	ParentCommentID *uuid.UUID
 }
 
 type UpdateCommentRequest struct {
@@ -101,13 +110,13 @@ type UpdateCommentRequest struct {
 }
 
 type PaginationRequest struct {
-	Page  int64
-	Limit int64
+	Page  int32
+	Limit int32
 }
 
 type PaginationResponse struct {
-	TotalCount int64
-	Page       int64
-	Limit      int64
-	TotalPages int64
+	TotalCount int32
+	Page       int32
+	Limit      int32
+	TotalPages int32
 }

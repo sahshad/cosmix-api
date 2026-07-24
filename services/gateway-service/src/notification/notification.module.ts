@@ -19,6 +19,9 @@ import { join } from 'path';
             __dirname,
             '../../../../shared/grpc/proto/notification/notification.proto',
           ),
+          loader: {
+            defaults: true,
+          },
         },
       },
     ]),

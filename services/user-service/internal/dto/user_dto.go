@@ -36,8 +36,8 @@ type UserResponse struct {
 	Location      *string
 	Bio           *string
 	LastSeenAt    *time.Time
-	CreatedAt     time.Time
-	UpdatedAt     *time.Time
+	CreatedAt     string
+	UpdatedAt     string
 }
 
 type UserCreatedFromDTO struct {
@@ -45,5 +45,5 @@ type UserCreatedFromDTO struct {
 	Email      string
 	FirstName  string
 	LastName   string
-	CreatedAt  time.Time
+	CreatedAt  string
 }

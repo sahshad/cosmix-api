@@ -19,6 +19,9 @@ import { AUTH_PACKAGE_NAME } from '../generated/auth/auth';
             __dirname,
             '../../../../shared/grpc/proto/auth/auth.proto',
           ),
+          loader: {
+            defaults: true,
+          },
         },
       },
     ]),

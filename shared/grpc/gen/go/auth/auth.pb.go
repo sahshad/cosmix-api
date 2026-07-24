@@ -724,8 +724,8 @@ type AuthUser struct {
 	IsActive      bool                   `protobuf:"varint,2,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
 	EmailVerified bool                   `protobuf:"varint,3,opt,name=email_verified,json=emailVerified,proto3" json:"email_verified,omitempty"`
 	LastLoginAt   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=last_login_at,json=lastLoginAt,proto3" json:"last_login_at,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -788,18 +788,18 @@ func (x *AuthUser) GetLastLoginAt() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *AuthUser) GetCreatedAt() *timestamppb.Timestamp {
+func (x *AuthUser) GetCreatedAt() string {
 	if x != nil {
 		return x.CreatedAt
 	}
-	return nil
+	return ""
 }
 
-func (x *AuthUser) GetUpdatedAt() *timestamppb.Timestamp {
+func (x *AuthUser) GetUpdatedAt() string {
 	if x != nil {
 		return x.UpdatedAt
 	}
-	return nil
+	return ""
 }
 
 var File_auth_auth_proto protoreflect.FileDescriptor
@@ -844,16 +844,16 @@ const file_auth_auth_proto_rawDesc = "" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
 	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\"6\n" +
 	"\x1aUpdateUserPasswordResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\"\x9a\x02\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\"\xe2\x01\n" +
 	"\bAuthUser\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1b\n" +
 	"\tis_active\x18\x02 \x01(\bR\bisActive\x12%\n" +
 	"\x0eemail_verified\x18\x03 \x01(\bR\remailVerified\x12>\n" +
-	"\rlast_login_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vlastLoginAt\x129\n" +
+	"\rlast_login_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vlastLoginAt\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\x05 \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt2\xe6\x03\n" +
+	"updated_at\x18\x06 \x01(\tR\tupdatedAt2\xe6\x03\n" +
 	"\vAuthService\x129\n" +
 	"\bRegister\x12\x15.auth.RegisterRequest\x1a\x16.auth.RegisterResponse\x12B\n" +
 	"\vVerifyEmail\x12\x18.auth.VerifyEmailRequest\x1a\x19.auth.VerifyEmailResponse\x120\n" +
@@ -897,27 +897,25 @@ var file_auth_auth_proto_goTypes = []any{
 var file_auth_auth_proto_depIdxs = []int32{
 	14, // 0: auth.LoginResponse.user:type_name -> auth.AuthUser
 	15, // 1: auth.AuthUser.last_login_at:type_name -> google.protobuf.Timestamp
-	15, // 2: auth.AuthUser.created_at:type_name -> google.protobuf.Timestamp
-	15, // 3: auth.AuthUser.updated_at:type_name -> google.protobuf.Timestamp
-	4,  // 4: auth.AuthService.Register:input_type -> auth.RegisterRequest
-	6,  // 5: auth.AuthService.VerifyEmail:input_type -> auth.VerifyEmailRequest
-	8,  // 6: auth.AuthService.Login:input_type -> auth.LoginRequest
-	10, // 7: auth.AuthService.Refresh:input_type -> auth.RefreshRequest
-	12, // 8: auth.AuthService.UpdateUserPassword:input_type -> auth.UpdateUserPasswordRequest
-	2,  // 9: auth.AuthService.ForgotPassword:input_type -> auth.ForgotPasswordRequest
-	0,  // 10: auth.AuthService.ResetPassword:input_type -> auth.ResetPasswordRequest
-	5,  // 11: auth.AuthService.Register:output_type -> auth.RegisterResponse
-	7,  // 12: auth.AuthService.VerifyEmail:output_type -> auth.VerifyEmailResponse
-	9,  // 13: auth.AuthService.Login:output_type -> auth.LoginResponse
-	11, // 14: auth.AuthService.Refresh:output_type -> auth.RefreshResponse
-	13, // 15: auth.AuthService.UpdateUserPassword:output_type -> auth.UpdateUserPasswordResponse
-	3,  // 16: auth.AuthService.ForgotPassword:output_type -> auth.ForgotPasswordResponse
-	1,  // 17: auth.AuthService.ResetPassword:output_type -> auth.ResetPasswordResponse
-	11, // [11:18] is the sub-list for method output_type
-	4,  // [4:11] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	4,  // 2: auth.AuthService.Register:input_type -> auth.RegisterRequest
+	6,  // 3: auth.AuthService.VerifyEmail:input_type -> auth.VerifyEmailRequest
+	8,  // 4: auth.AuthService.Login:input_type -> auth.LoginRequest
+	10, // 5: auth.AuthService.Refresh:input_type -> auth.RefreshRequest
+	12, // 6: auth.AuthService.UpdateUserPassword:input_type -> auth.UpdateUserPasswordRequest
+	2,  // 7: auth.AuthService.ForgotPassword:input_type -> auth.ForgotPasswordRequest
+	0,  // 8: auth.AuthService.ResetPassword:input_type -> auth.ResetPasswordRequest
+	5,  // 9: auth.AuthService.Register:output_type -> auth.RegisterResponse
+	7,  // 10: auth.AuthService.VerifyEmail:output_type -> auth.VerifyEmailResponse
+	9,  // 11: auth.AuthService.Login:output_type -> auth.LoginResponse
+	11, // 12: auth.AuthService.Refresh:output_type -> auth.RefreshResponse
+	13, // 13: auth.AuthService.UpdateUserPassword:output_type -> auth.UpdateUserPasswordResponse
+	3,  // 14: auth.AuthService.ForgotPassword:output_type -> auth.ForgotPasswordResponse
+	1,  // 15: auth.AuthService.ResetPassword:output_type -> auth.ResetPasswordResponse
+	9,  // [9:16] is the sub-list for method output_type
+	2,  // [2:9] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_auth_auth_proto_init() }

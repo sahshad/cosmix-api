@@ -100,6 +100,6 @@ func mapNotification(item dto.NotificationList) *notificationpb.Notification {
 		ActionUrl:        item.ActionURL,
 		IsRead:           item.IsRead,
 		ReadAt:           readAt,
-		CreatedAt:        timestamppb.New(item.CreatedAt),
+		CreatedAt:        item.CreatedAt,
 	}
 }

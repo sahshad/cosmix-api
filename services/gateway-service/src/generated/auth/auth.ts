@@ -84,8 +84,8 @@ export interface AuthUser {
   isActive: boolean;
   emailVerified: boolean;
   lastLoginAt: Timestamp | undefined;
-  createdAt: Timestamp | undefined;
-  updatedAt: Timestamp | undefined;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const AUTH_PACKAGE_NAME = "auth";
@@ -719,14 +719,7 @@ export const UpdateUserPasswordResponse: MessageFns<UpdateUserPasswordResponse> 
 };
 
 function createBaseAuthUser(): AuthUser {
-  return {
-    email: "",
-    isActive: false,
-    emailVerified: false,
-    lastLoginAt: undefined,
-    createdAt: undefined,
-    updatedAt: undefined,
-  };
+  return { email: "", isActive: false, emailVerified: false, lastLoginAt: undefined, createdAt: "", updatedAt: "" };
 }
 
 export const AuthUser: MessageFns<AuthUser> = {
@@ -743,11 +736,11 @@ export const AuthUser: MessageFns<AuthUser> = {
     if (message.lastLoginAt !== undefined) {
       Timestamp.encode(message.lastLoginAt, writer.uint32(34).fork()).join();
     }
-    if (message.createdAt !== undefined) {
-      Timestamp.encode(message.createdAt, writer.uint32(42).fork()).join();
+    if (message.createdAt !== "") {
+      writer.uint32(42).string(message.createdAt);
     }
-    if (message.updatedAt !== undefined) {
-      Timestamp.encode(message.updatedAt, writer.uint32(50).fork()).join();
+    if (message.updatedAt !== "") {
+      writer.uint32(50).string(message.updatedAt);
     }
     return writer;
   },
@@ -796,7 +789,7 @@ export const AuthUser: MessageFns<AuthUser> = {
             break;
           }
 
-          message.createdAt = Timestamp.decode(reader, reader.uint32());
+          message.createdAt = reader.string();
           continue;
         }
         case 6: {
@@ -804,7 +797,7 @@ export const AuthUser: MessageFns<AuthUser> = {
             break;
           }
 
-          message.updatedAt = Timestamp.decode(reader, reader.uint32());
+          message.updatedAt = reader.string();
           continue;
         }
       }

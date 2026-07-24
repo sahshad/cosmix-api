@@ -22,7 +22,7 @@ type NotificationList struct {
 	ActionURL        *string
 	IsRead           bool
 	ReadAt           *time.Time
-	CreatedAt        time.Time
+	CreatedAt        string
 }
 
 type UserNotificationsResponse struct {

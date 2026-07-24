@@ -22,9 +22,9 @@ type LikeRepository struct {
 
 func NewLikeRepository(
 	db *gorm.DB,
-	) *LikeRepository {
+) *LikeRepository {
 	return &LikeRepository{
-	 NewBaseRepository[models.Like](db),
+		NewBaseRepository[models.Like](db),
 	}
 }
 
@@ -32,8 +32,9 @@ func NewLikeRepository(
 // 	return repo.db.WithContext(ctx).Create(like).Error
 // }
 
-func (repo *LikeRepository) Delete(ctx context.Context, postID uuid.UUID, userID uuid.UUID) error {
-	return repo.db.WithContext(ctx).Where("post_id = ? AND user_id = ?", postID, userID).Delete(&models.Like{}).Error
+func (repo *LikeRepository) Delete(ctx context.Context, postID uuid.UUID, userID uuid.UUID) (int64, error) {
+	tx := repo.db.WithContext(ctx).Where("post_id = ? AND user_id = ?", postID, userID).Delete(&models.Like{})
+	return tx.RowsAffected, tx.Error
 }
 
 func (repo *LikeRepository) CountByPostID(ctx context.Context, postID uuid.UUID) (int64, error) {

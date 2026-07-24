@@ -167,8 +167,15 @@ func (svc *UserService) toResponse(profile *models.User) *dto.UserProfileRespons
 			Location:      profile.Location,
 			Bio:           profile.Bio,
 			LastSeenAt:    profile.LastSeenAt,
-			CreatedAt:     profile.CreatedAt,
-			UpdatedAt:     profile.UpdatedAt,
+			CreatedAt:     profile.CreatedAt.Format(time.RFC3339),
+			UpdatedAt:     formatTimePtr(profile.UpdatedAt),
 		},
 	}
+}
+
+func formatTimePtr(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+	return t.Format(time.RFC3339)
 }

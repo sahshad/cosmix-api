@@ -38,8 +38,12 @@ export class PostGrpcService {
     return firstValueFrom(this.client.getPost({ postId }))
   }
 
-  getFeed(page: number, limit: number): Promise<PostListResponse> {
-    return firstValueFrom(this.client.getFeed({ page, limit }))
+  getFeed(page: number, limit: number, userId?: string): Promise<PostListResponse> {
+    return firstValueFrom(this.client.getFeed({ page, limit, userId: userId ?? '' }))
+  }
+
+  getUserPosts(userId: string, page: number, limit: number, viewerId?: string): Promise<PostListResponse> {
+    return firstValueFrom(this.client.getUserPosts({ userId, page, limit, viewerId: viewerId ?? '' }))
   }
 
   updatePost(postId: string, authorId: string, body: any): Promise<PostResponse> {
@@ -58,12 +62,16 @@ export class PostGrpcService {
     return firstValueFrom(this.client.unlikePost({ postId, userId }))
   }
 
-  createComment(postId: string,authorId: string,content: string): Promise<CommentResponse> {
-    return firstValueFrom(this.client.createComment({ postId,authorId,content}))
+  createComment(postId: string, authorId: string, content: string, parentCommentId?: string): Promise<CommentResponse> {
+    return firstValueFrom(this.client.createComment({ postId, authorId, content, parentCommentId: parentCommentId ?? '' }))
   }
 
-  getComments(postId: string,page: number,limit: number): Promise<CommentListResponse> {
-    return firstValueFrom(this.client.getComments({ postId,page,limit}))
+  getComments(postId: string, page: number, limit: number, userId?: string): Promise<CommentListResponse> {
+    return firstValueFrom(this.client.getComments({ postId, page, limit, userId: userId ?? '' }))
+  }
+
+  getReplies(commentId: string, page: number, limit: number, userId?: string): Promise<CommentListResponse> {
+    return firstValueFrom(this.client.getReplies({ commentId, page, limit, userId: userId ?? '' }))
   }
 
   updateComment(commentId: string,authorId: string,content: string): Promise<CommentResponse> {
@@ -72,5 +80,13 @@ export class PostGrpcService {
 
   deleteComment(commentId: string,authorId: string): Promise<MessageResponse> {
     return firstValueFrom(this.client.deleteComment({ commentId,authorId}))
+  }
+
+  likeComment(commentId: string, userId: string): Promise<MessageResponse> {
+    return firstValueFrom(this.client.likeComment({ commentId, userId }))
+  }
+
+  unlikeComment(commentId: string, userId: string): Promise<MessageResponse> {
+    return firstValueFrom(this.client.unlikeComment({ commentId, userId }))
   }
 }

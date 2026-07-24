@@ -47,7 +47,7 @@ export interface Notification {
   actionUrl?: string | undefined;
   isRead: boolean;
   readAt: Timestamp | undefined;
-  createdAt: Timestamp | undefined;
+  createdAt: string;
 }
 
 export interface Pagination {
@@ -230,7 +230,7 @@ export const UserNotificationsResponse: MessageFns<UserNotificationsResponse> = 
 };
 
 function createBaseNotification(): Notification {
-  return { id: "", userId: "", type: "", title: "", body: "", isRead: false, readAt: undefined, createdAt: undefined };
+  return { id: "", userId: "", type: "", title: "", body: "", isRead: false, readAt: undefined, createdAt: "" };
 }
 
 export const Notification: MessageFns<Notification> = {
@@ -280,8 +280,8 @@ export const Notification: MessageFns<Notification> = {
     if (message.readAt !== undefined) {
       Timestamp.encode(message.readAt, writer.uint32(122).fork()).join();
     }
-    if (message.createdAt !== undefined) {
-      Timestamp.encode(message.createdAt, writer.uint32(130).fork()).join();
+    if (message.createdAt !== "") {
+      writer.uint32(130).string(message.createdAt);
     }
     return writer;
   },
@@ -418,7 +418,7 @@ export const Notification: MessageFns<Notification> = {
             break;
           }
 
-          message.createdAt = Timestamp.decode(reader, reader.uint32());
+          message.createdAt = reader.string();
           continue;
         }
       }

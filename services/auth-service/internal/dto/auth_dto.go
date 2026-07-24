@@ -1,8 +1,6 @@
 package dto
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 )
 
@@ -26,7 +24,7 @@ type LoginDTO struct {
 type UserUpdatedFromDTO struct {
 	AuthUserID uuid.UUID
 	Email      string
-	UpdatedAt  time.Time
+	UpdatedAt  string
 }
 
 type UpdateUserPasswordDTO struct {

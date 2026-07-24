@@ -13,6 +13,7 @@ import {
 import { PostGrpcService } from './post-client.service';
 
 import { AuthGuard } from '../common/guard/auth.guard';
+import { OptionalAuthGuard } from '../common/guard/optional-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 import { CreatePostDto } from './dto/create-post.dto';
@@ -38,14 +39,33 @@ export class PostController {
     );
   }
 
+  @UseGuards(OptionalAuthGuard)
   @Get()
   getFeed(
+    @CurrentUser() user: { userId: string } | undefined,
     @Query('page') page = '1',
     @Query('limit') limit = '20',
   ) {
     return this.postGrpc.getFeed(
       Number(page),
       Number(limit),
+      user?.userId,
+    );
+  }
+
+  @UseGuards(OptionalAuthGuard)
+  @Get('user/:userId')
+  getUserPosts(
+    @Param('userId') userId: string,
+    @CurrentUser() user: { userId: string } | undefined,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+  ) {
+    return this.postGrpc.getUserPosts(
+      userId,
+      Number(page),
+      Number(limit),
+      user?.userId,
     );
   }
 
@@ -119,12 +139,15 @@ export class PostController {
       id,
       user.userId,
       body.content,
+      body.parentCommentId,
     );
   }
 
+  @UseGuards(OptionalAuthGuard)
   @Get(':id/comment')
   getComments(
     @Param('id') id: string,
+    @CurrentUser() user: { userId: string } | undefined,
     @Query('page') page = '1',
     @Query('limit') limit = '10',
   ) {
@@ -132,6 +155,47 @@ export class PostController {
       id,
       Number(page),
       Number(limit),
+      user?.userId,
+    );
+  }
+
+  @UseGuards(OptionalAuthGuard)
+  @Get('comment/:commentId/replies')
+  getReplies(
+    @Param('commentId') commentId: string,
+    @CurrentUser() user: { userId: string } | undefined,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    return this.postGrpc.getReplies(
+      commentId,
+      Number(page),
+      Number(limit),
+      user?.userId,
+    );
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('comment/:commentId/like')
+  likeComment(
+    @Param('commentId') commentId: string,
+    @CurrentUser() user: { userId: string },
+  ) {
+    return this.postGrpc.likeComment(
+      commentId,
+      user.userId,
+    );
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('comment/:commentId/like')
+  unlikeComment(
+    @Param('commentId') commentId: string,
+    @CurrentUser() user: { userId: string },
+  ) {
+    return this.postGrpc.unlikeComment(
+      commentId,
+      user.userId,
     );
   }
 

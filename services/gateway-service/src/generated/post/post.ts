@@ -9,7 +9,6 @@ import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 import type { handleUnaryCall, UntypedServiceImplementation } from "@grpc/grpc-js";
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
 import { Observable } from "rxjs";
-import { Timestamp } from "../google/protobuf/timestamp";
 
 export const protobufPackage = "post";
 
@@ -38,8 +37,8 @@ export interface Media {
   url: string;
   type: string;
   duration: number;
-  createdAt: Timestamp | undefined;
-  updatedAt: Timestamp | undefined;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface User {
@@ -47,8 +46,9 @@ export interface User {
   email: string;
   username: string;
   displayName: string;
-  createdAt: Timestamp | undefined;
-  updatedAt: Timestamp | undefined;
+  createdAt: string;
+  updatedAt: string;
+  avatarUrl: string;
 }
 
 export interface Post {
@@ -56,10 +56,13 @@ export interface Post {
   content: string;
   likesCount: number;
   commentsCount: number;
-  createdAt: Timestamp | undefined;
-  updatedAt: Timestamp | undefined;
+  createdAt: string;
+  updatedAt: string;
   user: User | undefined;
   media: Media[];
+  sharesCount: number;
+  isLiked: boolean;
+  isOwner: boolean;
 }
 
 export interface Comment {
@@ -67,8 +70,14 @@ export interface Comment {
   postId: string;
   authorId: string;
   content: string;
-  createdAt: Timestamp | undefined;
-  updatedAt: Timestamp | undefined;
+  createdAt: string;
+  updatedAt: string;
+  user: User | undefined;
+  likesCount: number;
+  repliesCount: number;
+  isLiked: boolean;
+  parentCommentId: string;
+  isOwner: boolean;
 }
 
 export interface PostResponse {
@@ -96,6 +105,14 @@ export interface GetPostRequest {
 export interface GetFeedRequest {
   page: number;
   limit: number;
+  userId: string;
+}
+
+export interface GetUserPostsRequest {
+  userId: string;
+  page: number;
+  limit: number;
+  viewerId: string;
 }
 
 export interface CreatePostRequest {
@@ -130,12 +147,31 @@ export interface CreateCommentRequest {
   postId: string;
   authorId: string;
   content: string;
+  parentCommentId: string;
 }
 
 export interface GetCommentsRequest {
   postId: string;
   page: number;
   limit: number;
+  userId: string;
+}
+
+export interface GetRepliesRequest {
+  commentId: string;
+  page: number;
+  limit: number;
+  userId: string;
+}
+
+export interface LikeCommentRequest {
+  commentId: string;
+  userId: string;
+}
+
+export interface UnlikeCommentRequest {
+  commentId: string;
+  userId: string;
 }
 
 export interface UpdateCommentRequest {
@@ -195,16 +231,16 @@ function createBasePagination(): Pagination {
 export const Pagination: MessageFns<Pagination> = {
   encode(message: Pagination, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.totalCount !== 0) {
-      writer.uint32(8).int64(message.totalCount);
+      writer.uint32(8).int32(message.totalCount);
     }
     if (message.page !== 0) {
-      writer.uint32(16).int64(message.page);
+      writer.uint32(16).int32(message.page);
     }
     if (message.limit !== 0) {
-      writer.uint32(24).int64(message.limit);
+      writer.uint32(24).int32(message.limit);
     }
     if (message.totalPages !== 0) {
-      writer.uint32(32).int64(message.totalPages);
+      writer.uint32(32).int32(message.totalPages);
     }
     return writer;
   },
@@ -221,7 +257,7 @@ export const Pagination: MessageFns<Pagination> = {
             break;
           }
 
-          message.totalCount = longToNumber(reader.int64());
+          message.totalCount = reader.int32();
           continue;
         }
         case 2: {
@@ -229,7 +265,7 @@ export const Pagination: MessageFns<Pagination> = {
             break;
           }
 
-          message.page = longToNumber(reader.int64());
+          message.page = reader.int32();
           continue;
         }
         case 3: {
@@ -237,7 +273,7 @@ export const Pagination: MessageFns<Pagination> = {
             break;
           }
 
-          message.limit = longToNumber(reader.int64());
+          message.limit = reader.int32();
           continue;
         }
         case 4: {
@@ -245,7 +281,7 @@ export const Pagination: MessageFns<Pagination> = {
             break;
           }
 
-          message.totalPages = longToNumber(reader.int64());
+          message.totalPages = reader.int32();
           continue;
         }
       }
@@ -329,16 +365,7 @@ export const MediaItem: MessageFns<MediaItem> = {
 };
 
 function createBaseMedia(): Media {
-  return {
-    id: "",
-    postId: "",
-    publicId: "",
-    url: "",
-    type: "",
-    duration: 0,
-    createdAt: undefined,
-    updatedAt: undefined,
-  };
+  return { id: "", postId: "", publicId: "", url: "", type: "", duration: 0, createdAt: "", updatedAt: "" };
 }
 
 export const Media: MessageFns<Media> = {
@@ -361,11 +388,11 @@ export const Media: MessageFns<Media> = {
     if (message.duration !== 0) {
       writer.uint32(48).int32(message.duration);
     }
-    if (message.createdAt !== undefined) {
-      Timestamp.encode(message.createdAt, writer.uint32(58).fork()).join();
+    if (message.createdAt !== "") {
+      writer.uint32(58).string(message.createdAt);
     }
-    if (message.updatedAt !== undefined) {
-      Timestamp.encode(message.updatedAt, writer.uint32(66).fork()).join();
+    if (message.updatedAt !== "") {
+      writer.uint32(66).string(message.updatedAt);
     }
     return writer;
   },
@@ -430,7 +457,7 @@ export const Media: MessageFns<Media> = {
             break;
           }
 
-          message.createdAt = Timestamp.decode(reader, reader.uint32());
+          message.createdAt = reader.string();
           continue;
         }
         case 8: {
@@ -438,7 +465,7 @@ export const Media: MessageFns<Media> = {
             break;
           }
 
-          message.updatedAt = Timestamp.decode(reader, reader.uint32());
+          message.updatedAt = reader.string();
           continue;
         }
       }
@@ -452,7 +479,7 @@ export const Media: MessageFns<Media> = {
 };
 
 function createBaseUser(): User {
-  return { id: "", email: "", username: "", displayName: "", createdAt: undefined, updatedAt: undefined };
+  return { id: "", email: "", username: "", displayName: "", createdAt: "", updatedAt: "", avatarUrl: "" };
 }
 
 export const User: MessageFns<User> = {
@@ -469,11 +496,14 @@ export const User: MessageFns<User> = {
     if (message.displayName !== "") {
       writer.uint32(34).string(message.displayName);
     }
-    if (message.createdAt !== undefined) {
-      Timestamp.encode(message.createdAt, writer.uint32(42).fork()).join();
+    if (message.createdAt !== "") {
+      writer.uint32(42).string(message.createdAt);
     }
-    if (message.updatedAt !== undefined) {
-      Timestamp.encode(message.updatedAt, writer.uint32(50).fork()).join();
+    if (message.updatedAt !== "") {
+      writer.uint32(50).string(message.updatedAt);
+    }
+    if (message.avatarUrl !== "") {
+      writer.uint32(58).string(message.avatarUrl);
     }
     return writer;
   },
@@ -522,7 +552,7 @@ export const User: MessageFns<User> = {
             break;
           }
 
-          message.createdAt = Timestamp.decode(reader, reader.uint32());
+          message.createdAt = reader.string();
           continue;
         }
         case 6: {
@@ -530,7 +560,15 @@ export const User: MessageFns<User> = {
             break;
           }
 
-          message.updatedAt = Timestamp.decode(reader, reader.uint32());
+          message.updatedAt = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.avatarUrl = reader.string();
           continue;
         }
       }
@@ -549,10 +587,13 @@ function createBasePost(): Post {
     content: "",
     likesCount: 0,
     commentsCount: 0,
-    createdAt: undefined,
-    updatedAt: undefined,
+    createdAt: "",
+    updatedAt: "",
     user: undefined,
     media: [],
+    sharesCount: 0,
+    isLiked: false,
+    isOwner: false,
   };
 }
 
@@ -570,17 +611,26 @@ export const Post: MessageFns<Post> = {
     if (message.commentsCount !== 0) {
       writer.uint32(32).int32(message.commentsCount);
     }
-    if (message.createdAt !== undefined) {
-      Timestamp.encode(message.createdAt, writer.uint32(42).fork()).join();
+    if (message.createdAt !== "") {
+      writer.uint32(42).string(message.createdAt);
     }
-    if (message.updatedAt !== undefined) {
-      Timestamp.encode(message.updatedAt, writer.uint32(50).fork()).join();
+    if (message.updatedAt !== "") {
+      writer.uint32(50).string(message.updatedAt);
     }
     if (message.user !== undefined) {
       User.encode(message.user, writer.uint32(58).fork()).join();
     }
     for (const v of message.media) {
       Media.encode(v!, writer.uint32(66).fork()).join();
+    }
+    if (message.sharesCount !== 0) {
+      writer.uint32(72).int32(message.sharesCount);
+    }
+    if (message.isLiked !== false) {
+      writer.uint32(80).bool(message.isLiked);
+    }
+    if (message.isOwner !== false) {
+      writer.uint32(88).bool(message.isOwner);
     }
     return writer;
   },
@@ -629,7 +679,7 @@ export const Post: MessageFns<Post> = {
             break;
           }
 
-          message.createdAt = Timestamp.decode(reader, reader.uint32());
+          message.createdAt = reader.string();
           continue;
         }
         case 6: {
@@ -637,7 +687,7 @@ export const Post: MessageFns<Post> = {
             break;
           }
 
-          message.updatedAt = Timestamp.decode(reader, reader.uint32());
+          message.updatedAt = reader.string();
           continue;
         }
         case 7: {
@@ -656,6 +706,30 @@ export const Post: MessageFns<Post> = {
           message.media.push(Media.decode(reader, reader.uint32()));
           continue;
         }
+        case 9: {
+          if (tag !== 72) {
+            break;
+          }
+
+          message.sharesCount = reader.int32();
+          continue;
+        }
+        case 10: {
+          if (tag !== 80) {
+            break;
+          }
+
+          message.isLiked = reader.bool();
+          continue;
+        }
+        case 11: {
+          if (tag !== 88) {
+            break;
+          }
+
+          message.isOwner = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -667,7 +741,20 @@ export const Post: MessageFns<Post> = {
 };
 
 function createBaseComment(): Comment {
-  return { id: "", postId: "", authorId: "", content: "", createdAt: undefined, updatedAt: undefined };
+  return {
+    id: "",
+    postId: "",
+    authorId: "",
+    content: "",
+    createdAt: "",
+    updatedAt: "",
+    user: undefined,
+    likesCount: 0,
+    repliesCount: 0,
+    isLiked: false,
+    parentCommentId: "",
+    isOwner: false,
+  };
 }
 
 export const Comment: MessageFns<Comment> = {
@@ -684,11 +771,29 @@ export const Comment: MessageFns<Comment> = {
     if (message.content !== "") {
       writer.uint32(34).string(message.content);
     }
-    if (message.createdAt !== undefined) {
-      Timestamp.encode(message.createdAt, writer.uint32(42).fork()).join();
+    if (message.createdAt !== "") {
+      writer.uint32(42).string(message.createdAt);
     }
-    if (message.updatedAt !== undefined) {
-      Timestamp.encode(message.updatedAt, writer.uint32(50).fork()).join();
+    if (message.updatedAt !== "") {
+      writer.uint32(50).string(message.updatedAt);
+    }
+    if (message.user !== undefined) {
+      User.encode(message.user, writer.uint32(58).fork()).join();
+    }
+    if (message.likesCount !== 0) {
+      writer.uint32(64).int32(message.likesCount);
+    }
+    if (message.repliesCount !== 0) {
+      writer.uint32(72).int32(message.repliesCount);
+    }
+    if (message.isLiked !== false) {
+      writer.uint32(80).bool(message.isLiked);
+    }
+    if (message.parentCommentId !== "") {
+      writer.uint32(90).string(message.parentCommentId);
+    }
+    if (message.isOwner !== false) {
+      writer.uint32(96).bool(message.isOwner);
     }
     return writer;
   },
@@ -737,7 +842,7 @@ export const Comment: MessageFns<Comment> = {
             break;
           }
 
-          message.createdAt = Timestamp.decode(reader, reader.uint32());
+          message.createdAt = reader.string();
           continue;
         }
         case 6: {
@@ -745,7 +850,55 @@ export const Comment: MessageFns<Comment> = {
             break;
           }
 
-          message.updatedAt = Timestamp.decode(reader, reader.uint32());
+          message.updatedAt = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.user = User.decode(reader, reader.uint32());
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.likesCount = reader.int32();
+          continue;
+        }
+        case 9: {
+          if (tag !== 72) {
+            break;
+          }
+
+          message.repliesCount = reader.int32();
+          continue;
+        }
+        case 10: {
+          if (tag !== 80) {
+            break;
+          }
+
+          message.isLiked = reader.bool();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.parentCommentId = reader.string();
+          continue;
+        }
+        case 12: {
+          if (tag !== 96) {
+            break;
+          }
+
+          message.isOwner = reader.bool();
           continue;
         }
       }
@@ -966,16 +1119,19 @@ export const GetPostRequest: MessageFns<GetPostRequest> = {
 };
 
 function createBaseGetFeedRequest(): GetFeedRequest {
-  return { page: 0, limit: 0 };
+  return { page: 0, limit: 0, userId: "" };
 }
 
 export const GetFeedRequest: MessageFns<GetFeedRequest> = {
   encode(message: GetFeedRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.page !== 0) {
-      writer.uint32(8).int64(message.page);
+      writer.uint32(8).int32(message.page);
     }
     if (message.limit !== 0) {
-      writer.uint32(16).int64(message.limit);
+      writer.uint32(16).int32(message.limit);
+    }
+    if (message.userId !== "") {
+      writer.uint32(26).string(message.userId);
     }
     return writer;
   },
@@ -992,7 +1148,7 @@ export const GetFeedRequest: MessageFns<GetFeedRequest> = {
             break;
           }
 
-          message.page = longToNumber(reader.int64());
+          message.page = reader.int32();
           continue;
         }
         case 2: {
@@ -1000,7 +1156,85 @@ export const GetFeedRequest: MessageFns<GetFeedRequest> = {
             break;
           }
 
-          message.limit = longToNumber(reader.int64());
+          message.limit = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseGetUserPostsRequest(): GetUserPostsRequest {
+  return { userId: "", page: 0, limit: 0, viewerId: "" };
+}
+
+export const GetUserPostsRequest: MessageFns<GetUserPostsRequest> = {
+  encode(message: GetUserPostsRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
+    }
+    if (message.page !== 0) {
+      writer.uint32(16).int32(message.page);
+    }
+    if (message.limit !== 0) {
+      writer.uint32(24).int32(message.limit);
+    }
+    if (message.viewerId !== "") {
+      writer.uint32(34).string(message.viewerId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetUserPostsRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetUserPostsRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.page = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.limit = reader.int32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.viewerId = reader.string();
           continue;
         }
       }
@@ -1287,7 +1521,7 @@ export const UnlikePostRequest: MessageFns<UnlikePostRequest> = {
 };
 
 function createBaseCreateCommentRequest(): CreateCommentRequest {
-  return { postId: "", authorId: "", content: "" };
+  return { postId: "", authorId: "", content: "", parentCommentId: "" };
 }
 
 export const CreateCommentRequest: MessageFns<CreateCommentRequest> = {
@@ -1300,6 +1534,9 @@ export const CreateCommentRequest: MessageFns<CreateCommentRequest> = {
     }
     if (message.content !== "") {
       writer.uint32(26).string(message.content);
+    }
+    if (message.parentCommentId !== "") {
+      writer.uint32(34).string(message.parentCommentId);
     }
     return writer;
   },
@@ -1335,6 +1572,14 @@ export const CreateCommentRequest: MessageFns<CreateCommentRequest> = {
           message.content = reader.string();
           continue;
         }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.parentCommentId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1346,7 +1591,7 @@ export const CreateCommentRequest: MessageFns<CreateCommentRequest> = {
 };
 
 function createBaseGetCommentsRequest(): GetCommentsRequest {
-  return { postId: "", page: 0, limit: 0 };
+  return { postId: "", page: 0, limit: 0, userId: "" };
 }
 
 export const GetCommentsRequest: MessageFns<GetCommentsRequest> = {
@@ -1355,10 +1600,13 @@ export const GetCommentsRequest: MessageFns<GetCommentsRequest> = {
       writer.uint32(10).string(message.postId);
     }
     if (message.page !== 0) {
-      writer.uint32(16).int64(message.page);
+      writer.uint32(16).int32(message.page);
     }
     if (message.limit !== 0) {
-      writer.uint32(24).int64(message.limit);
+      writer.uint32(24).int32(message.limit);
+    }
+    if (message.userId !== "") {
+      writer.uint32(34).string(message.userId);
     }
     return writer;
   },
@@ -1383,7 +1631,7 @@ export const GetCommentsRequest: MessageFns<GetCommentsRequest> = {
             break;
           }
 
-          message.page = longToNumber(reader.int64());
+          message.page = reader.int32();
           continue;
         }
         case 3: {
@@ -1391,7 +1639,181 @@ export const GetCommentsRequest: MessageFns<GetCommentsRequest> = {
             break;
           }
 
-          message.limit = longToNumber(reader.int64());
+          message.limit = reader.int32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseGetRepliesRequest(): GetRepliesRequest {
+  return { commentId: "", page: 0, limit: 0, userId: "" };
+}
+
+export const GetRepliesRequest: MessageFns<GetRepliesRequest> = {
+  encode(message: GetRepliesRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.commentId !== "") {
+      writer.uint32(10).string(message.commentId);
+    }
+    if (message.page !== 0) {
+      writer.uint32(16).int32(message.page);
+    }
+    if (message.limit !== 0) {
+      writer.uint32(24).int32(message.limit);
+    }
+    if (message.userId !== "") {
+      writer.uint32(34).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetRepliesRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetRepliesRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.commentId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.page = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.limit = reader.int32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseLikeCommentRequest(): LikeCommentRequest {
+  return { commentId: "", userId: "" };
+}
+
+export const LikeCommentRequest: MessageFns<LikeCommentRequest> = {
+  encode(message: LikeCommentRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.commentId !== "") {
+      writer.uint32(10).string(message.commentId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): LikeCommentRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseLikeCommentRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.commentId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseUnlikeCommentRequest(): UnlikeCommentRequest {
+  return { commentId: "", userId: "" };
+}
+
+export const UnlikeCommentRequest: MessageFns<UnlikeCommentRequest> = {
+  encode(message: UnlikeCommentRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.commentId !== "") {
+      writer.uint32(10).string(message.commentId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UnlikeCommentRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUnlikeCommentRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.commentId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
           continue;
         }
       }
@@ -1518,6 +1940,8 @@ export interface PostServiceClient {
 
   getFeed(request: GetFeedRequest): Observable<PostListResponse>;
 
+  getUserPosts(request: GetUserPostsRequest): Observable<PostListResponse>;
+
   updatePost(request: UpdatePostRequest): Observable<PostResponse>;
 
   deletePost(request: DeletePostRequest): Observable<MessageResponse>;
@@ -1530,9 +1954,15 @@ export interface PostServiceClient {
 
   getComments(request: GetCommentsRequest): Observable<CommentListResponse>;
 
+  getReplies(request: GetRepliesRequest): Observable<CommentListResponse>;
+
   updateComment(request: UpdateCommentRequest): Observable<CommentResponse>;
 
   deleteComment(request: DeleteCommentRequest): Observable<MessageResponse>;
+
+  likeComment(request: LikeCommentRequest): Observable<MessageResponse>;
+
+  unlikeComment(request: UnlikeCommentRequest): Observable<MessageResponse>;
 }
 
 export interface PostServiceController {
@@ -1541,6 +1971,10 @@ export interface PostServiceController {
   getPost(request: GetPostRequest): Promise<PostResponse> | Observable<PostResponse> | PostResponse;
 
   getFeed(request: GetFeedRequest): Promise<PostListResponse> | Observable<PostListResponse> | PostListResponse;
+
+  getUserPosts(
+    request: GetUserPostsRequest,
+  ): Promise<PostListResponse> | Observable<PostListResponse> | PostListResponse;
 
   updatePost(request: UpdatePostRequest): Promise<PostResponse> | Observable<PostResponse> | PostResponse;
 
@@ -1558,12 +1992,22 @@ export interface PostServiceController {
     request: GetCommentsRequest,
   ): Promise<CommentListResponse> | Observable<CommentListResponse> | CommentListResponse;
 
+  getReplies(
+    request: GetRepliesRequest,
+  ): Promise<CommentListResponse> | Observable<CommentListResponse> | CommentListResponse;
+
   updateComment(
     request: UpdateCommentRequest,
   ): Promise<CommentResponse> | Observable<CommentResponse> | CommentResponse;
 
   deleteComment(
     request: DeleteCommentRequest,
+  ): Promise<MessageResponse> | Observable<MessageResponse> | MessageResponse;
+
+  likeComment(request: LikeCommentRequest): Promise<MessageResponse> | Observable<MessageResponse> | MessageResponse;
+
+  unlikeComment(
+    request: UnlikeCommentRequest,
   ): Promise<MessageResponse> | Observable<MessageResponse> | MessageResponse;
 }
 
@@ -1573,14 +2017,18 @@ export function PostServiceControllerMethods() {
       "createPost",
       "getPost",
       "getFeed",
+      "getUserPosts",
       "updatePost",
       "deletePost",
       "likePost",
       "unlikePost",
       "createComment",
       "getComments",
+      "getReplies",
       "updateComment",
       "deleteComment",
+      "likeComment",
+      "unlikeComment",
     ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
@@ -1622,6 +2070,15 @@ export const PostServiceService = {
     responseStream: false as const,
     requestSerialize: (value: GetFeedRequest): Buffer => Buffer.from(GetFeedRequest.encode(value).finish()),
     requestDeserialize: (value: Buffer): GetFeedRequest => GetFeedRequest.decode(value),
+    responseSerialize: (value: PostListResponse): Buffer => Buffer.from(PostListResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): PostListResponse => PostListResponse.decode(value),
+  },
+  getUserPosts: {
+    path: "/post.PostService/GetUserPosts" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: GetUserPostsRequest): Buffer => Buffer.from(GetUserPostsRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): GetUserPostsRequest => GetUserPostsRequest.decode(value),
     responseSerialize: (value: PostListResponse): Buffer => Buffer.from(PostListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): PostListResponse => PostListResponse.decode(value),
   },
@@ -1679,6 +2136,15 @@ export const PostServiceService = {
     responseSerialize: (value: CommentListResponse): Buffer => Buffer.from(CommentListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): CommentListResponse => CommentListResponse.decode(value),
   },
+  getReplies: {
+    path: "/post.PostService/GetReplies" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: GetRepliesRequest): Buffer => Buffer.from(GetRepliesRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): GetRepliesRequest => GetRepliesRequest.decode(value),
+    responseSerialize: (value: CommentListResponse): Buffer => Buffer.from(CommentListResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): CommentListResponse => CommentListResponse.decode(value),
+  },
   updateComment: {
     path: "/post.PostService/UpdateComment" as const,
     requestStream: false as const,
@@ -1697,31 +2163,42 @@ export const PostServiceService = {
     responseSerialize: (value: MessageResponse): Buffer => Buffer.from(MessageResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): MessageResponse => MessageResponse.decode(value),
   },
+  likeComment: {
+    path: "/post.PostService/LikeComment" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: LikeCommentRequest): Buffer => Buffer.from(LikeCommentRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): LikeCommentRequest => LikeCommentRequest.decode(value),
+    responseSerialize: (value: MessageResponse): Buffer => Buffer.from(MessageResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): MessageResponse => MessageResponse.decode(value),
+  },
+  unlikeComment: {
+    path: "/post.PostService/UnlikeComment" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: UnlikeCommentRequest): Buffer => Buffer.from(UnlikeCommentRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): UnlikeCommentRequest => UnlikeCommentRequest.decode(value),
+    responseSerialize: (value: MessageResponse): Buffer => Buffer.from(MessageResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): MessageResponse => MessageResponse.decode(value),
+  },
 } as const;
 
 export interface PostServiceServer extends UntypedServiceImplementation {
   createPost: handleUnaryCall<CreatePostRequest, PostResponse>;
   getPost: handleUnaryCall<GetPostRequest, PostResponse>;
   getFeed: handleUnaryCall<GetFeedRequest, PostListResponse>;
+  getUserPosts: handleUnaryCall<GetUserPostsRequest, PostListResponse>;
   updatePost: handleUnaryCall<UpdatePostRequest, PostResponse>;
   deletePost: handleUnaryCall<DeletePostRequest, MessageResponse>;
   likePost: handleUnaryCall<LikePostRequest, MessageResponse>;
   unlikePost: handleUnaryCall<UnlikePostRequest, MessageResponse>;
   createComment: handleUnaryCall<CreateCommentRequest, CommentResponse>;
   getComments: handleUnaryCall<GetCommentsRequest, CommentListResponse>;
+  getReplies: handleUnaryCall<GetRepliesRequest, CommentListResponse>;
   updateComment: handleUnaryCall<UpdateCommentRequest, CommentResponse>;
   deleteComment: handleUnaryCall<DeleteCommentRequest, MessageResponse>;
-}
-
-function longToNumber(int64: { toString(): string }): number {
-  const num = globalThis.Number(int64.toString());
-  if (num > globalThis.Number.MAX_SAFE_INTEGER) {
-    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
-  }
-  if (num < globalThis.Number.MIN_SAFE_INTEGER) {
-    throw new globalThis.Error("Value is smaller than Number.MIN_SAFE_INTEGER");
-  }
-  return num;
+  likeComment: handleUnaryCall<LikeCommentRequest, MessageResponse>;
+  unlikeComment: handleUnaryCall<UnlikeCommentRequest, MessageResponse>;
 }
 
 export interface MessageFns<T> {
