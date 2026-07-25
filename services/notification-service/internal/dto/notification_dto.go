@@ -1,8 +1,6 @@
 package dto
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 )
 
@@ -21,7 +19,7 @@ type NotificationList struct {
 	ImageURL         *string
 	ActionURL        *string
 	IsRead           bool
-	ReadAt           *time.Time
+	ReadAt           *string
 	CreatedAt        string
 }
 

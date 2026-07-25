@@ -9,7 +9,6 @@ import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 import type { handleUnaryCall, UntypedServiceImplementation } from "@grpc/grpc-js";
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
 import { Observable } from "rxjs";
-import { Timestamp } from "../google/protobuf/timestamp";
 
 export const protobufPackage = "notification";
 
@@ -46,7 +45,7 @@ export interface Notification {
   imageUrl?: string | undefined;
   actionUrl?: string | undefined;
   isRead: boolean;
-  readAt: Timestamp | undefined;
+  readAt?: string | undefined;
   createdAt: string;
 }
 
@@ -230,7 +229,7 @@ export const UserNotificationsResponse: MessageFns<UserNotificationsResponse> = 
 };
 
 function createBaseNotification(): Notification {
-  return { id: "", userId: "", type: "", title: "", body: "", isRead: false, readAt: undefined, createdAt: "" };
+  return { id: "", userId: "", type: "", title: "", body: "", isRead: false, createdAt: "" };
 }
 
 export const Notification: MessageFns<Notification> = {
@@ -278,7 +277,7 @@ export const Notification: MessageFns<Notification> = {
       writer.uint32(112).bool(message.isRead);
     }
     if (message.readAt !== undefined) {
-      Timestamp.encode(message.readAt, writer.uint32(122).fork()).join();
+      writer.uint32(122).string(message.readAt);
     }
     if (message.createdAt !== "") {
       writer.uint32(130).string(message.createdAt);
@@ -410,7 +409,7 @@ export const Notification: MessageFns<Notification> = {
             break;
           }
 
-          message.readAt = Timestamp.decode(reader, reader.uint32());
+          message.readAt = reader.string();
           continue;
         }
         case 16: {

@@ -4,8 +4,6 @@ package notification;
 
 option go_package = "cosmix/shared/grpc/gen/go/notification";
 
-import "google/protobuf/timestamp.proto";
-
 service NotificationService {
   rpc GetUserNotifications(
     GetUserNotificationsRequest
@@ -60,7 +58,7 @@ message Notification {
 
   bool is_read = 14;
 
-  google.protobuf.Timestamp read_at = 15;
+  optional string read_at = 15;
   string created_at = 16;
 }
 

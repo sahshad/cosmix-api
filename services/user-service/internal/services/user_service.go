@@ -160,13 +160,13 @@ func (svc *UserService) toResponse(profile *models.User) *dto.UserProfileRespons
 			IsPrivate:     profile.IsPrivate,
 			IsVerified:    profile.IsVerified,
 			IsActive:      profile.IsActive,
-			DateOfBirth:   profile.DateOfBirth,
+			DateOfBirth:   formatTimePtr(profile.DateOfBirth),
 			AvatarURL:     profile.AvatarURL,
 			CoverImageURL: profile.CoverImageURL,
 			Website:       profile.Website,
 			Location:      profile.Location,
 			Bio:           profile.Bio,
-			LastSeenAt:    profile.LastSeenAt,
+			LastSeenAt:    formatTimePtrOptional(profile.LastSeenAt),
 			CreatedAt:     profile.CreatedAt.Format(time.RFC3339),
 			UpdatedAt:     formatTimePtr(profile.UpdatedAt),
 		},
@@ -178,4 +178,12 @@ func formatTimePtr(t *time.Time) string {
 		return ""
 	}
 	return t.Format(time.RFC3339)
+}
+
+func formatTimePtrOptional(t *time.Time) *string {
+	if t == nil {
+		return nil
+	}
+	s := t.Format(time.RFC3339)
+	return &s
 }

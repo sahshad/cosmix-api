@@ -223,7 +223,7 @@ func (svc *AuthUserService) Login(ctx context.Context, input dto.LoginDTO) (*dto
 			Email:         authUser.Email,
 			IsActive:      authUser.IsActive,
 			EmailVerified: authUser.EmailVerified,
-			LastLoginAt:   authUser.LastLoginAt,
+			LastLoginAt:   formatTimePtr(authUser.LastLoginAt),
 			CreatedAt:     authUser.CreatedAt.Format(time.RFC3339),
 			UpdatedAt:     formatTimePtr(authUser.UpdatedAt),
 		},

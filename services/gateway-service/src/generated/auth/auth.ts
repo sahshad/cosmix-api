@@ -9,7 +9,6 @@ import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 import type { handleUnaryCall, UntypedServiceImplementation } from "@grpc/grpc-js";
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
 import { Observable } from "rxjs";
-import { Timestamp } from "../google/protobuf/timestamp";
 
 export const protobufPackage = "auth";
 
@@ -83,7 +82,7 @@ export interface AuthUser {
   email: string;
   isActive: boolean;
   emailVerified: boolean;
-  lastLoginAt: Timestamp | undefined;
+  lastLoginAt: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -719,7 +718,7 @@ export const UpdateUserPasswordResponse: MessageFns<UpdateUserPasswordResponse> 
 };
 
 function createBaseAuthUser(): AuthUser {
-  return { email: "", isActive: false, emailVerified: false, lastLoginAt: undefined, createdAt: "", updatedAt: "" };
+  return { email: "", isActive: false, emailVerified: false, lastLoginAt: "", createdAt: "", updatedAt: "" };
 }
 
 export const AuthUser: MessageFns<AuthUser> = {
@@ -733,8 +732,8 @@ export const AuthUser: MessageFns<AuthUser> = {
     if (message.emailVerified !== false) {
       writer.uint32(24).bool(message.emailVerified);
     }
-    if (message.lastLoginAt !== undefined) {
-      Timestamp.encode(message.lastLoginAt, writer.uint32(34).fork()).join();
+    if (message.lastLoginAt !== "") {
+      writer.uint32(34).string(message.lastLoginAt);
     }
     if (message.createdAt !== "") {
       writer.uint32(42).string(message.createdAt);
@@ -781,7 +780,7 @@ export const AuthUser: MessageFns<AuthUser> = {
             break;
           }
 
-          message.lastLoginAt = Timestamp.decode(reader, reader.uint32());
+          message.lastLoginAt = reader.string();
           continue;
         }
         case 5: {

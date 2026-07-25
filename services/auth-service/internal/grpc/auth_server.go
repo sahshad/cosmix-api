@@ -82,6 +82,9 @@ func (srv *AuthServer) Login(ctx context.Context, req *authpb.LoginRequest) (*au
 			Email:         result.AuthUser.Email,
 			IsActive:      result.AuthUser.IsActive,
 			EmailVerified: result.AuthUser.EmailVerified,
+			LastLoginAt:   result.AuthUser.LastLoginAt,
+			CreatedAt:     result.AuthUser.CreatedAt,
+			UpdatedAt:     result.AuthUser.UpdatedAt,
 		}
 	}
 

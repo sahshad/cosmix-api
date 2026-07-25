@@ -9,7 +9,6 @@ import (
 	notificationpb "cosmix/shared/grpc/gen/go/notification"
 
 	"github.com/google/uuid"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type NotificationServer struct {
@@ -79,11 +78,6 @@ func mapNotification(item dto.NotificationList) *notificationpb.Notification {
 		entityID = item.EntityID.String()
 	}
 
-	var readAt *timestamppb.Timestamp
-	if item.ReadAt != nil {
-		readAt = timestamppb.New(*item.ReadAt)
-	}
-
 	return &notificationpb.Notification{
 		Id:               item.ID.String(),
 		UserId:           item.UserID.String(),
@@ -99,7 +93,7 @@ func mapNotification(item dto.NotificationList) *notificationpb.Notification {
 		ImageUrl:         item.ImageURL,
 		ActionUrl:        item.ActionURL,
 		IsRead:           item.IsRead,
-		ReadAt:           readAt,
+		ReadAt:           item.ReadAt,
 		CreatedAt:        item.CreatedAt,
 	}
 }

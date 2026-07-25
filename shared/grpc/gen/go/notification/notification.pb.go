@@ -9,7 +9,6 @@ package notification
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -230,7 +229,7 @@ type Notification struct {
 	ImageUrl         *string                `protobuf:"bytes,12,opt,name=image_url,json=imageUrl,proto3,oneof" json:"image_url,omitempty"`
 	ActionUrl        *string                `protobuf:"bytes,13,opt,name=action_url,json=actionUrl,proto3,oneof" json:"action_url,omitempty"`
 	IsRead           bool                   `protobuf:"varint,14,opt,name=is_read,json=isRead,proto3" json:"is_read,omitempty"`
-	ReadAt           *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=read_at,json=readAt,proto3" json:"read_at,omitempty"`
+	ReadAt           *string                `protobuf:"bytes,15,opt,name=read_at,json=readAt,proto3,oneof" json:"read_at,omitempty"`
 	CreatedAt        string                 `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
@@ -364,11 +363,11 @@ func (x *Notification) GetIsRead() bool {
 	return false
 }
 
-func (x *Notification) GetReadAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.ReadAt
+func (x *Notification) GetReadAt() string {
+	if x != nil && x.ReadAt != nil {
+		return *x.ReadAt
 	}
-	return nil
+	return ""
 }
 
 func (x *Notification) GetCreatedAt() string {
@@ -450,7 +449,7 @@ var File_notification_notification_proto protoreflect.FileDescriptor
 
 const file_notification_notification_proto_rawDesc = "" +
 	"\n" +
-	"\x1fnotification/notification.proto\x12\fnotification\x1a\x1fgoogle/protobuf/timestamp.proto\"\x14\n" +
+	"\x1fnotification/notification.proto\x12\fnotification\"\x14\n" +
 	"\x12HealthCheckRequest\"-\n" +
 	"\x13HealthCheckResponse\x12\x16\n" +
 	"\x06status\x18\x01 \x01(\tR\x06status\"`\n" +
@@ -462,7 +461,7 @@ const file_notification_notification_proto_rawDesc = "" +
 	"\rnotifications\x18\x01 \x03(\v2\x1a.notification.NotificationR\rnotifications\x128\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x18.notification.PaginationR\n" +
-	"pagination\"\xa5\x05\n" +
+	"pagination\"\x9a\x05\n" +
 	"\fNotification\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1e\n" +
@@ -480,8 +479,8 @@ const file_notification_notification_proto_rawDesc = "" +
 	"\timage_url\x18\f \x01(\tH\x06R\bimageUrl\x88\x01\x01\x12\"\n" +
 	"\n" +
 	"action_url\x18\r \x01(\tH\aR\tactionUrl\x88\x01\x01\x12\x17\n" +
-	"\ais_read\x18\x0e \x01(\bR\x06isRead\x123\n" +
-	"\aread_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\x06readAt\x12\x1d\n" +
+	"\ais_read\x18\x0e \x01(\bR\x06isRead\x12\x1c\n" +
+	"\aread_at\x18\x0f \x01(\tH\bR\x06readAt\x88\x01\x01\x12\x1d\n" +
 	"\n" +
 	"created_at\x18\x10 \x01(\tR\tcreatedAtB\v\n" +
 	"\t_actor_idB\x11\n" +
@@ -493,7 +492,9 @@ const file_notification_notification_proto_rawDesc = "" +
 	"\f_entity_typeB\f\n" +
 	"\n" +
 	"_image_urlB\r\n" +
-	"\v_action_url\"x\n" +
+	"\v_action_urlB\n" +
+	"\n" +
+	"\b_read_at\"x\n" +
 	"\n" +
 	"Pagination\x12\x1f\n" +
 	"\vtotal_count\x18\x01 \x01(\rR\n" +
@@ -526,21 +527,19 @@ var file_notification_notification_proto_goTypes = []any{
 	(*UserNotificationsResponse)(nil),   // 3: notification.UserNotificationsResponse
 	(*Notification)(nil),                // 4: notification.Notification
 	(*Pagination)(nil),                  // 5: notification.Pagination
-	(*timestamppb.Timestamp)(nil),       // 6: google.protobuf.Timestamp
 }
 var file_notification_notification_proto_depIdxs = []int32{
 	4, // 0: notification.UserNotificationsResponse.notifications:type_name -> notification.Notification
 	5, // 1: notification.UserNotificationsResponse.pagination:type_name -> notification.Pagination
-	6, // 2: notification.Notification.read_at:type_name -> google.protobuf.Timestamp
-	2, // 3: notification.NotificationService.GetUserNotifications:input_type -> notification.GetUserNotificationsRequest
-	0, // 4: notification.NotificationService.HealthCheck:input_type -> notification.HealthCheckRequest
-	3, // 5: notification.NotificationService.GetUserNotifications:output_type -> notification.UserNotificationsResponse
-	1, // 6: notification.NotificationService.HealthCheck:output_type -> notification.HealthCheckResponse
-	5, // [5:7] is the sub-list for method output_type
-	3, // [3:5] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	2, // 2: notification.NotificationService.GetUserNotifications:input_type -> notification.GetUserNotificationsRequest
+	0, // 3: notification.NotificationService.HealthCheck:input_type -> notification.HealthCheckRequest
+	3, // 4: notification.NotificationService.GetUserNotifications:output_type -> notification.UserNotificationsResponse
+	1, // 5: notification.NotificationService.HealthCheck:output_type -> notification.HealthCheckResponse
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_notification_notification_proto_init() }

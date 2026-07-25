@@ -58,7 +58,7 @@ func (repo *NotificationRepository) GetUserNotifications(ctx context.Context, us
 			ImageURL:         n.ImageURL,
 			ActionURL:        n.ActionURL,
 			IsRead:           n.IsRead,
-			ReadAt:           n.ReadAt,
+			ReadAt:           formatTimePtr(n.ReadAt),
 			CreatedAt:        n.CreatedAt.Format(time.RFC3339),
 		})
 	}
@@ -87,4 +87,12 @@ func (repo *NotificationRepository) MarkAsRead(notificationID uuid.UUID, userID 
 		Model(&models.Notification{}).
 		Where("id = ? AND user_id = ?", notificationID, userID).
 		Update("is_read", true).Error
+}
+
+func formatTimePtr(t *time.Time) *string {
+	if t == nil {
+		return nil
+	}
+	s := t.Format(time.RFC3339)
+	return &s
 }

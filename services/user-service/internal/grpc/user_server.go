@@ -187,17 +187,6 @@ func (srv *UserServer) Unfollow(ctx context.Context, req *userpb.UnfollowRequest
 // }
 
 func mapUser(user dto.UserResponse) *userpb.User {
-	dateOfBirth := ""
-	if user.DateOfBirth != nil {
-		dateOfBirth = user.DateOfBirth.String()
-	}
-
-	var lastSeenAt *string
-	if user.LastSeenAt != nil {
-		s := user.LastSeenAt.String()
-		lastSeenAt = &s
-	}
-
 	return &userpb.User{
 		Id:            user.UserID.String(),
 		DisplayName:   user.DisplayName,
@@ -206,13 +195,13 @@ func mapUser(user dto.UserResponse) *userpb.User {
 		IsPrivate:     user.IsPrivate,
 		IsVerified:    user.IsVerified,
 		IsActive:      user.IsActive,
-		DateOfBirth:   dateOfBirth,
+		DateOfBirth:   user.DateOfBirth,
 		AvatarUrl:     user.AvatarURL,
 		CoverImageUrl: user.CoverImageURL,
 		Website:       user.Website,
 		Location:      user.Location,
 		Bio:           user.Bio,
-		LastSeenAt:    lastSeenAt,
+		LastSeenAt:    user.LastSeenAt,
 		CreatedAt:     user.CreatedAt,
 		UpdatedAt:     user.UpdatedAt,
 	}

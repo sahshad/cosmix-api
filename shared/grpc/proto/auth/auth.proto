@@ -4,8 +4,6 @@ package auth;
 
 option go_package = "cosmix/shared/gen/go/auth";
 
-import "google/protobuf/timestamp.proto";
-
 service AuthService {
   rpc Register(RegisterRequest)
       returns (RegisterResponse);
@@ -100,7 +98,7 @@ message AuthUser {
   bool is_active = 2;
   bool email_verified = 3;
 
-  google.protobuf.Timestamp last_login_at = 4;
+  string last_login_at = 4;
   string created_at = 5;
   string updated_at = 6;
 }

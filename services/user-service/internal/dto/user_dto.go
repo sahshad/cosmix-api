@@ -1,8 +1,6 @@
 package dto
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 )
 
@@ -29,13 +27,13 @@ type UserResponse struct {
 	IsPrivate     bool
 	IsVerified    bool
 	IsActive      bool
-	DateOfBirth   *time.Time
+	DateOfBirth   string
 	AvatarURL     *string
 	CoverImageURL *string
 	Website       *string
 	Location      *string
 	Bio           *string
-	LastSeenAt    *time.Time
+	LastSeenAt    *string
 	CreatedAt     string
 	UpdatedAt     string
 }
