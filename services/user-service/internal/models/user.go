@@ -24,8 +24,12 @@ type User struct {
 	IsActive   bool `gorm:"default:true"`
 
 	LastSeenAt *time.Time `gorm:"default:null"`
-	CreatedAt  time.Time  `gorm:"not null"`
-	UpdatedAt  *time.Time `gorm:"default:null"`
+
+	FollowersCount int `gorm:"default:0"`
+	FollowingCount int `gorm:"default:0"`
+
+	CreatedAt time.Time  `gorm:"not null"`
+	UpdatedAt *time.Time `gorm:"default:null"`
 }
 
 func (User) TableName() string {

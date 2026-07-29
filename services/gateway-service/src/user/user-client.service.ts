@@ -36,12 +36,12 @@ export class UserGrpcService {
     );
   }
 
-  getProfile(userId: string): Promise<UserProfileResponse> {
-    return this.call(this.client.getProfile({ userId }))
+  getProfile(userId: string, viewerId?: string): Promise<UserProfileResponse> {
+    return this.call(this.client.getProfile({ userId, viewerId: viewerId ?? '' }))
   }
 
-  getProfileByUsername(username: string,): Promise<UserProfileResponse> {
-    return this.call(this.client.getProfileByUsername({ username }))
+  getProfileByUsername(username: string, viewerId?: string): Promise<UserProfileResponse> {
+    return this.call(this.client.getProfileByUsername({ username, viewerId: viewerId ?? '' }))
   }
 
   updateProfile(userId: string, body: Partial<UpdateProfileRequest>): Promise<UserProfileResponse> {

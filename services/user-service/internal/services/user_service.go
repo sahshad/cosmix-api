@@ -20,34 +20,45 @@ import (
 )
 
 type UserService struct {
-	repo     *repositories.UserRepository
-	rabbitCh *amqp.Channel
+	repo       *repositories.UserRepository
+	followRepo *repositories.FollowRepository
+	rabbitCh   *amqp.Channel
 }
 
 func NewUserService(
 	repo *repositories.UserRepository,
+	followRepo *repositories.FollowRepository,
 	rabbitCh *amqp.Channel,
 ) *UserService {
 	return &UserService{
-		repo:     repo,
-		rabbitCh: rabbitCh,
+		repo:       repo,
+		followRepo: followRepo,
+		rabbitCh:   rabbitCh,
 	}
 }
 
-func (svc *UserService) GetProfile(ctx context.Context, userID uuid.UUID) (*dto.UserProfileResponse, error) {
+func (svc *UserService) GetProfile(ctx context.Context, userID uuid.UUID, viewerID uuid.UUID) (*dto.UserProfileResponse, error) {
 	profile, err := svc.repo.FindByUserID(ctx, userID)
 	if err != nil {
 		return nil, errors.New("profile not found")
 	}
-	return svc.toResponse(profile), nil
+	isFollowing, err := svc.isFollowing(ctx, viewerID, profile.UserID)
+	if err != nil {
+		return nil, err
+	}
+	return svc.toResponse(profile, isFollowing), nil
 }
 
-func (svc *UserService) GetProfileByID(ctx context.Context, id uuid.UUID) (*dto.UserProfileResponse, error) {
+func (svc *UserService) GetProfileByID(ctx context.Context, id uuid.UUID, viewerID uuid.UUID) (*dto.UserProfileResponse, error) {
 	profile, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("profile not found")
 	}
-	return svc.toResponse(profile), nil
+	isFollowing, err := svc.isFollowing(ctx, viewerID, profile.UserID)
+	if err != nil {
+		return nil, err
+	}
+	return svc.toResponse(profile, isFollowing), nil
 }
 
 func (svc *UserService) UpdateProfile(ctx context.Context, userID uuid.UUID, input dto.UpdateProfileDTO) (*dto.UserProfileResponse, error) {
@@ -123,7 +134,7 @@ func (svc *UserService) UpdateProfile(ctx context.Context, userID uuid.UUID, inp
 		return nil, err
 	}
 
-	return svc.toResponse(profile), nil
+	return svc.toResponse(profile, false), nil
 }
 
 func (svc *UserService) CreateProfile(ctx context.Context, profile *models.User) error {
@@ -142,33 +153,47 @@ func (svc *UserService) HandleAuthUserEmailVerificationCompleted(ctx context.Con
 	return svc.repo.Create(ctx, profile)
 }
 
-func (svc *UserService) GetProfileByUsername(ctx context.Context, username string) (*dto.UserProfileResponse, error) {
+func (svc *UserService) GetProfileByUsername(ctx context.Context, username string, viewerID uuid.UUID) (*dto.UserProfileResponse, error) {
 	profile, err := svc.repo.FindByUsername(ctx, username)
 	if err != nil {
 		return nil, errors.New("profile not found")
 	}
-	return svc.toResponse(profile), nil
+	isFollowing, err := svc.isFollowing(ctx, viewerID, profile.UserID)
+	if err != nil {
+		return nil, err
+	}
+	return svc.toResponse(profile, isFollowing), nil
 }
 
-func (svc *UserService) toResponse(profile *models.User) *dto.UserProfileResponse {
+func (svc *UserService) isFollowing(ctx context.Context, viewerID uuid.UUID, targetID uuid.UUID) (bool, error) {
+	if viewerID == uuid.Nil || viewerID == targetID {
+		return false, nil
+	}
+	return svc.followRepo.IsFollowing(ctx, viewerID, targetID)
+}
+
+func (svc *UserService) toResponse(profile *models.User, isFollowing bool) *dto.UserProfileResponse {
 	return &dto.UserProfileResponse{
 		User: dto.UserResponse{
-			UserID:        profile.UserID,
-			DisplayName:   profile.DisplayName,
-			Username:      profile.Username,
-			Email:         profile.Email,
-			IsPrivate:     profile.IsPrivate,
-			IsVerified:    profile.IsVerified,
-			IsActive:      profile.IsActive,
-			DateOfBirth:   formatTimePtr(profile.DateOfBirth),
-			AvatarURL:     profile.AvatarURL,
-			CoverImageURL: profile.CoverImageURL,
-			Website:       profile.Website,
-			Location:      profile.Location,
-			Bio:           profile.Bio,
-			LastSeenAt:    formatTimePtrOptional(profile.LastSeenAt),
-			CreatedAt:     profile.CreatedAt.Format(time.RFC3339),
-			UpdatedAt:     formatTimePtr(profile.UpdatedAt),
+			UserID:         profile.UserID,
+			DisplayName:    profile.DisplayName,
+			Username:       profile.Username,
+			Email:          profile.Email,
+			IsPrivate:      profile.IsPrivate,
+			IsVerified:     profile.IsVerified,
+			IsActive:       profile.IsActive,
+			DateOfBirth:    formatTimePtr(profile.DateOfBirth),
+			AvatarURL:      profile.AvatarURL,
+			CoverImageURL:  profile.CoverImageURL,
+			Website:        profile.Website,
+			Location:       profile.Location,
+			Bio:            profile.Bio,
+			LastSeenAt:     formatTimePtrOptional(profile.LastSeenAt),
+			FollowersCount: profile.FollowersCount,
+			FollowingCount: profile.FollowingCount,
+			IsFollowing:    isFollowing,
+			CreatedAt:      profile.CreatedAt.Format(time.RFC3339),
+			UpdatedAt:      formatTimePtr(profile.UpdatedAt),
 		},
 	}
 }

@@ -34,7 +34,12 @@ func (srv *UserServer) GetProfile(ctx context.Context, req *userpb.GetProfileReq
 		return nil, err
 	}
 
-	profile, err := srv.userService.GetProfile(ctx, userId)
+	viewerID, err := parseOptionalUUID(req.ViewerId)
+	if err != nil {
+		return nil, err
+	}
+
+	profile, err := srv.userService.GetProfile(ctx, userId, viewerID)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +50,12 @@ func (srv *UserServer) GetProfile(ctx context.Context, req *userpb.GetProfileReq
 }
 
 func (srv *UserServer) GetProfileByUsername(ctx context.Context, req *userpb.GetProfileByUsernameRequest) (*userpb.UserProfileResponse, error) {
-	profile, err := srv.userService.GetProfileByUsername(ctx, req.Username)
+	viewerID, err := parseOptionalUUID(req.ViewerId)
+	if err != nil {
+		return nil, err
+	}
+
+	profile, err := srv.userService.GetProfileByUsername(ctx, req.Username, viewerID)
 	if err != nil {
 		return nil, err
 	}
@@ -188,21 +198,31 @@ func (srv *UserServer) Unfollow(ctx context.Context, req *userpb.UnfollowRequest
 
 func mapUser(user dto.UserResponse) *userpb.User {
 	return &userpb.User{
-		Id:            user.UserID.String(),
-		DisplayName:   user.DisplayName,
-		Username:      user.Username,
-		Email:         user.Email,
-		IsPrivate:     user.IsPrivate,
-		IsVerified:    user.IsVerified,
-		IsActive:      user.IsActive,
-		DateOfBirth:   user.DateOfBirth,
-		AvatarUrl:     user.AvatarURL,
-		CoverImageUrl: user.CoverImageURL,
-		Website:       user.Website,
-		Location:      user.Location,
-		Bio:           user.Bio,
-		LastSeenAt:    user.LastSeenAt,
-		CreatedAt:     user.CreatedAt,
-		UpdatedAt:     user.UpdatedAt,
+		Id:             user.UserID.String(),
+		DisplayName:    user.DisplayName,
+		Username:       user.Username,
+		Email:          user.Email,
+		IsPrivate:      user.IsPrivate,
+		IsVerified:     user.IsVerified,
+		IsActive:       user.IsActive,
+		DateOfBirth:    user.DateOfBirth,
+		AvatarUrl:      user.AvatarURL,
+		CoverImageUrl:  user.CoverImageURL,
+		Website:        user.Website,
+		Location:       user.Location,
+		Bio:            user.Bio,
+		LastSeenAt:     user.LastSeenAt,
+		FollowersCount: int32(user.FollowersCount),
+		FollowingCount: int32(user.FollowingCount),
+		IsFollowing:    user.IsFollowing,
+		CreatedAt:      user.CreatedAt,
+		UpdatedAt:      user.UpdatedAt,
 	}
+}
+
+func parseOptionalUUID(value string) (uuid.UUID, error) {
+	if value == "" {
+		return uuid.Nil, nil
+	}
+	return uuid.Parse(value)
 }

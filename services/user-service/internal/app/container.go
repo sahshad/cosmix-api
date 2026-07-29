@@ -23,9 +23,8 @@ type Container struct {
 func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 
 	userRepo := repositories.NewUserRepository(db)
-	userService := services.NewUserService(userRepo, rabbit.Channel)
-
 	followRepo := repositories.NewFollowRepository(db)
+	userService := services.NewUserService(userRepo, followRepo, rabbit.Channel)
 	followService := services.NewFollowService(followRepo)
 
 	userGrpcServer :=

@@ -51,6 +51,12 @@ func ErrorInterceptor(
 				codes.NotFound,
 				appErr.Message,
 			)
+
+		case http.StatusConflict:
+			return nil, status.Error(
+				codes.AlreadyExists,
+				appErr.Message,
+			)
 		}
 	}
 

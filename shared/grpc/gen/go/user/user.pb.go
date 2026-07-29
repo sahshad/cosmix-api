@@ -24,6 +24,7 @@ const (
 type GetProfileRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	ViewerId      string                 `protobuf:"bytes,2,opt,name=viewer_id,json=viewerId,proto3" json:"viewer_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -65,9 +66,17 @@ func (x *GetProfileRequest) GetUserId() string {
 	return ""
 }
 
+func (x *GetProfileRequest) GetViewerId() string {
+	if x != nil {
+		return x.ViewerId
+	}
+	return ""
+}
+
 type GetProfileByUsernameRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	ViewerId      string                 `protobuf:"bytes,2,opt,name=viewer_id,json=viewerId,proto3" json:"viewer_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -105,6 +114,13 @@ func (*GetProfileByUsernameRequest) Descriptor() ([]byte, []int) {
 func (x *GetProfileByUsernameRequest) GetUsername() string {
 	if x != nil {
 		return x.Username
+	}
+	return ""
+}
+
+func (x *GetProfileByUsernameRequest) GetViewerId() string {
+	if x != nil {
+		return x.ViewerId
 	}
 	return ""
 }
@@ -586,25 +602,28 @@ func (x *UserListResponse) GetUsers() []*User {
 }
 
 type User struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	DisplayName   string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	Username      string                 `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
-	Email         string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
-	IsPrivate     bool                   `protobuf:"varint,5,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
-	IsActive      bool                   `protobuf:"varint,6,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
-	DateOfBirth   string                 `protobuf:"bytes,7,opt,name=date_of_birth,json=dateOfBirth,proto3" json:"date_of_birth,omitempty"`
-	AvatarUrl     *string                `protobuf:"bytes,8,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
-	Bio           *string                `protobuf:"bytes,9,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     string                 `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	CoverImageUrl *string                `protobuf:"bytes,12,opt,name=cover_image_url,json=coverImageUrl,proto3,oneof" json:"cover_image_url,omitempty"`
-	Website       *string                `protobuf:"bytes,13,opt,name=website,proto3,oneof" json:"website,omitempty"`
-	Location      *string                `protobuf:"bytes,14,opt,name=location,proto3,oneof" json:"location,omitempty"`
-	IsVerified    bool                   `protobuf:"varint,15,opt,name=is_verified,json=isVerified,proto3" json:"is_verified,omitempty"`
-	LastSeenAt    *string                `protobuf:"bytes,16,opt,name=last_seen_at,json=lastSeenAt,proto3,oneof" json:"last_seen_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	DisplayName    string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	Username       string                 `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
+	Email          string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
+	IsPrivate      bool                   `protobuf:"varint,5,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
+	IsActive       bool                   `protobuf:"varint,6,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	DateOfBirth    string                 `protobuf:"bytes,7,opt,name=date_of_birth,json=dateOfBirth,proto3" json:"date_of_birth,omitempty"`
+	AvatarUrl      *string                `protobuf:"bytes,8,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
+	Bio            *string                `protobuf:"bytes,9,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
+	CreatedAt      string                 `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt      string                 `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	CoverImageUrl  *string                `protobuf:"bytes,12,opt,name=cover_image_url,json=coverImageUrl,proto3,oneof" json:"cover_image_url,omitempty"`
+	Website        *string                `protobuf:"bytes,13,opt,name=website,proto3,oneof" json:"website,omitempty"`
+	Location       *string                `protobuf:"bytes,14,opt,name=location,proto3,oneof" json:"location,omitempty"`
+	IsVerified     bool                   `protobuf:"varint,15,opt,name=is_verified,json=isVerified,proto3" json:"is_verified,omitempty"`
+	LastSeenAt     *string                `protobuf:"bytes,16,opt,name=last_seen_at,json=lastSeenAt,proto3,oneof" json:"last_seen_at,omitempty"`
+	FollowersCount int32                  `protobuf:"varint,17,opt,name=followers_count,json=followersCount,proto3" json:"followers_count,omitempty"`
+	FollowingCount int32                  `protobuf:"varint,18,opt,name=following_count,json=followingCount,proto3" json:"following_count,omitempty"`
+	IsFollowing    bool                   `protobuf:"varint,19,opt,name=is_following,json=isFollowing,proto3" json:"is_following,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *User) Reset() {
@@ -749,15 +768,38 @@ func (x *User) GetLastSeenAt() string {
 	return ""
 }
 
+func (x *User) GetFollowersCount() int32 {
+	if x != nil {
+		return x.FollowersCount
+	}
+	return 0
+}
+
+func (x *User) GetFollowingCount() int32 {
+	if x != nil {
+		return x.FollowingCount
+	}
+	return 0
+}
+
+func (x *User) GetIsFollowing() bool {
+	if x != nil {
+		return x.IsFollowing
+	}
+	return false
+}
+
 var File_user_user_proto protoreflect.FileDescriptor
 
 const file_user_user_proto_rawDesc = "" +
 	"\n" +
-	"\x0fuser/user.proto\x12\x04user\",\n" +
+	"\x0fuser/user.proto\x12\x04user\"I\n" +
 	"\x11GetProfileRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"9\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1b\n" +
+	"\tviewer_id\x18\x02 \x01(\tR\bviewerId\"V\n" +
 	"\x1bGetProfileByUsernameRequest\x12\x1a\n" +
-	"\busername\x18\x01 \x01(\tR\busername\"\xbd\x03\n" +
+	"\busername\x18\x01 \x01(\tR\busername\x12\x1b\n" +
+	"\tviewer_id\x18\x02 \x01(\tR\bviewerId\"\xbd\x03\n" +
 	"\x14UpdateProfileRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12&\n" +
 	"\fdisplay_name\x18\x02 \x01(\tH\x00R\vdisplayName\x88\x01\x01\x12\x1f\n" +
@@ -799,7 +841,7 @@ const file_user_user_proto_rawDesc = "" +
 	".user.UserR\x04user\"4\n" +
 	"\x10UserListResponse\x12 \n" +
 	"\x05users\x18\x01 \x03(\v2\n" +
-	".user.UserR\x05users\"\xce\x04\n" +
+	".user.UserR\x05users\"\xc3\x05\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\x1a\n" +
@@ -823,7 +865,10 @@ const file_user_user_proto_rawDesc = "" +
 	"\vis_verified\x18\x0f \x01(\bR\n" +
 	"isVerified\x12%\n" +
 	"\flast_seen_at\x18\x10 \x01(\tH\x05R\n" +
-	"lastSeenAt\x88\x01\x01B\r\n" +
+	"lastSeenAt\x88\x01\x01\x12'\n" +
+	"\x0ffollowers_count\x18\x11 \x01(\x05R\x0efollowersCount\x12'\n" +
+	"\x0ffollowing_count\x18\x12 \x01(\x05R\x0efollowingCount\x12!\n" +
+	"\fis_following\x18\x13 \x01(\bR\visFollowingB\r\n" +
 	"\v_avatar_urlB\x06\n" +
 	"\x04_bioB\x12\n" +
 	"\x10_cover_image_urlB\n" +

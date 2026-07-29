@@ -14,10 +14,12 @@ export const protobufPackage = "user";
 
 export interface GetProfileRequest {
   userId: string;
+  viewerId: string;
 }
 
 export interface GetProfileByUsernameRequest {
   username: string;
+  viewerId: string;
 }
 
 export interface UpdateProfileRequest {
@@ -83,18 +85,24 @@ export interface User {
   location?: string | undefined;
   isVerified: boolean;
   lastSeenAt?: string | undefined;
+  followersCount: number;
+  followingCount: number;
+  isFollowing: boolean;
 }
 
 export const USER_PACKAGE_NAME = "user";
 
 function createBaseGetProfileRequest(): GetProfileRequest {
-  return { userId: "" };
+  return { userId: "", viewerId: "" };
 }
 
 export const GetProfileRequest: MessageFns<GetProfileRequest> = {
   encode(message: GetProfileRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.userId !== "") {
       writer.uint32(10).string(message.userId);
+    }
+    if (message.viewerId !== "") {
+      writer.uint32(18).string(message.viewerId);
     }
     return writer;
   },
@@ -114,6 +122,14 @@ export const GetProfileRequest: MessageFns<GetProfileRequest> = {
           message.userId = reader.string();
           continue;
         }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.viewerId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -125,13 +141,16 @@ export const GetProfileRequest: MessageFns<GetProfileRequest> = {
 };
 
 function createBaseGetProfileByUsernameRequest(): GetProfileByUsernameRequest {
-  return { username: "" };
+  return { username: "", viewerId: "" };
 }
 
 export const GetProfileByUsernameRequest: MessageFns<GetProfileByUsernameRequest> = {
   encode(message: GetProfileByUsernameRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.username !== "") {
       writer.uint32(10).string(message.username);
+    }
+    if (message.viewerId !== "") {
+      writer.uint32(18).string(message.viewerId);
     }
     return writer;
   },
@@ -149,6 +168,14 @@ export const GetProfileByUsernameRequest: MessageFns<GetProfileByUsernameRequest
           }
 
           message.username = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.viewerId = reader.string();
           continue;
         }
       }
@@ -616,6 +643,9 @@ function createBaseUser(): User {
     createdAt: "",
     updatedAt: "",
     isVerified: false,
+    followersCount: 0,
+    followingCount: 0,
+    isFollowing: false,
   };
 }
 
@@ -668,6 +698,15 @@ export const User: MessageFns<User> = {
     }
     if (message.lastSeenAt !== undefined) {
       writer.uint32(130).string(message.lastSeenAt);
+    }
+    if (message.followersCount !== 0) {
+      writer.uint32(136).int32(message.followersCount);
+    }
+    if (message.followingCount !== 0) {
+      writer.uint32(144).int32(message.followingCount);
+    }
+    if (message.isFollowing !== false) {
+      writer.uint32(152).bool(message.isFollowing);
     }
     return writer;
   },
@@ -805,6 +844,30 @@ export const User: MessageFns<User> = {
           }
 
           message.lastSeenAt = reader.string();
+          continue;
+        }
+        case 17: {
+          if (tag !== 136) {
+            break;
+          }
+
+          message.followersCount = reader.int32();
+          continue;
+        }
+        case 18: {
+          if (tag !== 144) {
+            break;
+          }
+
+          message.followingCount = reader.int32();
+          continue;
+        }
+        case 19: {
+          if (tag !== 152) {
+            break;
+          }
+
+          message.isFollowing = reader.bool();
           continue;
         }
       }

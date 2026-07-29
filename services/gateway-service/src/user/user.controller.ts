@@ -11,6 +11,7 @@ import {
 
 import { UserGrpcService } from './user-client.service';
 import { AuthGuard } from '../common/guard/auth.guard';
+import { OptionalAuthGuard } from '../common/guard/optional-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -43,12 +44,15 @@ export class UserController {
     );
   }
 
+  @UseGuards(OptionalAuthGuard)
   @Get('username/:username')
   async getByUsername(
     @Param('username') username: string,
+    @CurrentUser() user: { userId: string } | undefined,
   ) {
     return this.userGrpc.getProfileByUsername(
       username,
+      user?.userId,
     );
   }
 

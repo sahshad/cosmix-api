@@ -21,9 +21,10 @@ func NewFollowRepository(
 	}
 }
 
-func (repo *FollowRepository) Delete(ctx context.Context, followerID, followingID uuid.UUID) error {
-	return repo.db.WithContext(ctx).Where("follower_id = ? AND following_id = ?", followerID, followingID).
-		Delete(&models.Follow{}).Error
+func (repo *FollowRepository) Delete(ctx context.Context, followerID, followingID uuid.UUID) (int64, error) {
+	tx := repo.db.WithContext(ctx).Where("follower_id = ? AND following_id = ?", followerID, followingID).
+		Delete(&models.Follow{})
+	return tx.RowsAffected, tx.Error
 }
 
 func (repo *FollowRepository) IsFollowing(ctx context.Context, followerID, followingID uuid.UUID) (bool, error) {
@@ -64,4 +65,20 @@ func (repo *FollowRepository) GetFollowingCount(ctx context.Context, userID uuid
 		Where("follower_id = ?", userID).
 		Count(&count).Error
 	return count, err
+}
+
+func (repo *FollowRepository) IncrementFollowersCount(ctx context.Context, userID uuid.UUID, delta int) error {
+	return repo.db.WithContext(ctx).
+		Model(&models.User{}).
+		Where("user_id = ?", userID).
+		UpdateColumn("followers_count", gorm.Expr("GREATEST(followers_count + ?, 0)", delta)).
+		Error
+}
+
+func (repo *FollowRepository) IncrementFollowingCount(ctx context.Context, userID uuid.UUID, delta int) error {
+	return repo.db.WithContext(ctx).
+		Model(&models.User{}).
+		Where("user_id = ?", userID).
+		UpdateColumn("following_count", gorm.Expr("GREATEST(following_count + ?, 0)", delta)).
+		Error
 }

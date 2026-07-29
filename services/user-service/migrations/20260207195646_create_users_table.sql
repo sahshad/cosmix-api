@@ -16,6 +16,8 @@ CREATE TABLE users (
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     date_of_birth DATE,
     last_seen_at TIMESTAMPTZ NULL,
+    followers_count INT NOT NULL DEFAULT 0 CHECK (followers_count >= 0),
+    following_count INT NOT NULL DEFAULT 0 CHECK (following_count >= 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NULL
 );

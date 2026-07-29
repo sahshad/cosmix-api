@@ -32,10 +32,12 @@ service UserService {
 
 message GetProfileRequest {
   string user_id = 1;
+  string viewer_id = 2;
 }
 
 message GetProfileByUsernameRequest {
   string username = 1;
+  string viewer_id = 2;
 }
 
 message UpdateProfileRequest {
@@ -107,4 +109,7 @@ message User {
   optional string location = 14;
   bool is_verified = 15;
   optional string last_seen_at = 16;
+  int32 followers_count = 17;
+  int32 following_count = 18;
+  bool is_following = 19;
 }
