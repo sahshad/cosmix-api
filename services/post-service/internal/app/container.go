@@ -33,9 +33,9 @@ func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 
 	postUserService := services.NewPostUserService(postUserRepo)
 	postService := services.NewPostService(postRepo)
-	likeService := services.NewLikeService(likeRepo, postRepo)
-	commentService := services.NewCommentService(commentRepo, postRepo, postUserRepo)
-	commentLikeService := services.NewCommentLikeService(commentLikeRepo, commentRepo)
+	likeService := services.NewLikeService(likeRepo, postRepo, postUserRepo, rabbit.Channel)
+	commentService := services.NewCommentService(commentRepo, postRepo, postUserRepo, rabbit.Channel)
+	commentLikeService := services.NewCommentLikeService(commentLikeRepo, commentRepo, postUserRepo, rabbit.Channel)
 
 	postGrpcServer := grpc.NewPostServer(
 		postService,

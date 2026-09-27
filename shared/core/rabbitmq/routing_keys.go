@@ -25,6 +25,8 @@ const (
 	CommentCreated string = "comment.created"
 	CommentUpdated string = "comment.updated"
 	CommentDeleted string = "comment.deleted"
+	CommentReplied string = "comment.replied"
+	CommentLiked   string = "comment.liked"
 
 	// Chat Routing Keys
 	ChatMessageSent string = "chat.message.sent"

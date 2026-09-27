@@ -19,48 +19,58 @@ export class UserGrpcService {
   constructor(
     @Inject(USER_PACKAGE_NAME)
     private readonly grpcClient: ClientGrpc,
-  ) { }
+  ) {}
 
   onModuleInit() {
     this.client =
-      this.grpcClient.getService<UserServiceClient>(
-        USER_SERVICE_NAME,
-      );
+      this.grpcClient.getService<UserServiceClient>(USER_SERVICE_NAME);
   }
 
   private call<T>(observable: Observable<T>): Promise<T> {
     return firstValueFrom(
       observable.pipe(
-        catchError(err => { throw new RpcException(err); })
-      )
+        catchError((err) => {
+          throw new RpcException(err);
+        }),
+      ),
     );
   }
 
   getProfile(userId: string, viewerId?: string): Promise<UserProfileResponse> {
-    return this.call(this.client.getProfile({ userId, viewerId: viewerId ?? '' }))
+    return this.call(
+      this.client.getProfile({ userId, viewerId: viewerId ?? '' }),
+    );
   }
 
-  getProfileByUsername(username: string, viewerId?: string): Promise<UserProfileResponse> {
-    return this.call(this.client.getProfileByUsername({ username, viewerId: viewerId ?? '' }))
+  getProfileByUsername(
+    username: string,
+    viewerId?: string,
+  ): Promise<UserProfileResponse> {
+    return this.call(
+      this.client.getProfileByUsername({ username, viewerId: viewerId ?? '' }),
+    );
   }
 
-  updateProfile(userId: string, body: Partial<UpdateProfileRequest>): Promise<UserProfileResponse> {
-    return this.call(this.client.updateProfile({ userId, ...body }))
+  updateProfile(
+    userId: string,
+    body: Partial<UpdateProfileRequest>,
+  ): Promise<UserProfileResponse> {
+    return this.call(this.client.updateProfile({ userId, ...body }));
   }
 
   follow(followerId: string, followingId: string): Promise<FollowResponse> {
-    return this.call(this.client.follow({ followerId, followingId }))
+    return this.call(this.client.follow({ followerId, followingId }));
   }
 
   unfollow(followerId: string, followingId: string): Promise<UnfollowResponse> {
-    return this.call(this.client.unfollow({ followerId, followingId }))
+    return this.call(this.client.unfollow({ followerId, followingId }));
   }
 
   getFollowers(userId: string): Promise<UserListResponse> {
-    return this.call(this.client.getFollowers({ userId }))
+    return this.call(this.client.getFollowers({ userId }));
   }
 
   getFollowing(userId: string): Promise<UserListResponse> {
-    return this.call(this.client.getFollowing({ userId }))
+    return this.call(this.client.getFollowing({ userId }));
   }
 }

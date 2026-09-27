@@ -65,7 +65,7 @@ export class AuthGrpcService {
   }
 
   resetPassword(body: ResetPasswordRequest): Promise<ResetPasswordResponse> {
-    console.log("pass", body.newPassword)
+    console.log('pass', body.newPassword);
     return this.call(this.client.resetPassword(body));
   }
 }

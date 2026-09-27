@@ -30,4 +30,4 @@ import { join } from 'path';
   providers: [UserService, UserGrpcService],
   exports: [UserGrpcService],
 })
-export class UserModule { }
+export class UserModule {}

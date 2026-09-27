@@ -8,11 +8,8 @@ import { GrpcExceptionFilter } from './common/filter/grpc-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(helmet())
-  app.useGlobalFilters(
-    new HttpExceptionFilter(),
-    new GrpcExceptionFilter(),
-  );
+  app.use(helmet());
+  app.useGlobalFilters(new HttpExceptionFilter(), new GrpcExceptionFilter());
   app.use(cookieParser());
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
@@ -23,8 +20,7 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin:
-      'http://localhost:3000',
+    origin: 'http://localhost:3000',
     credentials: true,
   });
   await app.listen(process.env.PORT ?? 5000);

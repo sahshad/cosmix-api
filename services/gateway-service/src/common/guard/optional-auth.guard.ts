@@ -8,18 +8,15 @@ export class OptionalAuthGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const request =
-      context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest();
 
-    const header =
-      request.headers.authorization;
+    const header = request.headers.authorization;
 
     if (!header) {
       return true;
     }
 
-    const token =
-      header.split(' ')[1];
+    const token = header.split(' ')[1];
 
     if (!token) {
       return true;
@@ -33,7 +30,7 @@ export class OptionalAuthGuard implements CanActivate {
 
       request.user = payload;
 
-      request.headers['x-user-id'] = payload.userId
+      request.headers['x-user-id'] = payload.userId;
     } catch {
       // invalid/expired token on a public route: proceed anonymously
     }

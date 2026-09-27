@@ -23,9 +23,7 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 
 @Controller('posts')
 export class PostController {
-  constructor(
-    private readonly postGrpc: PostGrpcService,
-  ) {}
+  constructor(private readonly postGrpc: PostGrpcService) {}
 
   @UseGuards(AuthGuard)
   @Post()
@@ -33,10 +31,7 @@ export class PostController {
     @CurrentUser() user: { userId: string },
     @Body() body: CreatePostDto,
   ) {
-    return this.postGrpc.createPost(
-      user.userId,
-      body,
-    );
+    return this.postGrpc.createPost(user.userId, body);
   }
 
   @UseGuards(OptionalAuthGuard)
@@ -46,11 +41,7 @@ export class PostController {
     @Query('page') page = '1',
     @Query('limit') limit = '20',
   ) {
-    return this.postGrpc.getFeed(
-      Number(page),
-      Number(limit),
-      user?.userId,
-    );
+    return this.postGrpc.getFeed(Number(page), Number(limit), user?.userId);
   }
 
   @UseGuards(OptionalAuthGuard)
@@ -70,12 +61,8 @@ export class PostController {
   }
 
   @Get(':id')
-  getPost(
-    @Param('id') id: string,
-  ) {
-    return this.postGrpc.getPost(
-      id,
-    );
+  getPost(@Param('id') id: string) {
+    return this.postGrpc.getPost(id);
   }
 
   @UseGuards(AuthGuard)
@@ -85,47 +72,25 @@ export class PostController {
     @CurrentUser() user: { userId: string },
     @Body() body: UpdatePostDto,
   ) {
-    return this.postGrpc.updatePost(
-      id,
-      user.userId,
-      body,
-    );
+    return this.postGrpc.updatePost(id, user.userId, body);
   }
 
   @UseGuards(AuthGuard)
   @Delete(':id')
-  deletePost(
-    @Param('id') id: string,
-    @CurrentUser() user: { userId: string },
-  ) {
-    return this.postGrpc.deletePost(
-      id,
-      user.userId,
-    );
+  deletePost(@Param('id') id: string, @CurrentUser() user: { userId: string }) {
+    return this.postGrpc.deletePost(id, user.userId);
   }
 
   @UseGuards(AuthGuard)
   @Post(':id/like')
-  likePost(
-    @Param('id') id: string,
-    @CurrentUser() user: { userId: string },
-  ) {
-    return this.postGrpc.likePost(
-      id,
-      user.userId,
-    );
+  likePost(@Param('id') id: string, @CurrentUser() user: { userId: string }) {
+    return this.postGrpc.likePost(id, user.userId);
   }
 
   @UseGuards(AuthGuard)
   @Delete(':id/like')
-  unlikePost(
-    @Param('id') id: string,
-    @CurrentUser() user: { userId: string },
-  ) {
-    return this.postGrpc.unlikePost(
-      id,
-      user.userId,
-    );
+  unlikePost(@Param('id') id: string, @CurrentUser() user: { userId: string }) {
+    return this.postGrpc.unlikePost(id, user.userId);
   }
 
   @UseGuards(AuthGuard)
@@ -181,10 +146,7 @@ export class PostController {
     @Param('commentId') commentId: string,
     @CurrentUser() user: { userId: string },
   ) {
-    return this.postGrpc.likeComment(
-      commentId,
-      user.userId,
-    );
+    return this.postGrpc.likeComment(commentId, user.userId);
   }
 
   @UseGuards(AuthGuard)
@@ -193,10 +155,7 @@ export class PostController {
     @Param('commentId') commentId: string,
     @CurrentUser() user: { userId: string },
   ) {
-    return this.postGrpc.unlikeComment(
-      commentId,
-      user.userId,
-    );
+    return this.postGrpc.unlikeComment(commentId, user.userId);
   }
 
   @UseGuards(AuthGuard)
@@ -206,11 +165,7 @@ export class PostController {
     @CurrentUser() user: { userId: string },
     @Body() body: UpdateCommentDto,
   ) {
-    return this.postGrpc.updateComment(
-      commentId,
-      user.userId,
-      body.content,
-    );
+    return this.postGrpc.updateComment(commentId, user.userId, body.content);
   }
 
   @UseGuards(AuthGuard)
@@ -219,9 +174,6 @@ export class PostController {
     @Param('commentId') commentId: string,
     @CurrentUser() user: { userId: string },
   ) {
-    return this.postGrpc.deleteComment(
-      commentId,
-      user.userId,
-    );
+    return this.postGrpc.deleteComment(commentId, user.userId);
   }
 }

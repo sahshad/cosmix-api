@@ -44,6 +44,15 @@ func (repo *PostRepository) FindByID(ctx context.Context, id uuid.UUID) (*models
 
 func (repo *PostRepository) GetFeed(ctx context.Context, viewerID uuid.UUID, params *dto.PaginationRequest) (*dto.PostListResponse, error) {
 	var posts []models.Post
+
+	var totalCount int64
+	err := repo.db.WithContext(ctx).
+		Model(&models.Post{}).
+		Count(&totalCount).Error
+	if err != nil {
+		return nil, err
+	}
+
 	if err := repo.db.WithContext(ctx).
 		Model(&models.Post{}).
 		Preload("User").
@@ -61,8 +70,7 @@ func (repo *PostRepository) GetFeed(ctx context.Context, viewerID uuid.UUID, par
 		return nil, err
 	}
 
-	totalCount := int32(len(posts))
-	totalPages := (totalCount + params.Limit - 1) / params.Limit
+	totalPages := (int32(totalCount) + params.Limit - 1) / params.Limit
 
 	postList := make([]dto.PostList, 0, len(posts))
 	for _, post := range posts {
@@ -74,7 +82,7 @@ func (repo *PostRepository) GetFeed(ctx context.Context, viewerID uuid.UUID, par
 		Pagination: dto.PaginationResponse{
 			Page:       params.Page,
 			Limit:      params.Limit,
-			TotalCount: totalCount,
+			TotalCount: int32(totalCount),
 			TotalPages: totalPages,
 		}}, nil
 }
@@ -111,6 +119,16 @@ func (repo *PostRepository) getLikedPostIDs(ctx context.Context, viewerID uuid.U
 
 func (repo *PostRepository) GetUserPosts(ctx context.Context, userID uuid.UUID, viewerID uuid.UUID, params *dto.PaginationRequest) (*dto.PostListResponse, error) {
 	var posts []models.Post
+
+	var totalCount int64
+	err := repo.db.WithContext(ctx).
+		Model(&models.Post{}).
+		Where("user_id = ?", userID).
+		Count(&totalCount).Error
+	if err != nil {
+		return nil, err
+	}
+
 	if err := repo.db.WithContext(ctx).
 		Model(&models.Post{}).
 		Preload("User").
@@ -129,8 +147,7 @@ func (repo *PostRepository) GetUserPosts(ctx context.Context, userID uuid.UUID, 
 		return nil, err
 	}
 
-	totalCount := int32(len(posts))
-	totalPages := (totalCount + params.Limit - 1) / params.Limit
+	totalPages := (int32(totalCount) + params.Limit - 1) / params.Limit
 
 	postList := make([]dto.PostList, 0, len(posts))
 	for _, post := range posts {
@@ -142,7 +159,7 @@ func (repo *PostRepository) GetUserPosts(ctx context.Context, userID uuid.UUID, 
 		Pagination: dto.PaginationResponse{
 			Page:       params.Page,
 			Limit:      params.Limit,
-			TotalCount: totalCount,
+			TotalCount: int32(totalCount),
 			TotalPages: totalPages,
 		}}, nil
 }

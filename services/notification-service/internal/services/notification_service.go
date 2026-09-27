@@ -45,6 +45,10 @@ func (svc *NotificationService) MarkAsRead(notificationID uuid.UUID, userID uuid
 	return svc.repo.MarkAsRead(notificationID, userID)
 }
 
+func (svc *NotificationService) MarkAllAsRead(userID uuid.UUID) (int64, error) {
+	return svc.repo.MarkAllAsRead(userID)
+}
+
 func (svc *NotificationService) HandleEmailVerification(ctx context.Context, event authEvents.AuthUserEmailVerification) error {
 	verificationLink := fmt.Sprintf("http://localhost:3000/verify-email?token=%s", event.Token)
 	templateData := map[string]any{

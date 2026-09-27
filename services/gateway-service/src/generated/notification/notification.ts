@@ -56,6 +56,32 @@ export interface Pagination {
   totalPages: number;
 }
 
+export interface MarkAsReadRequest {
+  notificationId: string;
+  userId: string;
+}
+
+export interface MarkAsReadResponse {
+  success: boolean;
+}
+
+export interface MarkAllAsReadRequest {
+  userId: string;
+}
+
+export interface MarkAllAsReadResponse {
+  success: boolean;
+  count: number;
+}
+
+export interface GetUnreadCountRequest {
+  userId: string;
+}
+
+export interface GetUnreadCountResponse {
+  count: number;
+}
+
 export const NOTIFICATION_PACKAGE_NAME = "notification";
 
 function createBaseHealthCheckRequest(): HealthCheckRequest {
@@ -500,8 +526,258 @@ export const Pagination: MessageFns<Pagination> = {
   },
 };
 
+function createBaseMarkAsReadRequest(): MarkAsReadRequest {
+  return { notificationId: "", userId: "" };
+}
+
+export const MarkAsReadRequest: MessageFns<MarkAsReadRequest> = {
+  encode(message: MarkAsReadRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.notificationId !== "") {
+      writer.uint32(10).string(message.notificationId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MarkAsReadRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMarkAsReadRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.notificationId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseMarkAsReadResponse(): MarkAsReadResponse {
+  return { success: false };
+}
+
+export const MarkAsReadResponse: MessageFns<MarkAsReadResponse> = {
+  encode(message: MarkAsReadResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.success !== false) {
+      writer.uint32(8).bool(message.success);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MarkAsReadResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMarkAsReadResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.success = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseMarkAllAsReadRequest(): MarkAllAsReadRequest {
+  return { userId: "" };
+}
+
+export const MarkAllAsReadRequest: MessageFns<MarkAllAsReadRequest> = {
+  encode(message: MarkAllAsReadRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MarkAllAsReadRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMarkAllAsReadRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseMarkAllAsReadResponse(): MarkAllAsReadResponse {
+  return { success: false, count: 0 };
+}
+
+export const MarkAllAsReadResponse: MessageFns<MarkAllAsReadResponse> = {
+  encode(message: MarkAllAsReadResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.success !== false) {
+      writer.uint32(8).bool(message.success);
+    }
+    if (message.count !== 0) {
+      writer.uint32(16).uint32(message.count);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MarkAllAsReadResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMarkAllAsReadResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.success = reader.bool();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.count = reader.uint32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseGetUnreadCountRequest(): GetUnreadCountRequest {
+  return { userId: "" };
+}
+
+export const GetUnreadCountRequest: MessageFns<GetUnreadCountRequest> = {
+  encode(message: GetUnreadCountRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetUnreadCountRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetUnreadCountRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseGetUnreadCountResponse(): GetUnreadCountResponse {
+  return { count: 0 };
+}
+
+export const GetUnreadCountResponse: MessageFns<GetUnreadCountResponse> = {
+  encode(message: GetUnreadCountResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.count !== 0) {
+      writer.uint32(8).uint32(message.count);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetUnreadCountResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetUnreadCountResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.count = reader.uint32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
 export interface NotificationServiceClient {
   getUserNotifications(request: GetUserNotificationsRequest): Observable<UserNotificationsResponse>;
+
+  getUnreadCount(request: GetUnreadCountRequest): Observable<GetUnreadCountResponse>;
+
+  markAsRead(request: MarkAsReadRequest): Observable<MarkAsReadResponse>;
+
+  markAllAsRead(request: MarkAllAsReadRequest): Observable<MarkAllAsReadResponse>;
 
   healthCheck(request: HealthCheckRequest): Observable<HealthCheckResponse>;
 }
@@ -511,6 +787,18 @@ export interface NotificationServiceController {
     request: GetUserNotificationsRequest,
   ): Promise<UserNotificationsResponse> | Observable<UserNotificationsResponse> | UserNotificationsResponse;
 
+  getUnreadCount(
+    request: GetUnreadCountRequest,
+  ): Promise<GetUnreadCountResponse> | Observable<GetUnreadCountResponse> | GetUnreadCountResponse;
+
+  markAsRead(
+    request: MarkAsReadRequest,
+  ): Promise<MarkAsReadResponse> | Observable<MarkAsReadResponse> | MarkAsReadResponse;
+
+  markAllAsRead(
+    request: MarkAllAsReadRequest,
+  ): Promise<MarkAllAsReadResponse> | Observable<MarkAllAsReadResponse> | MarkAllAsReadResponse;
+
   healthCheck(
     request: HealthCheckRequest,
   ): Promise<HealthCheckResponse> | Observable<HealthCheckResponse> | HealthCheckResponse;
@@ -518,7 +806,13 @@ export interface NotificationServiceController {
 
 export function NotificationServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["getUserNotifications", "healthCheck"];
+    const grpcMethods: string[] = [
+      "getUserNotifications",
+      "getUnreadCount",
+      "markAsRead",
+      "markAllAsRead",
+      "healthCheck",
+    ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("NotificationService", method)(constructor.prototype[method], method, descriptor);
@@ -546,6 +840,36 @@ export const NotificationServiceService = {
       Buffer.from(UserNotificationsResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): UserNotificationsResponse => UserNotificationsResponse.decode(value),
   },
+  getUnreadCount: {
+    path: "/notification.NotificationService/GetUnreadCount" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: GetUnreadCountRequest): Buffer =>
+      Buffer.from(GetUnreadCountRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): GetUnreadCountRequest => GetUnreadCountRequest.decode(value),
+    responseSerialize: (value: GetUnreadCountResponse): Buffer =>
+      Buffer.from(GetUnreadCountResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): GetUnreadCountResponse => GetUnreadCountResponse.decode(value),
+  },
+  markAsRead: {
+    path: "/notification.NotificationService/MarkAsRead" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: MarkAsReadRequest): Buffer => Buffer.from(MarkAsReadRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): MarkAsReadRequest => MarkAsReadRequest.decode(value),
+    responseSerialize: (value: MarkAsReadResponse): Buffer => Buffer.from(MarkAsReadResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): MarkAsReadResponse => MarkAsReadResponse.decode(value),
+  },
+  markAllAsRead: {
+    path: "/notification.NotificationService/MarkAllAsRead" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: MarkAllAsReadRequest): Buffer => Buffer.from(MarkAllAsReadRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): MarkAllAsReadRequest => MarkAllAsReadRequest.decode(value),
+    responseSerialize: (value: MarkAllAsReadResponse): Buffer =>
+      Buffer.from(MarkAllAsReadResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): MarkAllAsReadResponse => MarkAllAsReadResponse.decode(value),
+  },
   healthCheck: {
     path: "/notification.NotificationService/HealthCheck" as const,
     requestStream: false as const,
@@ -559,6 +883,9 @@ export const NotificationServiceService = {
 
 export interface NotificationServiceServer extends UntypedServiceImplementation {
   getUserNotifications: handleUnaryCall<GetUserNotificationsRequest, UserNotificationsResponse>;
+  getUnreadCount: handleUnaryCall<GetUnreadCountRequest, GetUnreadCountResponse>;
+  markAsRead: handleUnaryCall<MarkAsReadRequest, MarkAsReadResponse>;
+  markAllAsRead: handleUnaryCall<MarkAllAsReadRequest, MarkAllAsReadResponse>;
   healthCheck: handleUnaryCall<HealthCheckRequest, HealthCheckResponse>;
 }
 

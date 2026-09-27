@@ -24,6 +24,16 @@ func NewCommentRepository(
 
 func (repo *CommentRepository) GetCommentsByPostID(ctx context.Context, postID uuid.UUID, viewerID uuid.UUID, params *dto.PaginationRequest) (*dto.CommentListResponse, error) {
 	var comments []models.Comment
+
+	var totalCount int64
+	err := repo.db.WithContext(ctx).
+		Model(&models.Comment{}).
+		Where("post_id = ? AND parent_comment_id IS NULL", postID).
+		Count(&totalCount).Error
+	if err != nil {
+		return nil, err
+	}
+
 	if err := repo.db.WithContext(ctx).
 		Model(&models.Comment{}).
 		Preload("User").
@@ -36,11 +46,21 @@ func (repo *CommentRepository) GetCommentsByPostID(ctx context.Context, postID u
 		return nil, err
 	}
 
-	return repo.buildCommentListResponse(ctx, comments, viewerID, params)
+	return repo.buildCommentListResponse(ctx, comments, viewerID, params, int32(totalCount))
 }
 
 func (repo *CommentRepository) GetReplies(ctx context.Context, parentCommentID uuid.UUID, viewerID uuid.UUID, params *dto.PaginationRequest) (*dto.CommentListResponse, error) {
 	var comments []models.Comment
+
+	var totalCount int64
+	err := repo.db.WithContext(ctx).
+		Model(&models.Comment{}).
+		Where("parent_comment_id = ?", parentCommentID).
+		Count(&totalCount).Error
+	if err != nil {
+		return nil, err
+	}
+
 	if err := repo.db.WithContext(ctx).
 		Model(&models.Comment{}).
 		Preload("User").
@@ -53,16 +73,15 @@ func (repo *CommentRepository) GetReplies(ctx context.Context, parentCommentID u
 		return nil, err
 	}
 
-	return repo.buildCommentListResponse(ctx, comments, viewerID, params)
+	return repo.buildCommentListResponse(ctx, comments, viewerID, params, int32(totalCount))
 }
 
-func (repo *CommentRepository) buildCommentListResponse(ctx context.Context, comments []models.Comment, viewerID uuid.UUID, params *dto.PaginationRequest) (*dto.CommentListResponse, error) {
+func (repo *CommentRepository) buildCommentListResponse(ctx context.Context, comments []models.Comment, viewerID uuid.UUID, params *dto.PaginationRequest, totalCount int32) (*dto.CommentListResponse, error) {
 	likedCommentIDs, err := repo.getLikedCommentIDs(ctx, viewerID, comments)
 	if err != nil {
 		return nil, err
 	}
 
-	totalCount := int32(len(comments))
 	totalPages := (totalCount + params.Limit - 1) / params.Limit
 
 	commentList := make([]dto.CommentList, 0, len(comments))
@@ -173,4 +192,15 @@ func (repo *CommentRepository) CountDescendants(ctx context.Context, commentID u
 		return 0, err
 	}
 	return int(count), nil
+}
+
+func (repo *CommentRepository) GetPostByID(ctx context.Context, postID uuid.UUID) (*models.Post, error) {
+	var post models.Post
+	if err := repo.db.WithContext(ctx).
+		Model(&models.Post{}).
+		Where("id = ?", postID).
+		First(&post).Error; err != nil {
+		return nil, err
+	}
+	return &post, nil
 }

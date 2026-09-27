@@ -3,34 +3,43 @@ package services
 import (
 	"context"
 	"errors"
+	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 
 	"post-service/internal/dto"
 	"post-service/internal/models"
 	"post-service/internal/repositories"
 
+	"cosmix/shared/core/eventbus"
+	postEvents "cosmix/shared/events/post"
+
 	"github.com/google/uuid"
 )
 
 type CommentService struct {
-	repo     *repositories.CommentRepository
-	postRepo *repositories.PostRepository
-	userRepo *repositories.PostUserRepository
+	repo      *repositories.CommentRepository
+	postRepo  *repositories.PostRepository
+	userRepo  *repositories.PostUserRepository
+	rabbitCh  *amqp.Channel
 }
 
 func NewCommentService(
 	repo *repositories.CommentRepository,
 	postRepo *repositories.PostRepository,
 	userRepo *repositories.PostUserRepository,
+	rabbitCh *amqp.Channel,
 ) *CommentService {
 	return &CommentService{
-		repo:     repo,
-		postRepo: postRepo,
-		userRepo: userRepo,
+		repo:      repo,
+		postRepo:  postRepo,
+		userRepo:  userRepo,
+		rabbitCh:  rabbitCh,
 	}
 }
 
 func (svc *CommentService) CreateComment(ctx context.Context, postID uuid.UUID, userID uuid.UUID, req *dto.CreateCommentRequest) (*models.Comment, error) {
-	_, err := svc.postRepo.FindByID(ctx, postID)
+	post, err := svc.postRepo.FindByID(ctx, postID)
 	if err != nil {
 		return nil, errors.New("post not found")
 	}
@@ -72,6 +81,52 @@ func (svc *CommentService) CreateComment(ctx context.Context, postID uuid.UUID, 
 		return nil, err
 	}
 	comment.User = *postUser
+
+	if svc.rabbitCh != nil {
+		actor, _ := svc.userRepo.FindByUserID(ctx, userID)
+		actorUsername := ""
+		actorDisplayName := ""
+		if actor != nil {
+			actorUsername = actor.Username
+			actorDisplayName = actor.DisplayName
+		}
+
+		postTitle := post.Content
+
+		if req.ParentCommentID != nil {
+			parent, _ := svc.repo.FindByID(ctx, *req.ParentCommentID)
+			if parent.UserID != userID {
+				event := postEvents.CommentReplied{
+					EventVersion:         postEvents.EventVersionOne,
+					PostID:               postID,
+					ParentCommentID:      *req.ParentCommentID,
+					ParentCommentOwnerID: parent.UserID,
+					ReplyCommentID:       comment.ID,
+					ActorID:              userID,
+					ActorUsername:        actorUsername,
+					ActorDisplayName:     actorDisplayName,
+					Content:              req.Content,
+					PostTitle:            postTitle,
+					CreatedAt:            time.Now(),
+				}
+				eventbus.Publish(ctx, svc.rabbitCh, "cosmix.events", "comment.replied", event)
+			}
+		} else if post.UserID != userID {
+			event := postEvents.PostCommented{
+				EventVersion:     postEvents.EventVersionOne,
+				PostID:           postID,
+				PostOwnerID:      post.UserID,
+				CommentID:        comment.ID,
+				ActorID:          userID,
+				ActorUsername:    actorUsername,
+				ActorDisplayName: actorDisplayName,
+				Content:          req.Content,
+				PostTitle:        postTitle,
+				CreatedAt:        time.Now(),
+			}
+			eventbus.Publish(ctx, svc.rabbitCh, "cosmix.events", "comment.created", event)
+		}
+	}
 
 	return comment, nil
 }

@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import * as jwt from 'jsonwebtoken';
 import { AuthJwtPayload } from '../types/jwt-payload.type';
@@ -8,25 +13,18 @@ export class AuthGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const request =
-      context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest();
 
-    const header =
-      request.headers.authorization;
+    const header = request.headers.authorization;
 
     if (!header) {
-      throw new UnauthorizedException(
-        'Authorization header missing',
-      );
+      throw new UnauthorizedException('Authorization header missing');
     }
 
-    const token =
-      header.split(' ')[1];
+    const token = header.split(' ')[1];
 
     if (!token) {
-      throw new UnauthorizedException(
-        'Invalid authorization header',
-      );
+      throw new UnauthorizedException('Invalid authorization header');
     }
 
     try {
@@ -37,13 +35,11 @@ export class AuthGuard implements CanActivate {
 
       request.user = payload;
 
-      request.headers['x-user-id'] = payload.userId
+      request.headers['x-user-id'] = payload.userId;
 
       return true;
     } catch {
-      throw new UnauthorizedException(
-        'Invalid token',
-      );
+      throw new UnauthorizedException('Invalid token');
     }
   }
 }

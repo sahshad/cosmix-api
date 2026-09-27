@@ -60,5 +60,55 @@ func RegisterSubscriptions(container *Container) error {
 		return err
 	}
 
+	if err := eventbus.Subscribe(
+		container.Rabbit.Channel,
+		rabbitmq.ExchangeEvents,
+		rabbitmq.NotificationPostLikedQueue,
+		rabbitmq.PostLiked,
+		container.EventService.HandlePostLiked,
+	); err != nil {
+		return err
+	}
+
+	if err := eventbus.Subscribe(
+		container.Rabbit.Channel,
+		rabbitmq.ExchangeEvents,
+		rabbitmq.NotificationPostCommentedQueue,
+		rabbitmq.CommentCreated,
+		container.EventService.HandlePostCommented,
+	); err != nil {
+		return err
+	}
+
+	if err := eventbus.Subscribe(
+		container.Rabbit.Channel,
+		rabbitmq.ExchangeEvents,
+		rabbitmq.NotificationCommentRepliedQueue,
+		rabbitmq.CommentReplied,
+		container.EventService.HandleCommentReplied,
+	); err != nil {
+		return err
+	}
+
+	if err := eventbus.Subscribe(
+		container.Rabbit.Channel,
+		rabbitmq.ExchangeEvents,
+		rabbitmq.NotificationCommentLikedQueue,
+		rabbitmq.CommentLiked,
+		container.EventService.HandleCommentLiked,
+	); err != nil {
+		return err
+	}
+
+	if err := eventbus.Subscribe(
+		container.Rabbit.Channel,
+		rabbitmq.ExchangeEvents,
+		rabbitmq.NotificationUserFollowedQueue,
+		rabbitmq.UserFollowed,
+		container.EventService.HandleUserFollowed,
+	); err != nil {
+		return err
+	}
+
 	return nil
 }

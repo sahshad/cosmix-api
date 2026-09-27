@@ -18,18 +18,12 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('users')
 export class UserController {
-  constructor(
-    private readonly userGrpc: UserGrpcService,
-  ) {}
+  constructor(private readonly userGrpc: UserGrpcService) {}
 
   @UseGuards(AuthGuard)
   @Get('me')
-  async getMyProfile(
-    @CurrentUser() user: { userId: string },
-  ) {
-    return this.userGrpc.getProfile(
-      user.userId,
-    );
+  async getMyProfile(@CurrentUser() user: { userId: string }) {
+    return this.userGrpc.getProfile(user.userId);
   }
 
   @UseGuards(AuthGuard)
@@ -38,10 +32,7 @@ export class UserController {
     @CurrentUser() user: { userId: string },
     @Body() body: UpdateProfileDto,
   ) {
-    return this.userGrpc.updateProfile(
-      user.userId,
-      body,
-    );
+    return this.userGrpc.updateProfile(user.userId, body);
   }
 
   @UseGuards(OptionalAuthGuard)
@@ -50,10 +41,7 @@ export class UserController {
     @Param('username') username: string,
     @CurrentUser() user: { userId: string } | undefined,
   ) {
-    return this.userGrpc.getProfileByUsername(
-      username,
-      user?.userId,
-    );
+    return this.userGrpc.getProfileByUsername(username, user?.userId);
   }
 
   @UseGuards(AuthGuard)
@@ -62,10 +50,7 @@ export class UserController {
     @CurrentUser() user: { userId: string },
     @Param('id') followingId: string,
   ) {
-    return this.userGrpc.follow(
-      user.userId,
-      followingId,
-    );
+    return this.userGrpc.follow(user.userId, followingId);
   }
 
   @UseGuards(AuthGuard)
@@ -74,27 +59,16 @@ export class UserController {
     @CurrentUser() user: { userId: string },
     @Param('id') followingId: string,
   ) {
-    return this.userGrpc.unfollow(
-      user.userId,
-      followingId,
-    );
+    return this.userGrpc.unfollow(user.userId, followingId);
   }
 
   @Get('followers/:id')
-  async getFollowers(
-    @Param('id') userId: string,
-  ) {
-    return this.userGrpc.getFollowers(
-      userId,
-    );
+  async getFollowers(@Param('id') userId: string) {
+    return this.userGrpc.getFollowers(userId);
   }
 
   @Get('following/:id')
-  async getFollowing(
-    @Param('id') userId: string,
-  ) {
-    return this.userGrpc.getFollowing(
-      userId,
-    );
+  async getFollowing(@Param('id') userId: string) {
+    return this.userGrpc.getFollowing(userId);
   }
 }

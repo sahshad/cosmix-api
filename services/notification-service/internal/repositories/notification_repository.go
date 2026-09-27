@@ -26,7 +26,16 @@ func NewNotificationRepository(
 func (repo *NotificationRepository) GetUserNotifications(ctx context.Context, userID uuid.UUID, params dto.PaginationRequest) (*dto.UserNotificationsResponse, error) {
 	var notifications []models.Notification
 
+	var totalCount int64
 	err := repo.db.WithContext(ctx).
+		Model(&models.Notification{}).
+		Where("user_id = ?", userID).
+		Count(&totalCount).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = repo.db.WithContext(ctx).
 		Model(&models.Notification{}).
 		Where("user_id = ?", userID).
 		Order("created_at DESC").
@@ -38,8 +47,7 @@ func (repo *NotificationRepository) GetUserNotifications(ctx context.Context, us
 		return nil, err
 	}
 
-	totalCount := uint(len(notifications))
-	totalPages := (uint(len(notifications)) + params.Limit - 1) / params.Limit
+	totalPages := (uint(totalCount) + params.Limit - 1) / params.Limit
 
 	notificationList := make([]dto.NotificationList, 0, len(notifications))
 	for _, n := range notifications {
@@ -66,7 +74,7 @@ func (repo *NotificationRepository) GetUserNotifications(ctx context.Context, us
 	return &dto.UserNotificationsResponse{Notifications: notificationList, Pagination: dto.PaginationResponse{
 		Page:       params.Page,
 		Limit:      params.Limit,
-		TotalCount: totalCount,
+		TotalCount: uint(totalCount),
 		TotalPages: totalPages,
 	}}, nil
 }
@@ -87,6 +95,18 @@ func (repo *NotificationRepository) MarkAsRead(notificationID uuid.UUID, userID 
 		Model(&models.Notification{}).
 		Where("id = ? AND user_id = ?", notificationID, userID).
 		Update("is_read", true).Error
+}
+
+func (repo *NotificationRepository) MarkAllAsRead(userID uuid.UUID) (int64, error) {
+	now := time.Now()
+	result := repo.db.
+		Model(&models.Notification{}).
+		Where("user_id = ? AND is_read = false", userID).
+		Updates(map[string]any{
+			"is_read": true,
+			"read_at": now,
+		})
+	return result.RowsAffected, result.Error
 }
 
 func formatTimePtr(t *time.Time) *string {

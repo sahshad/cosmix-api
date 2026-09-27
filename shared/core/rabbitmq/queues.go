@@ -19,4 +19,13 @@ const (
 
 	// Notification Service Queues (user)
 	NotificationUserProfileUpdatedQueue string = "notification.user.profile.updated"
+
+	// Notification Service Queues (post interactions)
+	NotificationPostLikedQueue           string = "notification.post.liked"
+	NotificationPostCommentedQueue       string = "notification.post.commented"
+	NotificationCommentRepliedQueue      string = "notification.comment.replied"
+	NotificationCommentLikedQueue        string = "notification.comment.liked"
+
+	// Notification Service Queues (user interactions)
+	NotificationUserFollowedQueue string = "notification.user.followed"
 )

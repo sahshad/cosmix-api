@@ -2,6 +2,10 @@ package services
 
 import (
 	"context"
+	"time"
+
+	"cosmix/shared/core/eventbus"
+	userEvents "cosmix/shared/events/user"
 
 	"user-service/internal/models"
 	"user-service/internal/repositories"
@@ -9,17 +13,24 @@ import (
 	appErr "cosmix/shared/core/errors"
 
 	"github.com/google/uuid"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type FollowService struct {
-	repo *repositories.FollowRepository
+	repo       *repositories.FollowRepository
+	userRepo   *repositories.UserRepository
+	rabbitCh   *amqp.Channel
 }
 
 func NewFollowService(
 	repo *repositories.FollowRepository,
+	userRepo *repositories.UserRepository,
+	rabbitCh *amqp.Channel,
 ) *FollowService {
 	return &FollowService{
-		repo: repo,
+		repo:       repo,
+		userRepo:   userRepo,
+		rabbitCh:   rabbitCh,
 	}
 }
 
@@ -47,7 +58,31 @@ func (svc *FollowService) Follow(ctx context.Context, followerID, followingID uu
 	if err := svc.repo.IncrementFollowingCount(ctx, followerID, 1); err != nil {
 		return err
 	}
-	return svc.repo.IncrementFollowersCount(ctx, followingID, 1)
+	if err := svc.repo.IncrementFollowersCount(ctx, followingID, 1); err != nil {
+		return err
+	}
+
+	if svc.rabbitCh != nil {
+		follower, _ := svc.userRepo.FindByUserID(ctx, followerID)
+		followerUsername := ""
+		followerDisplayName := ""
+		if follower != nil {
+			followerUsername = follower.Username
+			followerDisplayName = follower.DisplayName
+		}
+
+		event := userEvents.UserFollowed{
+			EventVersion:        userEvents.EventVersionOne,
+			FollowerID:          followerID,
+			FollowerUsername:    followerUsername,
+			FollowerDisplayName: followerDisplayName,
+			FollowingID:         followingID,
+			CreatedAt:           time.Now(),
+		}
+		eventbus.Publish(ctx, svc.rabbitCh, "cosmix.events", "user.followed", event)
+	}
+
+	return nil
 }
 
 func (svc *FollowService) Unfollow(ctx context.Context, followerID, followingID uuid.UUID) error {

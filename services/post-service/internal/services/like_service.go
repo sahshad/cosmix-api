@@ -3,38 +3,42 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
+	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 
 	"post-service/internal/models"
 	"post-service/internal/repositories"
 
+	"cosmix/shared/core/eventbus"
+	postEvents "cosmix/shared/events/post"
+
 	"github.com/google/uuid"
 )
 
-// type LikeServiceInterface interface {
-// 	LikePost(ctx context.Context, postID uuid.UUID, userID uuid.UUID) error
-// 	UnlikePost(ctx context.Context, postID uuid.UUID, userID uuid.UUID) error
-// 	GetLikesCount(ctx context.Context, postID uuid.UUID) (int64, error)
-// }
-
 type LikeService struct {
-	repo     *repositories.LikeRepository
-	postRepo *repositories.PostRepository
+	repo         *repositories.LikeRepository
+	postRepo     *repositories.PostRepository
+	postUserRepo *repositories.PostUserRepository
+	rabbitCh     *amqp.Channel
 }
 
 func NewLikeService(
 	repo *repositories.LikeRepository,
 	postRepo *repositories.PostRepository,
+	postUserRepo *repositories.PostUserRepository,
+	rabbitCh *amqp.Channel,
 ) *LikeService {
 	return &LikeService{
-		repo:     repo,
-		postRepo: postRepo,
+		repo:         repo,
+		postRepo:     postRepo,
+		postUserRepo: postUserRepo,
+		rabbitCh:     rabbitCh,
 	}
 }
 
 func (svc *LikeService) LikePost(ctx context.Context, postID uuid.UUID, userID uuid.UUID) error {
-	fmt.Println("in the like service")
-	_, err := svc.postRepo.FindByID(ctx, postID)
+	post, err := svc.postRepo.FindByID(ctx, postID)
 	if err != nil {
 		return errors.New("post not found")
 	}
@@ -55,7 +59,33 @@ func (svc *LikeService) LikePost(ctx context.Context, postID uuid.UUID, userID u
 		return err
 	}
 
-	return svc.postRepo.IncrementLikesCount(ctx, postID, 1)
+	if err := svc.postRepo.IncrementLikesCount(ctx, postID, 1); err != nil {
+		return err
+	}
+
+	if svc.rabbitCh != nil && post.UserID != userID {
+		actor, _ := svc.postUserRepo.FindByUserID(ctx, userID)
+		actorUsername := ""
+		actorDisplayName := ""
+		if actor != nil {
+			actorUsername = actor.Username
+			actorDisplayName = actor.DisplayName
+		}
+
+		event := postEvents.PostLiked{
+			EventVersion:     postEvents.EventVersionOne,
+			PostID:           postID,
+			PostOwnerID:      post.UserID,
+			ActorID:          userID,
+			ActorUsername:    actorUsername,
+			ActorDisplayName: actorDisplayName,
+			PostTitle:        post.Content, // Use post content as title (first 100 chars)
+			LikedAt:          time.Now(),
+		}
+		eventbus.Publish(ctx, svc.rabbitCh, "cosmix.events", "post.liked", event)
+	}
+
+	return nil
 }
 
 func (svc *LikeService) UnlikePost(ctx context.Context, postID uuid.UUID, userID uuid.UUID) error {

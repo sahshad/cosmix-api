@@ -30,4 +30,4 @@ import { join } from 'path';
   providers: [NotificationService, NotificationGrpcService],
   exports: [NotificationGrpcService],
 })
-export class NotificationModule { }
+export class NotificationModule {}

@@ -1,6 +1,9 @@
 import {
+  Body,
   Controller,
   Get,
+  Param,
+  Patch,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -14,10 +17,7 @@ import { GetUserNotificationsDto } from './dto/get-user-notifications.dto';
 
 @Controller('notifications')
 export class NotificationController {
-  constructor(
-    private readonly notificationGrpc:
-      NotificationGrpcService,
-  ) {}
+  constructor(private readonly notificationGrpc: NotificationGrpcService) {}
 
   @UseGuards(AuthGuard)
   @Get('me')
@@ -33,5 +33,36 @@ export class NotificationController {
       query.page ?? 1,
       query.limit ?? 10,
     );
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('unread-count')
+  async getUnreadCount(
+    @CurrentUser()
+    user: { userId: string },
+  ) {
+    return this.notificationGrpc.getUnreadCount(user.userId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch(':id/read')
+  async markAsRead(
+    @CurrentUser()
+    user: { userId: string },
+
+    @Param('id') notificationId: string,
+  ) {
+    return this.notificationGrpc.markAsRead(notificationId, user.userId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('read-all')
+  async markAllAsRead(
+    @CurrentUser()
+    user: {
+      userId: string;
+    },
+  ) {
+    return this.notificationGrpc.markAllAsRead(user.userId);
   }
 }

@@ -30,4 +30,4 @@ import { join } from 'path';
   providers: [PostGrpcService, PostService],
   exports: [PostGrpcService],
 })
-export class PostModule { }
+export class PostModule {}

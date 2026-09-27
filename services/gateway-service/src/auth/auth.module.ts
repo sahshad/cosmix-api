@@ -13,7 +13,7 @@ import { AUTH_PACKAGE_NAME } from '../generated/auth/auth';
         name: AUTH_PACKAGE_NAME,
         transport: Transport.GRPC,
         options: {
-          url:process.env.AUTH_GRPC_ADDR ?? 'localhost:50051',
+          url: process.env.AUTH_GRPC_ADDR ?? 'localhost:50051',
           package: 'auth',
           protoPath: join(
             __dirname,
@@ -30,4 +30,4 @@ import { AUTH_PACKAGE_NAME } from '../generated/auth/auth';
   providers: [AuthService, AuthGrpcService],
   exports: [AuthGrpcService],
 })
-export class AuthModule { }
+export class AuthModule {}

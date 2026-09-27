@@ -25,7 +25,7 @@ func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 	userRepo := repositories.NewUserRepository(db)
 	followRepo := repositories.NewFollowRepository(db)
 	userService := services.NewUserService(userRepo, followRepo, rabbit.Channel)
-	followService := services.NewFollowService(followRepo)
+	followService := services.NewFollowService(followRepo, userRepo, rabbit.Channel)
 
 	userGrpcServer :=
 		grpc.NewUserServer(

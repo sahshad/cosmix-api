@@ -67,6 +67,39 @@ func (srv *NotificationServer) GetUserNotifications(ctx context.Context, req *no
 	return response, nil
 }
 
+func (srv *NotificationServer) GetUnreadCount(ctx context.Context, req *notificationpb.GetUnreadCountRequest) (*notificationpb.GetUnreadCountResponse, error) {
+	userID, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := srv.notificationService.GetUnreadCount(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &notificationpb.GetUnreadCountResponse{
+		Count: uint32(count),
+	}, nil
+}
+
+func (srv *NotificationServer) MarkAllAsRead(ctx context.Context, req *notificationpb.MarkAllAsReadRequest) (*notificationpb.MarkAllAsReadResponse, error) {
+	userID, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := srv.notificationService.MarkAllAsRead(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &notificationpb.MarkAllAsReadResponse{
+		Success: true,
+		Count:   uint32(count),
+	}, nil
+}
+
 func mapNotification(item dto.NotificationList) *notificationpb.Notification {
 	var actorID string
 	if item.ActorID != nil {
