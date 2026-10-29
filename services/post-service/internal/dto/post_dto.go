@@ -41,12 +41,23 @@ type Like struct {
 }
 
 type Comment struct {
-	ID        uuid.UUID
-	PostID    uuid.UUID
-	AuthorID  uuid.UUID
-	Content   string
-	CreatedAt string
-	UpdatedAt string
+	ID              uuid.UUID
+	PostID          uuid.UUID
+	AuthorID        uuid.UUID
+	ParentCommentID *uuid.UUID
+	Content         string
+	LikesCount      int
+	RepliesCount    int
+	IsLiked         bool
+	IsOwner         bool
+	CreatedAt       string
+	UpdatedAt       string
+	User            User
+}
+
+type CommentListResponse struct {
+	Comments   []Comment
+	Pagination PaginationResponse
 }
 
 type PostList struct {
@@ -67,26 +78,6 @@ type PostList struct {
 
 type PostListResponse struct {
 	Posts      []PostList
-	Pagination PaginationResponse
-}
-
-type CommentList struct {
-	ID              uuid.UUID
-	PostID          uuid.UUID
-	AuthorID        uuid.UUID
-	ParentCommentID *uuid.UUID
-	Content         string
-	LikesCount      int
-	RepliesCount    int
-	IsLiked         bool
-	IsOwner         bool
-	CreatedAt       string
-	UpdatedAt       string
-	User            User
-}
-
-type CommentListResponse struct {
-	Comments   []CommentList
 	Pagination PaginationResponse
 }
 

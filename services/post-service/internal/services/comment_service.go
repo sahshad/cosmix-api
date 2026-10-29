@@ -139,7 +139,7 @@ func (svc *CommentService) GetReplies(ctx context.Context, parentCommentID uuid.
 	return svc.repo.GetReplies(ctx, parentCommentID, viewerID, params)
 }
 
-func (svc *CommentService) UpdateComment(ctx context.Context, id uuid.UUID, userID uuid.UUID, req *dto.UpdateCommentRequest) (*models.Comment, error) {
+func (svc *CommentService) UpdateComment(ctx context.Context, id uuid.UUID, userID uuid.UUID, req *dto.UpdateCommentRequest) (*dto.Comment, error) {
 	comment, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -149,12 +149,11 @@ func (svc *CommentService) UpdateComment(ctx context.Context, id uuid.UUID, user
 		return nil, errors.New("unauthorized to update this comment")
 	}
 
-	comment.Content = req.Content
-
-	if err := svc.repo.Update(ctx, comment); err != nil {
+	if err := svc.repo.UpdateContent(ctx, id, req.Content); err != nil {
 		return nil, err
 	}
-	return comment, nil
+
+	return svc.repo.FindCommentByID(ctx, id, userID)
 }
 
 func (svc *CommentService) DeleteComment(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {

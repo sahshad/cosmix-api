@@ -90,6 +90,40 @@ func (srv *PostServer) GetPost(ctx context.Context, req *postpb.GetPostRequest) 
 	}, nil
 }
 
+func (srv *PostServer) UpdatePost(ctx context.Context, req *postpb.UpdatePostRequest) (*postpb.PostResponse, error) {
+	postID, err := uuid.Parse(req.PostId)
+	if err != nil {
+		return nil, err
+	}
+
+	userID, err := uuid.Parse(req.AuthorId)
+	if err != nil {
+		return nil, err
+	}
+
+	mediaItemsDTO := []dto.MediaItem{}
+	for _, media := range req.Media {
+		mediaItemsDTO = append(mediaItemsDTO, dto.MediaItem{
+			PublicID: media.PublicId,
+			URL:      media.Url,
+			Type:     media.Type,
+			Duration: int(media.Duration),
+		})
+	}
+
+	updateDTO := &dto.UpdatePostRequest{
+		Content: req.Content,
+		Media:   mediaItemsDTO,
+	}
+
+	_, err = srv.postService.UpdatePost(ctx, postID, userID, updateDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
 func (srv *PostServer) DeletePost(ctx context.Context, req *postpb.DeletePostRequest) (*postpb.MessageResponse, error) {
 	postID, err := uuid.Parse(req.PostId)
 	if err != nil {
@@ -189,7 +223,7 @@ func (srv *PostServer) CreateComment(ctx context.Context, req *postpb.CreateComm
 	}
 
 	return &postpb.CommentResponse{
-		Comment: mapComment(dto.CommentList{
+		Comment: mapComment(dto.Comment{
 			ID:              comment.ID,
 			PostID:          comment.PostID,
 			AuthorID:        comment.UserID,
@@ -209,6 +243,34 @@ func (srv *PostServer) CreateComment(ctx context.Context, req *postpb.CreateComm
 				UpdatedAt:   formatTimePtr(comment.User.UpdatedAt),
 			},
 		}),
+	}, nil
+}
+
+func (srv *PostServer) UpdateComment(ctx context.Context, req *postpb.UpdateCommentRequest) (*postpb.CommentResponse, error) {
+	commentID, err := uuid.Parse(req.CommentId)
+	if err != nil {
+		return nil, err
+	}
+
+	authorID, err := uuid.Parse(req.AuthorId)
+	if err != nil {
+		return nil, err
+	}
+
+	comment, err := srv.commentService.UpdateComment(
+		ctx,
+		commentID,
+		authorID,
+		&dto.UpdateCommentRequest{
+			Content: req.Content,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &postpb.CommentResponse{
+		Comment: mapComment(*comment),
 	}, nil
 }
 
@@ -457,7 +519,7 @@ func mapPost(post dto.PostList) *postpb.Post {
 	return result
 }
 
-func mapComment(comment dto.CommentList) *postpb.Comment {
+func mapComment(comment dto.Comment) *postpb.Comment {
 	parentCommentID := ""
 	if comment.ParentCommentID != nil {
 		parentCommentID = comment.ParentCommentID.String()

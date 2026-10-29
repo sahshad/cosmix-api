@@ -84,9 +84,9 @@ func (repo *CommentRepository) buildCommentListResponse(ctx context.Context, com
 
 	totalPages := (totalCount + params.Limit - 1) / params.Limit
 
-	commentList := make([]dto.CommentList, 0, len(comments))
+	commentList := make([]dto.Comment, 0, len(comments))
 	for _, comment := range comments {
-		commentList = append(commentList, toCommentList(comment, likedCommentIDs[comment.ID], comment.UserID == viewerID))
+		commentList = append(commentList, toComment(comment, likedCommentIDs[comment.ID], comment.UserID == viewerID))
 	}
 
 	return &dto.CommentListResponse{
@@ -129,13 +129,13 @@ func (repo *CommentRepository) getLikedCommentIDs(ctx context.Context, viewerID 
 	return liked, nil
 }
 
-func toCommentList(comment models.Comment, isLiked bool, isOwner bool) dto.CommentList {
+func toComment(comment models.Comment, isLiked bool, isOwner bool) dto.Comment {
 	avatarURL := ""
 	if comment.User.AvatarURL != nil {
 		avatarURL = *comment.User.AvatarURL
 	}
 
-	return dto.CommentList{
+	return dto.Comment{
 		ID:              comment.ID,
 		PostID:          comment.PostID,
 		AuthorID:        comment.UserID,
@@ -156,6 +156,33 @@ func toCommentList(comment models.Comment, isLiked bool, isOwner bool) dto.Comme
 			UpdatedAt:   formatTimePtr(comment.User.UpdatedAt),
 		},
 	}
+}
+
+func (repo *CommentRepository) FindCommentByID(ctx context.Context, id uuid.UUID, viewerID uuid.UUID) (*dto.Comment, error) {
+	var comment models.Comment
+
+	if err := repo.db.WithContext(ctx).
+		Model(&models.Comment{}).
+		Preload("User").
+		Where("id = ?", id).
+		First(&comment).Error; err != nil {
+		return nil, err
+	}
+
+	likedCommentIDs, err := repo.getLikedCommentIDs(ctx, viewerID, []models.Comment{comment})
+	if err != nil {
+		return nil, err
+	}
+
+	result := toComment(comment, likedCommentIDs[comment.ID], comment.UserID == viewerID)
+	return &result, nil
+}
+
+func (repo *CommentRepository) UpdateContent(ctx context.Context, id uuid.UUID, content string) error {
+	return repo.db.WithContext(ctx).
+		Model(&models.Comment{}).
+		Where("id = ?", id).
+		Update("content", content).Error
 }
 
 func (repo *CommentRepository) IncrementLikesCount(ctx context.Context, id uuid.UUID, delta int) error {
