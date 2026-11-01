@@ -28,4 +28,13 @@ const (
 
 	// Notification Service Queues (user interactions)
 	NotificationUserFollowedQueue string = "notification.user.followed"
+
+	// Realtime Service Queues (post interactions)
+	RealtimePostLikedQueue      string = "realtime.post.liked"
+	RealtimePostCommentedQueue  string = "realtime.post.commented"
+	RealtimeCommentRepliedQueue string = "realtime.comment.replied"
+	RealtimeCommentLikedQueue   string = "realtime.comment.liked"
+
+	// Realtime Service Queues (user interactions)
+	RealtimeUserFollowedQueue string = "realtime.user.followed"
 )

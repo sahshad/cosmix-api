@@ -10,6 +10,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Infrastructure started successfully."
+Write-Host "Dev nginx available at http://localhost:5000 (after services finish starting)."
 
 wt `
 new-tab --title auth-service powershell -NoExit -File "$root/services/auth-service/auth-service.ps1" `
@@ -19,6 +20,8 @@ new-tab --title user-service powershell -NoExit -File "$root/services/user-servi
 new-tab --title post-service powershell -NoExit -File "$root/services/post-service/post-service.ps1" `
 `; `
 new-tab --title notification-service powershell -NoExit -File "$root/services/notification-service/notification-service.ps1" `
+`; `
+new-tab --title realtime-service powershell -NoExit -File "$root/services/realtime-service/realtime-service.ps1" `
 `; `
 new-tab --title gateway-service powershell -NoExit -File "$root/services/gateway-service/gateway-service.ps1"
 

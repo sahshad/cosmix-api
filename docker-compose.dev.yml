@@ -1,4 +1,14 @@
 services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: cosmix-nginx-dev
+    ports:
+      - "5000:80"
+    volumes:
+      - ./infrastructure/nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - cosmix-net
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: cosmix-rabbitmq
