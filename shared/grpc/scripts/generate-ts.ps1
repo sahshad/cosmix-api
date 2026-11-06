@@ -14,6 +14,7 @@ protoc `
   auth/auth.proto `
   user/user.proto `
   notification/notification.proto `
-  post/post.proto
+  post/post.proto `
+  communication/communication.proto
 
 Write-Host "TypeScript protobuf files generated successfully"

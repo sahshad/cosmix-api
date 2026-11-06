@@ -17,6 +17,10 @@ const (
 	PostAuthUserEmailVerificationCompletedQueue string = "post.auth.user.email_verification_completed"
 	PostUserProfileUpdatedQueue                 string = "post.user.profile.updated"
 
+	// Communication Service Queues
+	CommunicationAuthUserEmailVerificationCompletedQueue string = "communication.auth.user.email_verification_completed"
+	CommunicationUserProfileUpdatedQueue                 string = "communication.user.profile.updated"
+
 	// Notification Service Queues (user)
 	NotificationUserProfileUpdatedQueue string = "notification.user.profile.updated"
 
@@ -37,4 +41,7 @@ const (
 
 	// Realtime Service Queues (user interactions)
 	RealtimeUserFollowedQueue string = "realtime.user.followed"
+
+	// Realtime Service Queues (communication)
+	RealtimeChatMessageSentQueue string = "realtime.chat.message.sent"
 )

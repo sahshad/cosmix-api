@@ -1,4 +1,5 @@
 package main
+
 import (
 	"context"
 	"errors"
@@ -85,4 +86,3 @@ func main() {
 	container.Hub.CloseAll()
 	_ = rabbit.Connection.Close()
 }
-

@@ -15,6 +15,7 @@ import { NotificationModule } from './notification/notification.module';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { PostModule } from './post/post.module';
+import { CommunicationModule } from './communication/communication.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { PostModule } from './post/post.module';
     UserModule,
     NotificationModule,
     PostModule,
+    CommunicationModule,
   ],
   providers: [
     {

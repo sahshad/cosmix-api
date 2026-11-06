@@ -9,6 +9,7 @@ import (
 const (
 	MessageTypeConnected    = "connected"
 	MessageTypeNotification = "notification"
+	MessageTypeChatMessage  = "chat.message"
 )
 
 type Message struct {
@@ -24,6 +25,15 @@ type Actor struct {
 	ID          string `json:"id"`
 	Username    string `json:"username,omitempty"`
 	DisplayName string `json:"displayName,omitempty"`
+	AvatarURL   string `json:"avatarUrl,omitempty"`
+}
+
+type ChatMessage struct {
+	MessageID      string    `json:"messageId"`
+	ConversationID string    `json:"conversationId"`
+	Content        string    `json:"content"`
+	Sender         *Actor    `json:"sender"`
+	CreatedAt      time.Time `json:"createdAt"`
 }
 
 type Notification struct {

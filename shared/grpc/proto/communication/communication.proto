@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+package communication;
+
+option go_package = "cosmix/shared/grpc/gen/go/communication";
+
+service CommunicationService {
+  rpc CreateDirectConversation(CreateDirectConversationRequest)
+      returns (ConversationResponse);
+
+  rpc GetConversations(GetConversationsRequest)
+      returns (ConversationListResponse);
+
+  rpc GetConversation(GetConversationRequest)
+      returns (ConversationResponse);
+
+  rpc GetMessages(GetMessagesRequest)
+      returns (MessageListResponse);
+
+  rpc SendMessage(SendMessageRequest)
+      returns (MessageResponse);
+
+  rpc MarkConversationRead(MarkConversationReadRequest)
+      returns (MarkConversationReadResponse);
+
+  rpc GetUnreadCount(GetUnreadCountRequest)
+      returns (GetUnreadCountResponse);
+}
+
+message Pagination {
+  uint32 total_count = 1;
+  uint32 page = 2;
+  uint32 limit = 3;
+  uint32 total_pages = 4;
+}
+
+message User {
+  string id = 1;
+  string username = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+  bool is_verified = 5;
+}
+
+message Message {
+  string id = 1;
+  string conversation_id = 2;
+  string sender_id = 3;
+  string content = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  User sender = 7;
+}
+
+message Conversation {
+  string id = 1;
+  string type = 2;
+  string created_at = 3;
+  string updated_at = 4;
+  repeated User participants = 5;
+  Message last_message = 6;
+  uint32 unread_count = 7;
+}
+
+message CreateDirectConversationRequest {
+  string user_id = 1;
+  string participant_id = 2;
+}
+
+message GetConversationsRequest {
+  string user_id = 1;
+  uint32 page = 2;
+  uint32 limit = 3;
+}
+
+message GetConversationRequest {
+  string conversation_id = 1;
+  string user_id = 2;
+}
+
+message GetMessagesRequest {
+  string conversation_id = 1;
+  string user_id = 2;
+  uint32 page = 3;
+  uint32 limit = 4;
+}
+
+message SendMessageRequest {
+  string conversation_id = 1;
+  string sender_id = 2;
+  string content = 3;
+}
+
+message MarkConversationReadRequest {
+  string conversation_id = 1;
+  string user_id = 2;
+}
+
+message MarkConversationReadResponse {
+  bool success = 1;
+}
+
+message GetUnreadCountRequest {
+  string user_id = 1;
+}
+
+message GetUnreadCountResponse {
+  uint32 count = 1;
+}
+
+message ConversationResponse {
+  Conversation conversation = 1;
+}
+
+message ConversationListResponse {
+  repeated Conversation conversations = 1;
+  Pagination pagination = 2;
+}
+
+message MessageListResponse {
+  repeated Message messages = 1;
+  Pagination pagination = 2;
+}
+
+message MessageResponse {
+  Message message = 1;
+}

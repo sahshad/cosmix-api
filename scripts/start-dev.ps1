@@ -21,6 +21,8 @@ new-tab --title post-service powershell -NoExit -File "$root/services/post-servi
 `; `
 new-tab --title notification-service powershell -NoExit -File "$root/services/notification-service/notification-service.ps1" `
 `; `
+new-tab --title communication-service powershell -NoExit -File "$root/services/communication-service/communication-service.ps1" `
+`; `
 new-tab --title realtime-service powershell -NoExit -File "$root/services/realtime-service/realtime-service.ps1" `
 `; `
 new-tab --title gateway-service powershell -NoExit -File "$root/services/gateway-service/gateway-service.ps1"

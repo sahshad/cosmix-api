@@ -19,11 +19,14 @@ services:
     container_name: gateway-service
     env_file:
       - ./services/gateway-service/.env.docker
+    volumes:
+      - ./shared/grpc/proto:/shared/grpc/proto:ro
     depends_on:
       - auth-service
       - user-service
       - notification-service
       - post-service
+      - communication-service
     networks:
       - cosmix-net
 
@@ -73,6 +76,19 @@ services:
     container_name: post-service
     env_file:
       - ./services/post-service/.env.docker
+    depends_on:
+      - db
+      - rabbitmq
+    networks:
+      - cosmix-net
+
+  communication-service:
+    build:
+      context: .
+      dockerfile: ./services/communication-service/Dockerfile
+    container_name: communication-service
+    env_file:
+      - ./services/communication-service/.env.docker
     depends_on:
       - db
       - rabbitmq

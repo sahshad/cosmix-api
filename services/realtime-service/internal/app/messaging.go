@@ -60,5 +60,15 @@ func RegisterSubscriptions(container *Container) error {
 		return err
 	}
 
+	if err := eventbus.Subscribe(
+		container.Rabbit.Channel,
+		rabbitmq.ExchangeEvents,
+		rabbitmq.RealtimeChatMessageSentQueue,
+		rabbitmq.ChatMessageSent,
+		container.EventService.HandleChatMessageSent,
+	); err != nil {
+		return err
+	}
+
 	return nil
 }

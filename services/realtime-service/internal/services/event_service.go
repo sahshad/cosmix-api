@@ -6,6 +6,7 @@ import (
 
 	"realtime-service/internal/realtime"
 
+	chatEvents "cosmix/shared/events/chat"
 	postEvents "cosmix/shared/events/post"
 	userEvents "cosmix/shared/events/user"
 
@@ -137,6 +138,28 @@ func (svc *EventService) HandleUserFollowed(ctx context.Context, event userEvent
 	return nil
 }
 
+func (svc *EventService) HandleChatMessageSent(ctx context.Context, event chatEvents.ChatMessageSent) error {
+	sender := newActor(event.SenderID, event.SenderUsername, event.SenderDisplayName)
+	sender.AvatarURL = avatarURL(event.SenderAvatarURL)
+
+	message := realtime.ChatMessage{
+		MessageID:      event.MessageID.String(),
+		ConversationID: event.ConversationID.String(),
+		Content:        event.Content,
+		Sender:         sender,
+		CreatedAt:      event.CreatedAt,
+	}
+
+	for _, recipientID := range event.RecipientIDs {
+		svc.sender.SendToUser(recipientID, realtime.Message{
+			Type: realtime.MessageTypeChatMessage,
+			Data: message,
+		})
+	}
+
+	return nil
+}
+
 func (svc *EventService) push(userID uuid.UUID, notification realtime.Notification) {
 	svc.sender.SendToUser(userID, realtime.Message{
 		Type: realtime.MessageTypeNotification,
@@ -162,6 +185,14 @@ func nameOf(displayName, username string) string {
 	}
 
 	return "Someone"
+}
+
+func avatarURL(url *string) string {
+	if url == nil {
+		return ""
+	}
+
+	return *url
 }
 
 func truncate(s string, maxLen int) string {
