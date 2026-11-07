@@ -7,6 +7,15 @@ import {
   Res,
   UnauthorizedException,
 } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiCookieAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 import { AuthGrpcService } from './auth-client.service';
 import { LoginDto } from './dto/login.dto';
@@ -15,7 +24,9 @@ import type { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { VerifyEmailDTO } from './dto/verify-email.dto';
 import { ChangePasswordDTO } from './dto/change-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
+@ApiTags('auth')
 @Throttle({
   default: {
     limit: 20,
@@ -26,6 +37,13 @@ import { ChangePasswordDTO } from './dto/change-password.dto';
 export class AuthController {
   constructor(private readonly authGrpc: AuthGrpcService) {}
 
+  @ApiOperation({ summary: 'Register a new account' })
+  @ApiCreatedResponse({
+    description: 'Account created; a verification email has been sent',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid payload or email already in use',
+  })
   @Post('register')
   async register(@Body() body: RegisterDTO) {
     console.log('register body: ', body);
@@ -33,6 +51,9 @@ export class AuthController {
     return result;
   }
 
+  @ApiOperation({ summary: 'Verify an email address' })
+  @ApiCreatedResponse({ description: 'Email verified' })
+  @ApiBadRequestResponse({ description: 'Invalid or expired token' })
   @Post('verify-email')
   async verifyEmail(@Body() body: VerifyEmailDTO) {
     console.log('verify-email body: ', body);
@@ -40,6 +61,15 @@ export class AuthController {
     return result;
   }
 
+  @ApiOperation({
+    summary: 'Log in and receive an access token',
+    description:
+      'Returns an access token and sets an httpOnly refresh_token cookie.',
+  })
+  @ApiCreatedResponse({
+    description: 'Authenticated; returns the access token and user profile',
+  })
+  @ApiUnauthorizedResponse({ description: 'Invalid email or password' })
   @Post('login')
   async login(
     @Body() body: LoginDto,
@@ -60,12 +90,18 @@ export class AuthController {
     };
   }
 
+  @ApiOperation({
+    summary: 'Rotate the refresh token and issue a new access token',
+  })
+  @ApiCookieAuth('refresh-token')
+  @ApiOkResponse({ description: 'Returns a new access token' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid refresh token' })
   @Get('refresh')
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const refreshToken = req.cookies?.refresh_token;
+    const refreshToken = req.cookies?.refresh_token as string | undefined;
 
     if (!refreshToken) {
       throw new UnauthorizedException('No refresh token');
@@ -85,8 +121,10 @@ export class AuthController {
     };
   }
 
+  @ApiOperation({ summary: 'Log out and clear the refresh token cookie' })
+  @ApiCreatedResponse({ description: 'Refresh token cookie cleared' })
   @Post('logout')
-  async logout(
+  logout(
     @Res({ passthrough: true })
     res: Response,
   ) {
@@ -100,13 +138,21 @@ export class AuthController {
     };
   }
 
+  @ApiOperation({ summary: 'Request a password reset token' })
+  @ApiCreatedResponse({
+    description: 'Reset token sent when the email address exists',
+  })
+  @ApiBadRequestResponse({ description: 'Invalid email address' })
   @Post('forgot-password')
-  async forgotPassword(@Body() body: { email: string }) {
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
     console.log('forgot-password body: ', body);
     const result = await this.authGrpc.forgotPassword(body.email);
     return result;
   }
 
+  @ApiOperation({ summary: 'Reset a password using a token' })
+  @ApiCreatedResponse({ description: 'Password updated' })
+  @ApiBadRequestResponse({ description: 'Invalid or expired token' })
   @Post('reset-password')
   async resetPassword(@Body() body: ChangePasswordDTO) {
     console.log('reset-password body: ', body);

@@ -6,11 +6,16 @@ import (
 	"github.com/google/uuid"
 )
 
-const ConversationTypeDirect = "direct"
+const (
+	ConversationTypeDirect = "direct"
+	ConversationTypeGroup  = "group"
+)
 
 type Conversation struct {
 	BaseModel
 	Type          string     `gorm:"type:varchar(20);not null;default:'direct'"`
+	Name          *string    `gorm:"type:varchar(100);default:null"`
+	AvatarURL     *string    `gorm:"type:text;default:null"`
 	DirectKey     *string    `gorm:"type:varchar(80);default:null"`
 	CreatedBy     uuid.UUID  `gorm:"type:uuid;not null"`
 	LastMessageID *uuid.UUID `gorm:"type:uuid;default:null"`

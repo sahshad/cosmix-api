@@ -20,11 +20,17 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	CommunicationService_CreateDirectConversation_FullMethodName = "/communication.CommunicationService/CreateDirectConversation"
+	CommunicationService_CreateGroupConversation_FullMethodName  = "/communication.CommunicationService/CreateGroupConversation"
+	CommunicationService_UpdateGroupConversation_FullMethodName  = "/communication.CommunicationService/UpdateGroupConversation"
+	CommunicationService_AddGroupParticipants_FullMethodName     = "/communication.CommunicationService/AddGroupParticipants"
+	CommunicationService_RemoveGroupParticipant_FullMethodName   = "/communication.CommunicationService/RemoveGroupParticipant"
 	CommunicationService_GetConversations_FullMethodName         = "/communication.CommunicationService/GetConversations"
 	CommunicationService_GetConversation_FullMethodName          = "/communication.CommunicationService/GetConversation"
 	CommunicationService_GetMessages_FullMethodName              = "/communication.CommunicationService/GetMessages"
 	CommunicationService_SendMessage_FullMethodName              = "/communication.CommunicationService/SendMessage"
 	CommunicationService_MarkConversationRead_FullMethodName     = "/communication.CommunicationService/MarkConversationRead"
+	CommunicationService_MarkMessageRead_FullMethodName          = "/communication.CommunicationService/MarkMessageRead"
+	CommunicationService_GetMessageReadReceipts_FullMethodName   = "/communication.CommunicationService/GetMessageReadReceipts"
 	CommunicationService_GetUnreadCount_FullMethodName           = "/communication.CommunicationService/GetUnreadCount"
 )
 
@@ -33,11 +39,17 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CommunicationServiceClient interface {
 	CreateDirectConversation(ctx context.Context, in *CreateDirectConversationRequest, opts ...grpc.CallOption) (*ConversationResponse, error)
+	CreateGroupConversation(ctx context.Context, in *CreateGroupConversationRequest, opts ...grpc.CallOption) (*ConversationResponse, error)
+	UpdateGroupConversation(ctx context.Context, in *UpdateGroupConversationRequest, opts ...grpc.CallOption) (*ConversationResponse, error)
+	AddGroupParticipants(ctx context.Context, in *AddGroupParticipantsRequest, opts ...grpc.CallOption) (*ConversationResponse, error)
+	RemoveGroupParticipant(ctx context.Context, in *RemoveGroupParticipantRequest, opts ...grpc.CallOption) (*RemoveGroupParticipantResponse, error)
 	GetConversations(ctx context.Context, in *GetConversationsRequest, opts ...grpc.CallOption) (*ConversationListResponse, error)
 	GetConversation(ctx context.Context, in *GetConversationRequest, opts ...grpc.CallOption) (*ConversationResponse, error)
 	GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...grpc.CallOption) (*MessageListResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 	MarkConversationRead(ctx context.Context, in *MarkConversationReadRequest, opts ...grpc.CallOption) (*MarkConversationReadResponse, error)
+	MarkMessageRead(ctx context.Context, in *MarkMessageReadRequest, opts ...grpc.CallOption) (*MarkMessageReadResponse, error)
+	GetMessageReadReceipts(ctx context.Context, in *GetMessageReadReceiptsRequest, opts ...grpc.CallOption) (*MessageReadReceiptListResponse, error)
 	GetUnreadCount(ctx context.Context, in *GetUnreadCountRequest, opts ...grpc.CallOption) (*GetUnreadCountResponse, error)
 }
 
@@ -53,6 +65,46 @@ func (c *communicationServiceClient) CreateDirectConversation(ctx context.Contex
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ConversationResponse)
 	err := c.cc.Invoke(ctx, CommunicationService_CreateDirectConversation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *communicationServiceClient) CreateGroupConversation(ctx context.Context, in *CreateGroupConversationRequest, opts ...grpc.CallOption) (*ConversationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ConversationResponse)
+	err := c.cc.Invoke(ctx, CommunicationService_CreateGroupConversation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *communicationServiceClient) UpdateGroupConversation(ctx context.Context, in *UpdateGroupConversationRequest, opts ...grpc.CallOption) (*ConversationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ConversationResponse)
+	err := c.cc.Invoke(ctx, CommunicationService_UpdateGroupConversation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *communicationServiceClient) AddGroupParticipants(ctx context.Context, in *AddGroupParticipantsRequest, opts ...grpc.CallOption) (*ConversationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ConversationResponse)
+	err := c.cc.Invoke(ctx, CommunicationService_AddGroupParticipants_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *communicationServiceClient) RemoveGroupParticipant(ctx context.Context, in *RemoveGroupParticipantRequest, opts ...grpc.CallOption) (*RemoveGroupParticipantResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveGroupParticipantResponse)
+	err := c.cc.Invoke(ctx, CommunicationService_RemoveGroupParticipant_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -109,6 +161,26 @@ func (c *communicationServiceClient) MarkConversationRead(ctx context.Context, i
 	return out, nil
 }
 
+func (c *communicationServiceClient) MarkMessageRead(ctx context.Context, in *MarkMessageReadRequest, opts ...grpc.CallOption) (*MarkMessageReadResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MarkMessageReadResponse)
+	err := c.cc.Invoke(ctx, CommunicationService_MarkMessageRead_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *communicationServiceClient) GetMessageReadReceipts(ctx context.Context, in *GetMessageReadReceiptsRequest, opts ...grpc.CallOption) (*MessageReadReceiptListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageReadReceiptListResponse)
+	err := c.cc.Invoke(ctx, CommunicationService_GetMessageReadReceipts_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *communicationServiceClient) GetUnreadCount(ctx context.Context, in *GetUnreadCountRequest, opts ...grpc.CallOption) (*GetUnreadCountResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetUnreadCountResponse)
@@ -124,11 +196,17 @@ func (c *communicationServiceClient) GetUnreadCount(ctx context.Context, in *Get
 // for forward compatibility.
 type CommunicationServiceServer interface {
 	CreateDirectConversation(context.Context, *CreateDirectConversationRequest) (*ConversationResponse, error)
+	CreateGroupConversation(context.Context, *CreateGroupConversationRequest) (*ConversationResponse, error)
+	UpdateGroupConversation(context.Context, *UpdateGroupConversationRequest) (*ConversationResponse, error)
+	AddGroupParticipants(context.Context, *AddGroupParticipantsRequest) (*ConversationResponse, error)
+	RemoveGroupParticipant(context.Context, *RemoveGroupParticipantRequest) (*RemoveGroupParticipantResponse, error)
 	GetConversations(context.Context, *GetConversationsRequest) (*ConversationListResponse, error)
 	GetConversation(context.Context, *GetConversationRequest) (*ConversationResponse, error)
 	GetMessages(context.Context, *GetMessagesRequest) (*MessageListResponse, error)
 	SendMessage(context.Context, *SendMessageRequest) (*MessageResponse, error)
 	MarkConversationRead(context.Context, *MarkConversationReadRequest) (*MarkConversationReadResponse, error)
+	MarkMessageRead(context.Context, *MarkMessageReadRequest) (*MarkMessageReadResponse, error)
+	GetMessageReadReceipts(context.Context, *GetMessageReadReceiptsRequest) (*MessageReadReceiptListResponse, error)
 	GetUnreadCount(context.Context, *GetUnreadCountRequest) (*GetUnreadCountResponse, error)
 	mustEmbedUnimplementedCommunicationServiceServer()
 }
@@ -142,6 +220,18 @@ type UnimplementedCommunicationServiceServer struct{}
 
 func (UnimplementedCommunicationServiceServer) CreateDirectConversation(context.Context, *CreateDirectConversationRequest) (*ConversationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateDirectConversation not implemented")
+}
+func (UnimplementedCommunicationServiceServer) CreateGroupConversation(context.Context, *CreateGroupConversationRequest) (*ConversationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateGroupConversation not implemented")
+}
+func (UnimplementedCommunicationServiceServer) UpdateGroupConversation(context.Context, *UpdateGroupConversationRequest) (*ConversationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateGroupConversation not implemented")
+}
+func (UnimplementedCommunicationServiceServer) AddGroupParticipants(context.Context, *AddGroupParticipantsRequest) (*ConversationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddGroupParticipants not implemented")
+}
+func (UnimplementedCommunicationServiceServer) RemoveGroupParticipant(context.Context, *RemoveGroupParticipantRequest) (*RemoveGroupParticipantResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveGroupParticipant not implemented")
 }
 func (UnimplementedCommunicationServiceServer) GetConversations(context.Context, *GetConversationsRequest) (*ConversationListResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetConversations not implemented")
@@ -157,6 +247,12 @@ func (UnimplementedCommunicationServiceServer) SendMessage(context.Context, *Sen
 }
 func (UnimplementedCommunicationServiceServer) MarkConversationRead(context.Context, *MarkConversationReadRequest) (*MarkConversationReadResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method MarkConversationRead not implemented")
+}
+func (UnimplementedCommunicationServiceServer) MarkMessageRead(context.Context, *MarkMessageReadRequest) (*MarkMessageReadResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method MarkMessageRead not implemented")
+}
+func (UnimplementedCommunicationServiceServer) GetMessageReadReceipts(context.Context, *GetMessageReadReceiptsRequest) (*MessageReadReceiptListResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetMessageReadReceipts not implemented")
 }
 func (UnimplementedCommunicationServiceServer) GetUnreadCount(context.Context, *GetUnreadCountRequest) (*GetUnreadCountResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUnreadCount not implemented")
@@ -196,6 +292,78 @@ func _CommunicationService_CreateDirectConversation_Handler(srv interface{}, ctx
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CommunicationServiceServer).CreateDirectConversation(ctx, req.(*CreateDirectConversationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CommunicationService_CreateGroupConversation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateGroupConversationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommunicationServiceServer).CreateGroupConversation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CommunicationService_CreateGroupConversation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommunicationServiceServer).CreateGroupConversation(ctx, req.(*CreateGroupConversationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CommunicationService_UpdateGroupConversation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateGroupConversationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommunicationServiceServer).UpdateGroupConversation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CommunicationService_UpdateGroupConversation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommunicationServiceServer).UpdateGroupConversation(ctx, req.(*UpdateGroupConversationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CommunicationService_AddGroupParticipants_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddGroupParticipantsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommunicationServiceServer).AddGroupParticipants(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CommunicationService_AddGroupParticipants_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommunicationServiceServer).AddGroupParticipants(ctx, req.(*AddGroupParticipantsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CommunicationService_RemoveGroupParticipant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveGroupParticipantRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommunicationServiceServer).RemoveGroupParticipant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CommunicationService_RemoveGroupParticipant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommunicationServiceServer).RemoveGroupParticipant(ctx, req.(*RemoveGroupParticipantRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -290,6 +458,42 @@ func _CommunicationService_MarkConversationRead_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CommunicationService_MarkMessageRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MarkMessageReadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommunicationServiceServer).MarkMessageRead(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CommunicationService_MarkMessageRead_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommunicationServiceServer).MarkMessageRead(ctx, req.(*MarkMessageReadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CommunicationService_GetMessageReadReceipts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMessageReadReceiptsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommunicationServiceServer).GetMessageReadReceipts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CommunicationService_GetMessageReadReceipts_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommunicationServiceServer).GetMessageReadReceipts(ctx, req.(*GetMessageReadReceiptsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CommunicationService_GetUnreadCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUnreadCountRequest)
 	if err := dec(in); err != nil {
@@ -320,6 +524,22 @@ var CommunicationService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CommunicationService_CreateDirectConversation_Handler,
 		},
 		{
+			MethodName: "CreateGroupConversation",
+			Handler:    _CommunicationService_CreateGroupConversation_Handler,
+		},
+		{
+			MethodName: "UpdateGroupConversation",
+			Handler:    _CommunicationService_UpdateGroupConversation_Handler,
+		},
+		{
+			MethodName: "AddGroupParticipants",
+			Handler:    _CommunicationService_AddGroupParticipants_Handler,
+		},
+		{
+			MethodName: "RemoveGroupParticipant",
+			Handler:    _CommunicationService_RemoveGroupParticipant_Handler,
+		},
+		{
 			MethodName: "GetConversations",
 			Handler:    _CommunicationService_GetConversations_Handler,
 		},
@@ -338,6 +558,14 @@ var CommunicationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MarkConversationRead",
 			Handler:    _CommunicationService_MarkConversationRead_Handler,
+		},
+		{
+			MethodName: "MarkMessageRead",
+			Handler:    _CommunicationService_MarkMessageRead_Handler,
+		},
+		{
+			MethodName: "GetMessageReadReceipts",
+			Handler:    _CommunicationService_GetMessageReadReceipts_Handler,
 		},
 		{
 			MethodName: "GetUnreadCount",

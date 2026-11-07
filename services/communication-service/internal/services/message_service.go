@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	stderrors "errors"
 	"strings"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"gorm.io/gorm"
 )
 
 const maxMessageLength = 5000
@@ -24,6 +26,7 @@ type MessageService struct {
 	messageRepo      *repositories.MessageRepository
 	conversationRepo *repositories.ConversationRepository
 	userRepo         *repositories.CommunicationUserRepository
+	receiptRepo      *repositories.MessageReadReceiptRepository
 	rabbitCh         *amqp.Channel
 }
 
@@ -31,12 +34,14 @@ func NewMessageService(
 	messageRepo *repositories.MessageRepository,
 	conversationRepo *repositories.ConversationRepository,
 	userRepo *repositories.CommunicationUserRepository,
+	receiptRepo *repositories.MessageReadReceiptRepository,
 	rabbitCh *amqp.Channel,
 ) *MessageService {
 	return &MessageService{
 		messageRepo:      messageRepo,
 		conversationRepo: conversationRepo,
 		userRepo:         userRepo,
+		receiptRepo:      receiptRepo,
 		rabbitCh:         rabbitCh,
 	}
 }
@@ -104,7 +109,97 @@ func (svc *MessageService) List(ctx context.Context, conversationID uuid.UUID, u
 		return nil, errors.NewNotFound("conversation")
 	}
 
-	return svc.messageRepo.ListByConversation(ctx, conversationID, params)
+	result, err := svc.messageRepo.ListByConversation(ctx, conversationID, params)
+	if err != nil {
+		return nil, err
+	}
+
+	messageIDs := make([]uuid.UUID, 0, len(result.Messages))
+	for i := range result.Messages {
+		messageIDs = append(messageIDs, result.Messages[i].ID)
+	}
+
+	readCounts, err := svc.receiptRepo.CountsForMessages(ctx, messageIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range result.Messages {
+		result.Messages[i].ReadCount = readCounts[result.Messages[i].ID]
+	}
+
+	return result, nil
+}
+
+func (svc *MessageService) MarkMessageRead(ctx context.Context, conversationID uuid.UUID, messageID uuid.UUID, userID uuid.UUID) error {
+	isParticipant, err := svc.conversationRepo.IsParticipant(ctx, conversationID, userID)
+	if err != nil {
+		return err
+	}
+
+	if !isParticipant {
+		return errors.NewNotFound("conversation")
+	}
+
+	message, err := svc.messageRepo.FindByIDInConversation(ctx, messageID, conversationID)
+	if err != nil {
+		if stderrors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.NewNotFound("message")
+		}
+
+		return err
+	}
+
+	if message.SenderID == userID {
+		return nil
+	}
+
+	return svc.receiptRepo.Create(ctx, &models.MessageReadReceipt{
+		MessageID:      message.ID,
+		ConversationID: conversationID,
+		UserID:         userID,
+		ReadAt:         time.Now().UTC(),
+	})
+}
+
+func (svc *MessageService) GetReadReceipts(ctx context.Context, conversationID uuid.UUID, messageID uuid.UUID, userID uuid.UUID) (*dto.MessageReadReceiptListResponse, error) {
+	isParticipant, err := svc.conversationRepo.IsParticipant(ctx, conversationID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if !isParticipant {
+		return nil, errors.NewNotFound("conversation")
+	}
+
+	if _, err := svc.messageRepo.FindByIDInConversation(ctx, messageID, conversationID); err != nil {
+		if stderrors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.NewNotFound("message")
+		}
+
+		return nil, err
+	}
+
+	receipts, err := svc.receiptRepo.ListForMessage(ctx, messageID)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]dto.MessageReadReceipt, 0, len(receipts))
+	for i := range receipts {
+		result = append(result, dto.MessageReadReceipt{
+			User: dto.User{
+				ID:          receipts[i].User.UserID,
+				Username:    receipts[i].User.Username,
+				DisplayName: receipts[i].User.DisplayName,
+				AvatarURL:   avatarURL(receipts[i].User.AvatarURL),
+				IsVerified:  receipts[i].User.IsVerified,
+			},
+			ReadAt: receipts[i].ReadAt.Format(time.RFC3339),
+		})
+	}
+
+	return &dto.MessageReadReceiptListResponse{Receipts: result}, nil
 }
 
 func (svc *MessageService) UnreadCount(ctx context.Context, userID uuid.UUID) (uint, error) {

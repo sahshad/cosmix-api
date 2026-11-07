@@ -8,8 +8,11 @@ import {
   ConversationResponse,
   GetUnreadCountResponse,
   MarkConversationReadResponse,
+  MarkMessageReadResponse,
   MessageListResponse,
+  MessageReadReceiptListResponse,
   MessageResponse,
+  RemoveGroupParticipantResponse,
 } from '../generated/communication/communication';
 
 import type { ClientGrpc } from '@nestjs/microservices';
@@ -36,6 +39,66 @@ export class CommunicationGrpcService {
   ): Promise<ConversationResponse> {
     return firstValueFrom(
       this.client.createDirectConversation({ userId, participantId }),
+    );
+  }
+
+  createGroupConversation(
+    userId: string,
+    name: string,
+    participantIds: string[],
+    avatarUrl?: string,
+  ): Promise<ConversationResponse> {
+    return firstValueFrom(
+      this.client.createGroupConversation({
+        userId,
+        name,
+        participantIds,
+        avatarUrl,
+      }),
+    );
+  }
+
+  updateGroupConversation(
+    conversationId: string,
+    userId: string,
+    name?: string,
+    avatarUrl?: string,
+  ): Promise<ConversationResponse> {
+    return firstValueFrom(
+      this.client.updateGroupConversation({
+        conversationId,
+        userId,
+        name,
+        avatarUrl,
+      }),
+    );
+  }
+
+  addGroupParticipants(
+    conversationId: string,
+    userId: string,
+    participantIds: string[],
+  ): Promise<ConversationResponse> {
+    return firstValueFrom(
+      this.client.addGroupParticipants({
+        conversationId,
+        userId,
+        participantIds,
+      }),
+    );
+  }
+
+  removeGroupParticipant(
+    conversationId: string,
+    userId: string,
+    participantId: string,
+  ): Promise<RemoveGroupParticipantResponse> {
+    return firstValueFrom(
+      this.client.removeGroupParticipant({
+        conversationId,
+        userId,
+        participantId,
+      }),
     );
   }
 
@@ -85,6 +148,30 @@ export class CommunicationGrpcService {
   ): Promise<MarkConversationReadResponse> {
     return firstValueFrom(
       this.client.markConversationRead({ conversationId, userId }),
+    );
+  }
+
+  markMessageRead(
+    conversationId: string,
+    messageId: string,
+    userId: string,
+  ): Promise<MarkMessageReadResponse> {
+    return firstValueFrom(
+      this.client.markMessageRead({ conversationId, messageId, userId }),
+    );
+  }
+
+  getMessageReadReceipts(
+    conversationId: string,
+    messageId: string,
+    userId: string,
+  ): Promise<MessageReadReceiptListResponse> {
+    return firstValueFrom(
+      this.client.getMessageReadReceipts({
+        conversationId,
+        messageId,
+        userId,
+      }),
     );
   }
 

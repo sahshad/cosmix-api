@@ -27,6 +27,16 @@ export interface User {
   isVerified: boolean;
 }
 
+export interface ConversationParticipant {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string;
+  isVerified: boolean;
+  role: string;
+  joinedAt: string;
+}
+
 export interface Message {
   id: string;
   conversationId: string;
@@ -35,6 +45,12 @@ export interface Message {
   createdAt: string;
   updatedAt: string;
   sender: User | undefined;
+  readCount: number;
+}
+
+export interface MessageReadReceipt {
+  user: User | undefined;
+  readAt: string;
 }
 
 export interface Conversation {
@@ -42,14 +58,48 @@ export interface Conversation {
   type: string;
   createdAt: string;
   updatedAt: string;
-  participants: User[];
+  participants: ConversationParticipant[];
   lastMessage: Message | undefined;
   unreadCount: number;
+  name: string;
+  avatarUrl: string;
+  createdBy: string;
+  currentUserRole: string;
 }
 
 export interface CreateDirectConversationRequest {
   userId: string;
   participantId: string;
+}
+
+export interface CreateGroupConversationRequest {
+  userId: string;
+  name: string;
+  participantIds: string[];
+  avatarUrl?: string | undefined;
+}
+
+export interface UpdateGroupConversationRequest {
+  conversationId: string;
+  userId: string;
+  name?: string | undefined;
+  avatarUrl?: string | undefined;
+}
+
+export interface AddGroupParticipantsRequest {
+  conversationId: string;
+  userId: string;
+  participantIds: string[];
+}
+
+export interface RemoveGroupParticipantRequest {
+  conversationId: string;
+  userId: string;
+  participantId: string;
+}
+
+export interface RemoveGroupParticipantResponse {
+  success: boolean;
 }
 
 export interface GetConversationsRequest {
@@ -83,6 +133,26 @@ export interface MarkConversationReadRequest {
 
 export interface MarkConversationReadResponse {
   success: boolean;
+}
+
+export interface MarkMessageReadRequest {
+  conversationId: string;
+  messageId: string;
+  userId: string;
+}
+
+export interface MarkMessageReadResponse {
+  success: boolean;
+}
+
+export interface GetMessageReadReceiptsRequest {
+  conversationId: string;
+  messageId: string;
+  userId: string;
+}
+
+export interface MessageReadReceiptListResponse {
+  receipts: MessageReadReceipt[];
 }
 
 export interface GetUnreadCountRequest {
@@ -264,8 +334,120 @@ export const User: MessageFns<User> = {
   },
 };
 
+function createBaseConversationParticipant(): ConversationParticipant {
+  return { id: "", username: "", displayName: "", avatarUrl: "", isVerified: false, role: "", joinedAt: "" };
+}
+
+export const ConversationParticipant: MessageFns<ConversationParticipant> = {
+  encode(message: ConversationParticipant, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== "") {
+      writer.uint32(10).string(message.id);
+    }
+    if (message.username !== "") {
+      writer.uint32(18).string(message.username);
+    }
+    if (message.displayName !== "") {
+      writer.uint32(26).string(message.displayName);
+    }
+    if (message.avatarUrl !== "") {
+      writer.uint32(34).string(message.avatarUrl);
+    }
+    if (message.isVerified !== false) {
+      writer.uint32(40).bool(message.isVerified);
+    }
+    if (message.role !== "") {
+      writer.uint32(50).string(message.role);
+    }
+    if (message.joinedAt !== "") {
+      writer.uint32(58).string(message.joinedAt);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ConversationParticipant {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseConversationParticipant();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.id = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.username = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.displayName = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.avatarUrl = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.isVerified = reader.bool();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.role = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.joinedAt = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
 function createBaseMessage(): Message {
-  return { id: "", conversationId: "", senderId: "", content: "", createdAt: "", updatedAt: "", sender: undefined };
+  return {
+    id: "",
+    conversationId: "",
+    senderId: "",
+    content: "",
+    createdAt: "",
+    updatedAt: "",
+    sender: undefined,
+    readCount: 0,
+  };
 }
 
 export const Message: MessageFns<Message> = {
@@ -290,6 +472,9 @@ export const Message: MessageFns<Message> = {
     }
     if (message.sender !== undefined) {
       User.encode(message.sender, writer.uint32(58).fork()).join();
+    }
+    if (message.readCount !== 0) {
+      writer.uint32(64).uint32(message.readCount);
     }
     return writer;
   },
@@ -357,6 +542,62 @@ export const Message: MessageFns<Message> = {
           message.sender = User.decode(reader, reader.uint32());
           continue;
         }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.readCount = reader.uint32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseMessageReadReceipt(): MessageReadReceipt {
+  return { user: undefined, readAt: "" };
+}
+
+export const MessageReadReceipt: MessageFns<MessageReadReceipt> = {
+  encode(message: MessageReadReceipt, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.user !== undefined) {
+      User.encode(message.user, writer.uint32(10).fork()).join();
+    }
+    if (message.readAt !== "") {
+      writer.uint32(18).string(message.readAt);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MessageReadReceipt {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMessageReadReceipt();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.user = User.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.readAt = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -368,7 +609,19 @@ export const Message: MessageFns<Message> = {
 };
 
 function createBaseConversation(): Conversation {
-  return { id: "", type: "", createdAt: "", updatedAt: "", participants: [], lastMessage: undefined, unreadCount: 0 };
+  return {
+    id: "",
+    type: "",
+    createdAt: "",
+    updatedAt: "",
+    participants: [],
+    lastMessage: undefined,
+    unreadCount: 0,
+    name: "",
+    avatarUrl: "",
+    createdBy: "",
+    currentUserRole: "",
+  };
 }
 
 export const Conversation: MessageFns<Conversation> = {
@@ -386,13 +639,25 @@ export const Conversation: MessageFns<Conversation> = {
       writer.uint32(34).string(message.updatedAt);
     }
     for (const v of message.participants) {
-      User.encode(v!, writer.uint32(42).fork()).join();
+      ConversationParticipant.encode(v!, writer.uint32(42).fork()).join();
     }
     if (message.lastMessage !== undefined) {
       Message.encode(message.lastMessage, writer.uint32(50).fork()).join();
     }
     if (message.unreadCount !== 0) {
       writer.uint32(56).uint32(message.unreadCount);
+    }
+    if (message.name !== "") {
+      writer.uint32(66).string(message.name);
+    }
+    if (message.avatarUrl !== "") {
+      writer.uint32(74).string(message.avatarUrl);
+    }
+    if (message.createdBy !== "") {
+      writer.uint32(82).string(message.createdBy);
+    }
+    if (message.currentUserRole !== "") {
+      writer.uint32(90).string(message.currentUserRole);
     }
     return writer;
   },
@@ -441,7 +706,7 @@ export const Conversation: MessageFns<Conversation> = {
             break;
           }
 
-          message.participants.push(User.decode(reader, reader.uint32()));
+          message.participants.push(ConversationParticipant.decode(reader, reader.uint32()));
           continue;
         }
         case 6: {
@@ -458,6 +723,38 @@ export const Conversation: MessageFns<Conversation> = {
           }
 
           message.unreadCount = reader.uint32();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.avatarUrl = reader.string();
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.createdBy = reader.string();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.currentUserRole = reader.string();
           continue;
         }
       }
@@ -506,6 +803,301 @@ export const CreateDirectConversationRequest: MessageFns<CreateDirectConversatio
           }
 
           message.participantId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseCreateGroupConversationRequest(): CreateGroupConversationRequest {
+  return { userId: "", name: "", participantIds: [] };
+}
+
+export const CreateGroupConversationRequest: MessageFns<CreateGroupConversationRequest> = {
+  encode(message: CreateGroupConversationRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
+    }
+    if (message.name !== "") {
+      writer.uint32(18).string(message.name);
+    }
+    for (const v of message.participantIds) {
+      writer.uint32(26).string(v!);
+    }
+    if (message.avatarUrl !== undefined) {
+      writer.uint32(34).string(message.avatarUrl);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CreateGroupConversationRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCreateGroupConversationRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.participantIds.push(reader.string());
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.avatarUrl = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseUpdateGroupConversationRequest(): UpdateGroupConversationRequest {
+  return { conversationId: "", userId: "" };
+}
+
+export const UpdateGroupConversationRequest: MessageFns<UpdateGroupConversationRequest> = {
+  encode(message: UpdateGroupConversationRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.conversationId !== "") {
+      writer.uint32(10).string(message.conversationId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    if (message.name !== undefined) {
+      writer.uint32(26).string(message.name);
+    }
+    if (message.avatarUrl !== undefined) {
+      writer.uint32(34).string(message.avatarUrl);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UpdateGroupConversationRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUpdateGroupConversationRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.conversationId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.avatarUrl = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseAddGroupParticipantsRequest(): AddGroupParticipantsRequest {
+  return { conversationId: "", userId: "", participantIds: [] };
+}
+
+export const AddGroupParticipantsRequest: MessageFns<AddGroupParticipantsRequest> = {
+  encode(message: AddGroupParticipantsRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.conversationId !== "") {
+      writer.uint32(10).string(message.conversationId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    for (const v of message.participantIds) {
+      writer.uint32(26).string(v!);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): AddGroupParticipantsRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseAddGroupParticipantsRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.conversationId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.participantIds.push(reader.string());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseRemoveGroupParticipantRequest(): RemoveGroupParticipantRequest {
+  return { conversationId: "", userId: "", participantId: "" };
+}
+
+export const RemoveGroupParticipantRequest: MessageFns<RemoveGroupParticipantRequest> = {
+  encode(message: RemoveGroupParticipantRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.conversationId !== "") {
+      writer.uint32(10).string(message.conversationId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    if (message.participantId !== "") {
+      writer.uint32(26).string(message.participantId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RemoveGroupParticipantRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRemoveGroupParticipantRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.conversationId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.participantId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseRemoveGroupParticipantResponse(): RemoveGroupParticipantResponse {
+  return { success: false };
+}
+
+export const RemoveGroupParticipantResponse: MessageFns<RemoveGroupParticipantResponse> = {
+  encode(message: RemoveGroupParticipantResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.success !== false) {
+      writer.uint32(8).bool(message.success);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RemoveGroupParticipantResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRemoveGroupParticipantResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.success = reader.bool();
           continue;
         }
       }
@@ -839,6 +1431,198 @@ export const MarkConversationReadResponse: MessageFns<MarkConversationReadRespon
   },
 };
 
+function createBaseMarkMessageReadRequest(): MarkMessageReadRequest {
+  return { conversationId: "", messageId: "", userId: "" };
+}
+
+export const MarkMessageReadRequest: MessageFns<MarkMessageReadRequest> = {
+  encode(message: MarkMessageReadRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.conversationId !== "") {
+      writer.uint32(10).string(message.conversationId);
+    }
+    if (message.messageId !== "") {
+      writer.uint32(18).string(message.messageId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(26).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MarkMessageReadRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMarkMessageReadRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.conversationId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.messageId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseMarkMessageReadResponse(): MarkMessageReadResponse {
+  return { success: false };
+}
+
+export const MarkMessageReadResponse: MessageFns<MarkMessageReadResponse> = {
+  encode(message: MarkMessageReadResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.success !== false) {
+      writer.uint32(8).bool(message.success);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MarkMessageReadResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMarkMessageReadResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.success = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseGetMessageReadReceiptsRequest(): GetMessageReadReceiptsRequest {
+  return { conversationId: "", messageId: "", userId: "" };
+}
+
+export const GetMessageReadReceiptsRequest: MessageFns<GetMessageReadReceiptsRequest> = {
+  encode(message: GetMessageReadReceiptsRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.conversationId !== "") {
+      writer.uint32(10).string(message.conversationId);
+    }
+    if (message.messageId !== "") {
+      writer.uint32(18).string(message.messageId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(26).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetMessageReadReceiptsRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetMessageReadReceiptsRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.conversationId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.messageId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseMessageReadReceiptListResponse(): MessageReadReceiptListResponse {
+  return { receipts: [] };
+}
+
+export const MessageReadReceiptListResponse: MessageFns<MessageReadReceiptListResponse> = {
+  encode(message: MessageReadReceiptListResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.receipts) {
+      MessageReadReceipt.encode(v!, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MessageReadReceiptListResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMessageReadReceiptListResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.receipts.push(MessageReadReceipt.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
 function createBaseGetUnreadCountRequest(): GetUnreadCountRequest {
   return { userId: "" };
 }
@@ -1086,6 +1870,14 @@ export const MessageResponse: MessageFns<MessageResponse> = {
 export interface CommunicationServiceClient {
   createDirectConversation(request: CreateDirectConversationRequest): Observable<ConversationResponse>;
 
+  createGroupConversation(request: CreateGroupConversationRequest): Observable<ConversationResponse>;
+
+  updateGroupConversation(request: UpdateGroupConversationRequest): Observable<ConversationResponse>;
+
+  addGroupParticipants(request: AddGroupParticipantsRequest): Observable<ConversationResponse>;
+
+  removeGroupParticipant(request: RemoveGroupParticipantRequest): Observable<RemoveGroupParticipantResponse>;
+
   getConversations(request: GetConversationsRequest): Observable<ConversationListResponse>;
 
   getConversation(request: GetConversationRequest): Observable<ConversationResponse>;
@@ -1096,6 +1888,10 @@ export interface CommunicationServiceClient {
 
   markConversationRead(request: MarkConversationReadRequest): Observable<MarkConversationReadResponse>;
 
+  markMessageRead(request: MarkMessageReadRequest): Observable<MarkMessageReadResponse>;
+
+  getMessageReadReceipts(request: GetMessageReadReceiptsRequest): Observable<MessageReadReceiptListResponse>;
+
   getUnreadCount(request: GetUnreadCountRequest): Observable<GetUnreadCountResponse>;
 }
 
@@ -1103,6 +1899,25 @@ export interface CommunicationServiceController {
   createDirectConversation(
     request: CreateDirectConversationRequest,
   ): Promise<ConversationResponse> | Observable<ConversationResponse> | ConversationResponse;
+
+  createGroupConversation(
+    request: CreateGroupConversationRequest,
+  ): Promise<ConversationResponse> | Observable<ConversationResponse> | ConversationResponse;
+
+  updateGroupConversation(
+    request: UpdateGroupConversationRequest,
+  ): Promise<ConversationResponse> | Observable<ConversationResponse> | ConversationResponse;
+
+  addGroupParticipants(
+    request: AddGroupParticipantsRequest,
+  ): Promise<ConversationResponse> | Observable<ConversationResponse> | ConversationResponse;
+
+  removeGroupParticipant(
+    request: RemoveGroupParticipantRequest,
+  ):
+    | Promise<RemoveGroupParticipantResponse>
+    | Observable<RemoveGroupParticipantResponse>
+    | RemoveGroupParticipantResponse;
 
   getConversations(
     request: GetConversationsRequest,
@@ -1122,6 +1937,17 @@ export interface CommunicationServiceController {
     request: MarkConversationReadRequest,
   ): Promise<MarkConversationReadResponse> | Observable<MarkConversationReadResponse> | MarkConversationReadResponse;
 
+  markMessageRead(
+    request: MarkMessageReadRequest,
+  ): Promise<MarkMessageReadResponse> | Observable<MarkMessageReadResponse> | MarkMessageReadResponse;
+
+  getMessageReadReceipts(
+    request: GetMessageReadReceiptsRequest,
+  ):
+    | Promise<MessageReadReceiptListResponse>
+    | Observable<MessageReadReceiptListResponse>
+    | MessageReadReceiptListResponse;
+
   getUnreadCount(
     request: GetUnreadCountRequest,
   ): Promise<GetUnreadCountResponse> | Observable<GetUnreadCountResponse> | GetUnreadCountResponse;
@@ -1131,11 +1957,17 @@ export function CommunicationServiceControllerMethods() {
   return function (constructor: Function) {
     const grpcMethods: string[] = [
       "createDirectConversation",
+      "createGroupConversation",
+      "updateGroupConversation",
+      "addGroupParticipants",
+      "removeGroupParticipant",
       "getConversations",
       "getConversation",
       "getMessages",
       "sendMessage",
       "markConversationRead",
+      "markMessageRead",
+      "getMessageReadReceipts",
       "getUnreadCount",
     ];
     for (const method of grpcMethods) {
@@ -1165,6 +1997,51 @@ export const CommunicationServiceService = {
     responseSerialize: (value: ConversationResponse): Buffer =>
       Buffer.from(ConversationResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): ConversationResponse => ConversationResponse.decode(value),
+  },
+  createGroupConversation: {
+    path: "/communication.CommunicationService/CreateGroupConversation" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: CreateGroupConversationRequest): Buffer =>
+      Buffer.from(CreateGroupConversationRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): CreateGroupConversationRequest => CreateGroupConversationRequest.decode(value),
+    responseSerialize: (value: ConversationResponse): Buffer =>
+      Buffer.from(ConversationResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): ConversationResponse => ConversationResponse.decode(value),
+  },
+  updateGroupConversation: {
+    path: "/communication.CommunicationService/UpdateGroupConversation" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: UpdateGroupConversationRequest): Buffer =>
+      Buffer.from(UpdateGroupConversationRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): UpdateGroupConversationRequest => UpdateGroupConversationRequest.decode(value),
+    responseSerialize: (value: ConversationResponse): Buffer =>
+      Buffer.from(ConversationResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): ConversationResponse => ConversationResponse.decode(value),
+  },
+  addGroupParticipants: {
+    path: "/communication.CommunicationService/AddGroupParticipants" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: AddGroupParticipantsRequest): Buffer =>
+      Buffer.from(AddGroupParticipantsRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): AddGroupParticipantsRequest => AddGroupParticipantsRequest.decode(value),
+    responseSerialize: (value: ConversationResponse): Buffer =>
+      Buffer.from(ConversationResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): ConversationResponse => ConversationResponse.decode(value),
+  },
+  removeGroupParticipant: {
+    path: "/communication.CommunicationService/RemoveGroupParticipant" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: RemoveGroupParticipantRequest): Buffer =>
+      Buffer.from(RemoveGroupParticipantRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): RemoveGroupParticipantRequest => RemoveGroupParticipantRequest.decode(value),
+    responseSerialize: (value: RemoveGroupParticipantResponse): Buffer =>
+      Buffer.from(RemoveGroupParticipantResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): RemoveGroupParticipantResponse =>
+      RemoveGroupParticipantResponse.decode(value),
   },
   getConversations: {
     path: "/communication.CommunicationService/GetConversations" as const,
@@ -1217,6 +2094,29 @@ export const CommunicationServiceService = {
       Buffer.from(MarkConversationReadResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): MarkConversationReadResponse => MarkConversationReadResponse.decode(value),
   },
+  markMessageRead: {
+    path: "/communication.CommunicationService/MarkMessageRead" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: MarkMessageReadRequest): Buffer =>
+      Buffer.from(MarkMessageReadRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): MarkMessageReadRequest => MarkMessageReadRequest.decode(value),
+    responseSerialize: (value: MarkMessageReadResponse): Buffer =>
+      Buffer.from(MarkMessageReadResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): MarkMessageReadResponse => MarkMessageReadResponse.decode(value),
+  },
+  getMessageReadReceipts: {
+    path: "/communication.CommunicationService/GetMessageReadReceipts" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: GetMessageReadReceiptsRequest): Buffer =>
+      Buffer.from(GetMessageReadReceiptsRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): GetMessageReadReceiptsRequest => GetMessageReadReceiptsRequest.decode(value),
+    responseSerialize: (value: MessageReadReceiptListResponse): Buffer =>
+      Buffer.from(MessageReadReceiptListResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): MessageReadReceiptListResponse =>
+      MessageReadReceiptListResponse.decode(value),
+  },
   getUnreadCount: {
     path: "/communication.CommunicationService/GetUnreadCount" as const,
     requestStream: false as const,
@@ -1232,11 +2132,17 @@ export const CommunicationServiceService = {
 
 export interface CommunicationServiceServer extends UntypedServiceImplementation {
   createDirectConversation: handleUnaryCall<CreateDirectConversationRequest, ConversationResponse>;
+  createGroupConversation: handleUnaryCall<CreateGroupConversationRequest, ConversationResponse>;
+  updateGroupConversation: handleUnaryCall<UpdateGroupConversationRequest, ConversationResponse>;
+  addGroupParticipants: handleUnaryCall<AddGroupParticipantsRequest, ConversationResponse>;
+  removeGroupParticipant: handleUnaryCall<RemoveGroupParticipantRequest, RemoveGroupParticipantResponse>;
   getConversations: handleUnaryCall<GetConversationsRequest, ConversationListResponse>;
   getConversation: handleUnaryCall<GetConversationRequest, ConversationResponse>;
   getMessages: handleUnaryCall<GetMessagesRequest, MessageListResponse>;
   sendMessage: handleUnaryCall<SendMessageRequest, MessageResponse>;
   markConversationRead: handleUnaryCall<MarkConversationReadRequest, MarkConversationReadResponse>;
+  markMessageRead: handleUnaryCall<MarkMessageReadRequest, MarkMessageReadResponse>;
+  getMessageReadReceipts: handleUnaryCall<GetMessageReadReceiptsRequest, MessageReadReceiptListResponse>;
   getUnreadCount: handleUnaryCall<GetUnreadCountRequest, GetUnreadCountResponse>;
 }
 

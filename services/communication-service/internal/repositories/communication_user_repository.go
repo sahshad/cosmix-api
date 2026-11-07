@@ -60,3 +60,19 @@ func (repo *CommunicationUserRepository) FindByUserID(ctx context.Context, userI
 	}
 	return &user, nil
 }
+
+func (repo *CommunicationUserRepository) FindByUserIDs(ctx context.Context, userIDs []uuid.UUID) ([]models.CommunicationUser, error) {
+	users := make([]models.CommunicationUser, 0, len(userIDs))
+	if len(userIDs) == 0 {
+		return users, nil
+	}
+
+	if err := repo.db.
+		WithContext(ctx).
+		Where("user_id IN ?", userIDs).
+		Find(&users).Error; err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

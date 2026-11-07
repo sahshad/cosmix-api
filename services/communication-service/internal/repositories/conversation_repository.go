@@ -2,13 +2,13 @@ package repositories
 
 import (
 	"context"
-	"time"
 
 	"communication-service/internal/dto"
 	"communication-service/internal/models"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ConversationRepository struct {
@@ -39,22 +39,45 @@ func (repo *ConversationRepository) FindDirectByKey(ctx context.Context, directK
 }
 
 func (repo *ConversationRepository) CreateDirect(ctx context.Context, conversation *models.Conversation, participantIDs []uuid.UUID) error {
+	participants := make([]models.ConversationParticipant, 0, len(participantIDs))
+	for _, participantID := range participantIDs {
+		participants = append(participants, models.ConversationParticipant{
+			UserID:   participantID,
+			Role:     models.ParticipantRoleMember,
+			JoinedAt: conversation.CreatedAt,
+		})
+	}
+
+	return repo.CreateWithParticipants(ctx, conversation, participants)
+}
+
+func (repo *ConversationRepository) CreateWithParticipants(ctx context.Context, conversation *models.Conversation, participants []models.ConversationParticipant) error {
 	return repo.Transaction(ctx, func(tx *gorm.DB) error {
 		if err := tx.Create(conversation).Error; err != nil {
 			return err
 		}
 
-		participants := make([]models.ConversationParticipant, 0, len(participantIDs))
-		for _, participantID := range participantIDs {
-			participants = append(participants, models.ConversationParticipant{
-				ConversationID: conversation.ID,
-				UserID:         participantID,
-				JoinedAt:       conversation.CreatedAt,
-			})
+		if len(participants) == 0 {
+			return nil
+		}
+
+		for i := range participants {
+			participants[i].ConversationID = conversation.ID
+			if participants[i].JoinedAt.IsZero() {
+				participants[i].JoinedAt = conversation.CreatedAt
+			}
 		}
 
 		return tx.Create(&participants).Error
 	})
+}
+
+func (repo *ConversationRepository) UpdateFields(ctx context.Context, conversationID uuid.UUID, fields map[string]any) error {
+	return repo.db.
+		WithContext(ctx).
+		Model(&models.Conversation{}).
+		Where("id = ?", conversationID).
+		Updates(fields).Error
 }
 
 func (repo *ConversationRepository) GetForUser(ctx context.Context, conversationID uuid.UUID, userID uuid.UUID) (*dto.Conversation, error) {
@@ -78,7 +101,7 @@ func (repo *ConversationRepository) GetForUser(ctx context.Context, conversation
 		return nil, err
 	}
 
-	return conversationDTO(&conversation, unreadCount), nil
+	return conversationDTO(&conversation, unreadCount, userID), nil
 }
 
 func (repo *ConversationRepository) ListForUser(ctx context.Context, userID uuid.UUID, params dto.PaginationRequest) (*dto.ConversationListResponse, error) {
@@ -121,7 +144,7 @@ func (repo *ConversationRepository) ListForUser(ctx context.Context, userID uuid
 
 	conversationList := make([]dto.Conversation, 0, len(conversations))
 	for i := range conversations {
-		conversationList = append(conversationList, *conversationDTO(&conversations[i], unreadCounts[conversations[i].ID]))
+		conversationList = append(conversationList, *conversationDTO(&conversations[i], unreadCounts[conversations[i].ID], userID))
 	}
 
 	return &dto.ConversationListResponse{
@@ -146,6 +169,21 @@ func (repo *ConversationRepository) IsParticipant(ctx context.Context, conversat
 	return count > 0, nil
 }
 
+func (repo *ConversationRepository) FindParticipant(ctx context.Context, conversationID uuid.UUID, userID uuid.UUID) (*models.ConversationParticipant, error) {
+	var participant models.ConversationParticipant
+
+	err := repo.db.
+		WithContext(ctx).
+		Where("conversation_id = ? AND user_id = ?", conversationID, userID).
+		First(&participant).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &participant, nil
+}
+
 func (repo *ConversationRepository) ParticipantIDs(ctx context.Context, conversationID uuid.UUID) ([]uuid.UUID, error) {
 	var participantIDs []uuid.UUID
 
@@ -158,22 +196,76 @@ func (repo *ConversationRepository) ParticipantIDs(ctx context.Context, conversa
 	return participantIDs, err
 }
 
-func (repo *ConversationRepository) MarkRead(ctx context.Context, conversationID uuid.UUID, userID uuid.UUID, readAt time.Time) error {
-	result := repo.db.
+func (repo *ConversationRepository) AddParticipants(ctx context.Context, participants []models.ConversationParticipant) error {
+	if len(participants) == 0 {
+		return nil
+	}
+
+	return repo.db.
 		WithContext(ctx).
-		Model(&models.ConversationParticipant{}).
-		Where("conversation_id = ? AND user_id = ?", conversationID, userID).
-		Update("last_read_at", readAt)
+		Clauses(clause.OnConflict{DoNothing: true}).
+		Create(&participants).Error
+}
 
-	if result.Error != nil {
-		return result.Error
-	}
+func (repo *ConversationRepository) RemoveParticipant(ctx context.Context, conversationID uuid.UUID, participantID uuid.UUID) error {
+	return repo.Transaction(ctx, func(tx *gorm.DB) error {
+		result := tx.
+			WithContext(ctx).
+			Where("conversation_id = ? AND user_id = ?", conversationID, participantID).
+			Delete(&models.ConversationParticipant{})
 
-	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
+		if result.Error != nil {
+			return result.Error
+		}
 
-	return nil
+		if result.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+
+		var remaining int64
+		if err := tx.
+			WithContext(ctx).
+			Model(&models.ConversationParticipant{}).
+			Where("conversation_id = ?", conversationID).
+			Count(&remaining).Error; err != nil {
+			return err
+		}
+
+		if remaining == 0 {
+			return tx.
+				WithContext(ctx).
+				Where("id = ?", conversationID).
+				Delete(&models.Conversation{}).Error
+		}
+
+		var owners int64
+		if err := tx.
+			WithContext(ctx).
+			Model(&models.ConversationParticipant{}).
+			Where("conversation_id = ? AND role = ?", conversationID, models.ParticipantRoleOwner).
+			Count(&owners).Error; err != nil {
+			return err
+		}
+
+		if owners > 0 {
+			return nil
+		}
+
+		var nextOwner models.ConversationParticipant
+		if err := tx.
+			WithContext(ctx).
+			Where("conversation_id = ?", conversationID).
+			Order("joined_at ASC").
+			First(&nextOwner).Error; err != nil {
+			return err
+		}
+
+		return tx.
+			WithContext(ctx).
+			Model(&models.ConversationParticipant{}).
+			Where("conversation_id = ? AND user_id = ?", conversationID, nextOwner.UserID).
+			Update("role", models.ParticipantRoleOwner).Error
+	})
 }
 
 func (repo *ConversationRepository) unreadCount(ctx context.Context, conversationID uuid.UUID, userID uuid.UUID) (uint, error) {
@@ -183,8 +275,9 @@ func (repo *ConversationRepository) unreadCount(ctx context.Context, conversatio
 		WithContext(ctx).
 		Model(&models.Message{}).
 		Joins("JOIN conversation_participants cp ON cp.conversation_id = messages.conversation_id AND cp.user_id = ?", userID).
+		Joins("LEFT JOIN message_read_receipts mrr ON mrr.message_id = messages.id AND mrr.user_id = ?", userID).
 		Where("messages.conversation_id = ? AND messages.sender_id <> ?", conversationID, userID).
-		Where("(cp.last_read_at IS NULL OR messages.created_at > cp.last_read_at)").
+		Where("messages.created_at >= cp.joined_at AND mrr.message_id IS NULL").
 		Count(&count).Error
 
 	return uint(count), err
@@ -213,9 +306,9 @@ func (repo *ConversationRepository) unreadCountsForUser(ctx context.Context, use
 		Model(&models.Message{}).
 		Select("messages.conversation_id, COUNT(*) AS unread_count").
 		Joins("JOIN conversation_participants cp ON cp.conversation_id = messages.conversation_id AND cp.user_id = ?", userID).
-		Where("messages.conversation_id IN ?", conversationIDs).
-		Where("messages.sender_id <> ?", userID).
-		Where("(cp.last_read_at IS NULL OR messages.created_at > cp.last_read_at)").
+		Joins("LEFT JOIN message_read_receipts mrr ON mrr.message_id = messages.id AND mrr.user_id = ?", userID).
+		Where("messages.conversation_id IN ? AND messages.sender_id <> ?", conversationIDs, userID).
+		Where("messages.created_at >= cp.joined_at AND mrr.message_id IS NULL").
 		Group("messages.conversation_id").
 		Scan(&rows).Error
 

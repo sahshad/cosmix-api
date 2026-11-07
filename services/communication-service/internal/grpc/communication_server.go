@@ -50,6 +50,99 @@ func (srv *CommunicationServer) CreateDirectConversation(ctx context.Context, re
 	}, nil
 }
 
+func (srv *CommunicationServer) CreateGroupConversation(ctx context.Context, req *communicationpb.CreateGroupConversationRequest) (*communicationpb.ConversationResponse, error) {
+	userID, err := parseUUID(req.UserId, "user_id")
+	if err != nil {
+		return nil, err
+	}
+
+	participantIDs, err := parseUUIDs(req.ParticipantIds, "participant_ids")
+	if err != nil {
+		return nil, err
+	}
+
+	conversation, err := srv.conversationService.CreateGroup(ctx, userID, req.Name, participantIDs, req.AvatarUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	return &communicationpb.ConversationResponse{
+		Conversation: toPbConversation(conversation),
+	}, nil
+}
+
+func (srv *CommunicationServer) UpdateGroupConversation(ctx context.Context, req *communicationpb.UpdateGroupConversationRequest) (*communicationpb.ConversationResponse, error) {
+	conversationID, err := parseUUID(req.ConversationId, "conversation_id")
+	if err != nil {
+		return nil, err
+	}
+
+	userID, err := parseUUID(req.UserId, "user_id")
+	if err != nil {
+		return nil, err
+	}
+
+	conversation, err := srv.conversationService.UpdateGroup(ctx, conversationID, userID, req.Name, req.AvatarUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	return &communicationpb.ConversationResponse{
+		Conversation: toPbConversation(conversation),
+	}, nil
+}
+
+func (srv *CommunicationServer) AddGroupParticipants(ctx context.Context, req *communicationpb.AddGroupParticipantsRequest) (*communicationpb.ConversationResponse, error) {
+	conversationID, err := parseUUID(req.ConversationId, "conversation_id")
+	if err != nil {
+		return nil, err
+	}
+
+	userID, err := parseUUID(req.UserId, "user_id")
+	if err != nil {
+		return nil, err
+	}
+
+	participantIDs, err := parseUUIDs(req.ParticipantIds, "participant_ids")
+	if err != nil {
+		return nil, err
+	}
+
+	conversation, err := srv.conversationService.AddParticipants(ctx, conversationID, userID, participantIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	return &communicationpb.ConversationResponse{
+		Conversation: toPbConversation(conversation),
+	}, nil
+}
+
+func (srv *CommunicationServer) RemoveGroupParticipant(ctx context.Context, req *communicationpb.RemoveGroupParticipantRequest) (*communicationpb.RemoveGroupParticipantResponse, error) {
+	conversationID, err := parseUUID(req.ConversationId, "conversation_id")
+	if err != nil {
+		return nil, err
+	}
+
+	userID, err := parseUUID(req.UserId, "user_id")
+	if err != nil {
+		return nil, err
+	}
+
+	participantID, err := parseUUID(req.ParticipantId, "participant_id")
+	if err != nil {
+		return nil, err
+	}
+
+	if err := srv.conversationService.RemoveParticipant(ctx, conversationID, userID, participantID); err != nil {
+		return nil, err
+	}
+
+	return &communicationpb.RemoveGroupParticipantResponse{
+		Success: true,
+	}, nil
+}
+
 func (srv *CommunicationServer) GetConversations(ctx context.Context, req *communicationpb.GetConversationsRequest) (*communicationpb.ConversationListResponse, error) {
 	userID, err := parseUUID(req.UserId, "user_id")
 	if err != nil {
@@ -165,6 +258,62 @@ func (srv *CommunicationServer) MarkConversationRead(ctx context.Context, req *c
 	}, nil
 }
 
+func (srv *CommunicationServer) MarkMessageRead(ctx context.Context, req *communicationpb.MarkMessageReadRequest) (*communicationpb.MarkMessageReadResponse, error) {
+	conversationID, err := parseUUID(req.ConversationId, "conversation_id")
+	if err != nil {
+		return nil, err
+	}
+
+	messageID, err := parseUUID(req.MessageId, "message_id")
+	if err != nil {
+		return nil, err
+	}
+
+	userID, err := parseUUID(req.UserId, "user_id")
+	if err != nil {
+		return nil, err
+	}
+
+	if err := srv.messageService.MarkMessageRead(ctx, conversationID, messageID, userID); err != nil {
+		return nil, err
+	}
+
+	return &communicationpb.MarkMessageReadResponse{
+		Success: true,
+	}, nil
+}
+
+func (srv *CommunicationServer) GetMessageReadReceipts(ctx context.Context, req *communicationpb.GetMessageReadReceiptsRequest) (*communicationpb.MessageReadReceiptListResponse, error) {
+	conversationID, err := parseUUID(req.ConversationId, "conversation_id")
+	if err != nil {
+		return nil, err
+	}
+
+	messageID, err := parseUUID(req.MessageId, "message_id")
+	if err != nil {
+		return nil, err
+	}
+
+	userID, err := parseUUID(req.UserId, "user_id")
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := srv.messageService.GetReadReceipts(ctx, conversationID, messageID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	receipts := make([]*communicationpb.MessageReadReceipt, 0, len(result.Receipts))
+	for i := range result.Receipts {
+		receipts = append(receipts, toPbMessageReadReceipt(&result.Receipts[i]))
+	}
+
+	return &communicationpb.MessageReadReceiptListResponse{
+		Receipts: receipts,
+	}, nil
+}
+
 func (srv *CommunicationServer) GetUnreadCount(ctx context.Context, req *communicationpb.GetUnreadCountRequest) (*communicationpb.GetUnreadCountResponse, error) {
 	userID, err := parseUUID(req.UserId, "user_id")
 	if err != nil {
@@ -188,6 +337,21 @@ func parseUUID(value string, field string) (uuid.UUID, error) {
 	}
 
 	return id, nil
+}
+
+func parseUUIDs(values []string, field string) ([]uuid.UUID, error) {
+	ids := make([]uuid.UUID, 0, len(values))
+
+	for _, value := range values {
+		id, err := parseUUID(value, field)
+		if err != nil {
+			return nil, err
+		}
+
+		ids = append(ids, id)
+	}
+
+	return ids, nil
 }
 
 func normalizePagination(page uint32, limit uint32) dto.PaginationRequest {
@@ -219,6 +383,18 @@ func toPbUser(user *dto.User) *communicationpb.User {
 	}
 }
 
+func toPbParticipant(participant *dto.Participant) *communicationpb.ConversationParticipant {
+	return &communicationpb.ConversationParticipant{
+		Id:          participant.ID.String(),
+		Username:    participant.Username,
+		DisplayName: participant.DisplayName,
+		AvatarUrl:   participant.AvatarURL,
+		IsVerified:  participant.IsVerified,
+		Role:        participant.Role,
+		JoinedAt:    participant.JoinedAt,
+	}
+}
+
 func toPbMessage(message *dto.Message) *communicationpb.Message {
 	return &communicationpb.Message{
 		Id:             message.ID.String(),
@@ -228,22 +404,34 @@ func toPbMessage(message *dto.Message) *communicationpb.Message {
 		CreatedAt:      message.CreatedAt,
 		UpdatedAt:      message.UpdatedAt,
 		Sender:         toPbUser(&message.Sender),
+		ReadCount:      uint32(message.ReadCount),
+	}
+}
+
+func toPbMessageReadReceipt(receipt *dto.MessageReadReceipt) *communicationpb.MessageReadReceipt {
+	return &communicationpb.MessageReadReceipt{
+		User:   toPbUser(&receipt.User),
+		ReadAt: receipt.ReadAt,
 	}
 }
 
 func toPbConversation(conversation *dto.Conversation) *communicationpb.Conversation {
-	participants := make([]*communicationpb.User, 0, len(conversation.Participants))
+	participants := make([]*communicationpb.ConversationParticipant, 0, len(conversation.Participants))
 	for i := range conversation.Participants {
-		participants = append(participants, toPbUser(&conversation.Participants[i]))
+		participants = append(participants, toPbParticipant(&conversation.Participants[i]))
 	}
 
 	result := &communicationpb.Conversation{
-		Id:           conversation.ID.String(),
-		Type:         conversation.Type,
-		CreatedAt:    conversation.CreatedAt,
-		UpdatedAt:    conversation.UpdatedAt,
-		Participants: participants,
-		UnreadCount:  uint32(conversation.UnreadCount),
+		Id:              conversation.ID.String(),
+		Type:            conversation.Type,
+		Name:            conversation.Name,
+		AvatarUrl:       conversation.AvatarURL,
+		CreatedBy:       conversation.CreatedBy.String(),
+		CreatedAt:       conversation.CreatedAt,
+		UpdatedAt:       conversation.UpdatedAt,
+		Participants:    participants,
+		UnreadCount:     uint32(conversation.UnreadCount),
+		CurrentUserRole: conversation.CurrentUserRole,
 	}
 
 	if conversation.LastMessage != nil {

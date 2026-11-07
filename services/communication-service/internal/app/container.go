@@ -31,10 +31,11 @@ func NewContainer(db *gorm.DB, rabbit *rabbitmq.Rabbit) *Container {
 	communicationUserRepo := repositories.NewCommunicationUserRepository(db)
 	conversationRepo := repositories.NewConversationRepository(db)
 	messageRepo := repositories.NewMessageRepository(db)
+	receiptRepo := repositories.NewMessageReadReceiptRepository(db)
 
 	communicationUserService := services.NewCommunicationUserService(communicationUserRepo)
-	conversationService := services.NewConversationService(conversationRepo, communicationUserRepo)
-	messageService := services.NewMessageService(messageRepo, conversationRepo, communicationUserRepo, rabbitCh)
+	conversationService := services.NewConversationService(conversationRepo, communicationUserRepo, receiptRepo)
+	messageService := services.NewMessageService(messageRepo, conversationRepo, communicationUserRepo, receiptRepo, rabbitCh)
 
 	communicationGrpcServer := grpc.NewCommunicationServer(
 		conversationService,

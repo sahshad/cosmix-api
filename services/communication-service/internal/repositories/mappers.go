@@ -3,20 +3,37 @@ package repositories
 import (
 	"communication-service/internal/dto"
 	"communication-service/internal/models"
+
+	"github.com/google/uuid"
 )
 
-func userDTO(user *models.CommunicationUser) dto.User {
-	avatarURL := ""
-	if user.AvatarURL != nil {
-		avatarURL = *user.AvatarURL
+func avatarURL(url *string) string {
+	if url == nil {
+		return ""
 	}
 
+	return *url
+}
+
+func userDTO(user *models.CommunicationUser) dto.User {
 	return dto.User{
 		ID:          user.UserID,
 		Username:    user.Username,
 		DisplayName: user.DisplayName,
-		AvatarURL:   avatarURL,
+		AvatarURL:   avatarURL(user.AvatarURL),
 		IsVerified:  user.IsVerified,
+	}
+}
+
+func participantDTO(participant *models.ConversationParticipant) dto.Participant {
+	return dto.Participant{
+		ID:          participant.UserID,
+		Username:    participant.User.Username,
+		DisplayName: participant.User.DisplayName,
+		AvatarURL:   avatarURL(participant.User.AvatarURL),
+		IsVerified:  participant.User.IsVerified,
+		Role:        participant.Role,
+		JoinedAt:    formatTime(participant.JoinedAt),
 	}
 }
 
@@ -32,19 +49,41 @@ func messageDTO(message *models.Message) *dto.Message {
 	}
 }
 
-func conversationDTO(conversation *models.Conversation, unreadCount uint) *dto.Conversation {
-	participants := make([]dto.User, 0, len(conversation.Participants))
+func messageReadReceiptDTO(receipt *models.MessageReadReceipt) dto.MessageReadReceipt {
+	return dto.MessageReadReceipt{
+		User:   userDTO(&receipt.User),
+		ReadAt: formatTime(receipt.ReadAt),
+	}
+}
+
+func conversationDTO(conversation *models.Conversation, unreadCount uint, userID uuid.UUID) *dto.Conversation {
+	participants := make([]dto.Participant, 0, len(conversation.Participants))
+	currentUserRole := ""
+
 	for i := range conversation.Participants {
-		participants = append(participants, userDTO(&conversation.Participants[i].User))
+		participants = append(participants, participantDTO(&conversation.Participants[i]))
+
+		if conversation.Participants[i].UserID == userID {
+			currentUserRole = conversation.Participants[i].Role
+		}
+	}
+
+	name := ""
+	if conversation.Name != nil {
+		name = *conversation.Name
 	}
 
 	result := &dto.Conversation{
-		ID:           conversation.ID,
-		Type:         conversation.Type,
-		CreatedAt:    formatTime(conversation.CreatedAt),
-		UpdatedAt:    formatTimePtr(conversation.UpdatedAt),
-		Participants: participants,
-		UnreadCount:  unreadCount,
+		ID:              conversation.ID,
+		Type:            conversation.Type,
+		Name:            name,
+		AvatarURL:       avatarURL(conversation.AvatarURL),
+		CreatedBy:       conversation.CreatedBy,
+		CreatedAt:       formatTime(conversation.CreatedAt),
+		UpdatedAt:       formatTimePtr(conversation.UpdatedAt),
+		Participants:    participants,
+		UnreadCount:     unreadCount,
+		CurrentUserRole: currentUserRole,
 	}
 
 	if conversation.LastMessage != nil {

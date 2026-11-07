@@ -8,6 +8,18 @@ service CommunicationService {
   rpc CreateDirectConversation(CreateDirectConversationRequest)
       returns (ConversationResponse);
 
+  rpc CreateGroupConversation(CreateGroupConversationRequest)
+      returns (ConversationResponse);
+
+  rpc UpdateGroupConversation(UpdateGroupConversationRequest)
+      returns (ConversationResponse);
+
+  rpc AddGroupParticipants(AddGroupParticipantsRequest)
+      returns (ConversationResponse);
+
+  rpc RemoveGroupParticipant(RemoveGroupParticipantRequest)
+      returns (RemoveGroupParticipantResponse);
+
   rpc GetConversations(GetConversationsRequest)
       returns (ConversationListResponse);
 
@@ -22,6 +34,12 @@ service CommunicationService {
 
   rpc MarkConversationRead(MarkConversationReadRequest)
       returns (MarkConversationReadResponse);
+
+  rpc MarkMessageRead(MarkMessageReadRequest)
+      returns (MarkMessageReadResponse);
+
+  rpc GetMessageReadReceipts(GetMessageReadReceiptsRequest)
+      returns (MessageReadReceiptListResponse);
 
   rpc GetUnreadCount(GetUnreadCountRequest)
       returns (GetUnreadCountResponse);
@@ -42,6 +60,16 @@ message User {
   bool is_verified = 5;
 }
 
+message ConversationParticipant {
+  string id = 1;
+  string username = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+  bool is_verified = 5;
+  string role = 6;
+  string joined_at = 7;
+}
+
 message Message {
   string id = 1;
   string conversation_id = 2;
@@ -50,6 +78,12 @@ message Message {
   string created_at = 5;
   string updated_at = 6;
   User sender = 7;
+  uint32 read_count = 8;
+}
+
+message MessageReadReceipt {
+  User user = 1;
+  string read_at = 2;
 }
 
 message Conversation {
@@ -57,14 +91,48 @@ message Conversation {
   string type = 2;
   string created_at = 3;
   string updated_at = 4;
-  repeated User participants = 5;
+  repeated ConversationParticipant participants = 5;
   Message last_message = 6;
   uint32 unread_count = 7;
+  string name = 8;
+  string avatar_url = 9;
+  string created_by = 10;
+  string current_user_role = 11;
 }
 
 message CreateDirectConversationRequest {
   string user_id = 1;
   string participant_id = 2;
+}
+
+message CreateGroupConversationRequest {
+  string user_id = 1;
+  string name = 2;
+  repeated string participant_ids = 3;
+  optional string avatar_url = 4;
+}
+
+message UpdateGroupConversationRequest {
+  string conversation_id = 1;
+  string user_id = 2;
+  optional string name = 3;
+  optional string avatar_url = 4;
+}
+
+message AddGroupParticipantsRequest {
+  string conversation_id = 1;
+  string user_id = 2;
+  repeated string participant_ids = 3;
+}
+
+message RemoveGroupParticipantRequest {
+  string conversation_id = 1;
+  string user_id = 2;
+  string participant_id = 3;
+}
+
+message RemoveGroupParticipantResponse {
+  bool success = 1;
 }
 
 message GetConversationsRequest {
@@ -98,6 +166,26 @@ message MarkConversationReadRequest {
 
 message MarkConversationReadResponse {
   bool success = 1;
+}
+
+message MarkMessageReadRequest {
+  string conversation_id = 1;
+  string message_id = 2;
+  string user_id = 3;
+}
+
+message MarkMessageReadResponse {
+  bool success = 1;
+}
+
+message GetMessageReadReceiptsRequest {
+  string conversation_id = 1;
+  string message_id = 2;
+  string user_id = 3;
+}
+
+message MessageReadReceiptListResponse {
+  repeated MessageReadReceipt receipts = 1;
 }
 
 message GetUnreadCountRequest {

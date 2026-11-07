@@ -1,23 +1,19 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsOptional, IsString } from 'class-validator';
-
-export class MediaItemDto {
-  @IsString()
-  publicId!: string;
-
-  @IsString()
-  url!: string;
-
-  @IsString()
-  type!: string;
-
-  @IsOptional()
-  duration?: number;
-}
+import { MediaItemDto } from './create-post.dto';
 
 export class UpdatePostDto {
+  @ApiProperty({
+    description: 'Updated post text content',
+    example: 'Hello world, edited!',
+  })
   @IsString()
   content!: string;
 
+  @ApiPropertyOptional({
+    description: 'Replacement media for the post',
+    type: () => [MediaItemDto],
+  })
   @IsOptional()
   @IsArray()
   media?: MediaItemDto[];

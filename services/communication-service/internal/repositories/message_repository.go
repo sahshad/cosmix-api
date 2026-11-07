@@ -22,6 +22,21 @@ func NewMessageRepository(
 	}
 }
 
+func (repo *MessageRepository) FindByIDInConversation(ctx context.Context, messageID uuid.UUID, conversationID uuid.UUID) (*models.Message, error) {
+	var message models.Message
+
+	err := repo.db.
+		WithContext(ctx).
+		Where("id = ? AND conversation_id = ?", messageID, conversationID).
+		First(&message).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &message, nil
+}
+
 func (repo *MessageRepository) CreateWithConversationUpdate(ctx context.Context, message *models.Message) error {
 	return repo.Transaction(ctx, func(tx *gorm.DB) error {
 		if err := tx.Create(message).Error; err != nil {
@@ -85,8 +100,9 @@ func (repo *MessageRepository) UnreadTotal(ctx context.Context, userID uuid.UUID
 		WithContext(ctx).
 		Model(&models.Message{}).
 		Joins("JOIN conversation_participants cp ON cp.conversation_id = messages.conversation_id").
+		Joins("LEFT JOIN message_read_receipts mrr ON mrr.message_id = messages.id AND mrr.user_id = ?", userID).
 		Where("cp.user_id = ? AND messages.sender_id <> ?", userID, userID).
-		Where("(cp.last_read_at IS NULL OR messages.created_at > cp.last_read_at)").
+		Where("messages.created_at >= cp.joined_at AND mrr.message_id IS NULL").
 		Count(&count).Error
 
 	return uint(count), err
