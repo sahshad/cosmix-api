@@ -46,7 +46,6 @@ export class AuthController {
   })
   @Post('register')
   async register(@Body() body: RegisterDTO) {
-    console.log('register body: ', body);
     const result = await this.authGrpc.register(body);
     return result;
   }
@@ -56,7 +55,6 @@ export class AuthController {
   @ApiBadRequestResponse({ description: 'Invalid or expired token' })
   @Post('verify-email')
   async verifyEmail(@Body() body: VerifyEmailDTO) {
-    console.log('verify-email body: ', body);
     const result = await this.authGrpc.verifyEmail(body);
     return result;
   }
@@ -145,7 +143,6 @@ export class AuthController {
   @ApiBadRequestResponse({ description: 'Invalid email address' })
   @Post('forgot-password')
   async forgotPassword(@Body() body: ForgotPasswordDto) {
-    console.log('forgot-password body: ', body);
     const result = await this.authGrpc.forgotPassword(body.email);
     return result;
   }
@@ -155,7 +152,6 @@ export class AuthController {
   @ApiBadRequestResponse({ description: 'Invalid or expired token' })
   @Post('reset-password')
   async resetPassword(@Body() body: ChangePasswordDTO) {
-    console.log('reset-password body: ', body);
     const result = await this.authGrpc.resetPassword(body);
     return result;
   }

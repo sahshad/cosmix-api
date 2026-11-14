@@ -61,6 +61,19 @@ func (svc *UserService) GetProfileByID(ctx context.Context, id uuid.UUID, viewer
 	return svc.toResponse(profile, isFollowing), nil
 }
 
+func (svc *UserService) GetUserResponsesByIDs(ctx context.Context, userIDs []uuid.UUID) (map[uuid.UUID]dto.UserResponse, error) {
+	users, err := svc.repo.FindByUserIDs(ctx, userIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	responses := make(map[uuid.UUID]dto.UserResponse, len(users))
+	for i := range users {
+		responses[users[i].UserID] = svc.toResponse(&users[i], false).User
+	}
+	return responses, nil
+}
+
 func (svc *UserService) UpdateProfile(ctx context.Context, userID uuid.UUID, input dto.UpdateProfileDTO) (*dto.UserProfileResponse, error) {
 	profile, err := svc.repo.FindByUserID(ctx, userID)
 	if err != nil {

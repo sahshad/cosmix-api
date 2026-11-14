@@ -29,6 +29,15 @@ func (repo *UserRepository) FindByUserID(ctx context.Context, userID uuid.UUID) 
 	return &profile, nil
 }
 
+func (repo *UserRepository) FindByUserIDs(ctx context.Context, userIDs []uuid.UUID) ([]models.User, error) {
+	users := make([]models.User, 0, len(userIDs))
+	if len(userIDs) == 0 {
+		return users, nil
+	}
+	err := repo.db.WithContext(ctx).Where("user_id IN ?", userIDs).Find(&users).Error
+	return users, err
+}
+
 func (repo *UserRepository) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
 	var profile models.User
 	if err := repo.db.WithContext(ctx).First(&profile, id).Error; err != nil {

@@ -15,8 +15,8 @@ import {
   RemoveGroupParticipantResponse,
 } from '../generated/communication/communication';
 
-import type { ClientGrpc } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
+import { RpcException, type ClientGrpc } from '@nestjs/microservices';
+import { catchError, firstValueFrom, Observable } from 'rxjs';
 
 @Injectable()
 export class CommunicationGrpcService {
@@ -33,11 +33,21 @@ export class CommunicationGrpcService {
     );
   }
 
+  private call<T>(observable: Observable<T>): Promise<T> {
+    return firstValueFrom(
+      observable.pipe(
+        catchError((err: unknown) => {
+          throw new RpcException(err as string | object);
+        }),
+      ),
+    );
+  }
+
   createDirectConversation(
     userId: string,
     participantId: string,
   ): Promise<ConversationResponse> {
-    return firstValueFrom(
+    return this.call(
       this.client.createDirectConversation({ userId, participantId }),
     );
   }
@@ -48,7 +58,7 @@ export class CommunicationGrpcService {
     participantIds: string[],
     avatarUrl?: string,
   ): Promise<ConversationResponse> {
-    return firstValueFrom(
+    return this.call(
       this.client.createGroupConversation({
         userId,
         name,
@@ -64,7 +74,7 @@ export class CommunicationGrpcService {
     name?: string,
     avatarUrl?: string,
   ): Promise<ConversationResponse> {
-    return firstValueFrom(
+    return this.call(
       this.client.updateGroupConversation({
         conversationId,
         userId,
@@ -79,7 +89,7 @@ export class CommunicationGrpcService {
     userId: string,
     participantIds: string[],
   ): Promise<ConversationResponse> {
-    return firstValueFrom(
+    return this.call(
       this.client.addGroupParticipants({
         conversationId,
         userId,
@@ -93,7 +103,7 @@ export class CommunicationGrpcService {
     userId: string,
     participantId: string,
   ): Promise<RemoveGroupParticipantResponse> {
-    return firstValueFrom(
+    return this.call(
       this.client.removeGroupParticipant({
         conversationId,
         userId,
@@ -107,18 +117,14 @@ export class CommunicationGrpcService {
     page: number,
     limit: number,
   ): Promise<ConversationListResponse> {
-    return firstValueFrom(
-      this.client.getConversations({ userId, page, limit }),
-    );
+    return this.call(this.client.getConversations({ userId, page, limit }));
   }
 
   getConversation(
     conversationId: string,
     userId: string,
   ): Promise<ConversationResponse> {
-    return firstValueFrom(
-      this.client.getConversation({ conversationId, userId }),
-    );
+    return this.call(this.client.getConversation({ conversationId, userId }));
   }
 
   getMessages(
@@ -127,7 +133,7 @@ export class CommunicationGrpcService {
     page: number,
     limit: number,
   ): Promise<MessageListResponse> {
-    return firstValueFrom(
+    return this.call(
       this.client.getMessages({ conversationId, userId, page, limit }),
     );
   }
@@ -137,7 +143,7 @@ export class CommunicationGrpcService {
     senderId: string,
     content: string,
   ): Promise<MessageResponse> {
-    return firstValueFrom(
+    return this.call(
       this.client.sendMessage({ conversationId, senderId, content }),
     );
   }
@@ -146,7 +152,7 @@ export class CommunicationGrpcService {
     conversationId: string,
     userId: string,
   ): Promise<MarkConversationReadResponse> {
-    return firstValueFrom(
+    return this.call(
       this.client.markConversationRead({ conversationId, userId }),
     );
   }
@@ -156,7 +162,7 @@ export class CommunicationGrpcService {
     messageId: string,
     userId: string,
   ): Promise<MarkMessageReadResponse> {
-    return firstValueFrom(
+    return this.call(
       this.client.markMessageRead({ conversationId, messageId, userId }),
     );
   }
@@ -166,7 +172,7 @@ export class CommunicationGrpcService {
     messageId: string,
     userId: string,
   ): Promise<MessageReadReceiptListResponse> {
-    return firstValueFrom(
+    return this.call(
       this.client.getMessageReadReceipts({
         conversationId,
         messageId,
@@ -176,6 +182,6 @@ export class CommunicationGrpcService {
   }
 
   getUnreadCount(userId: string): Promise<GetUnreadCountResponse> {
-    return firstValueFrom(this.client.getUnreadCount({ userId }));
+    return this.call(this.client.getUnreadCount({ userId }));
   }
 }

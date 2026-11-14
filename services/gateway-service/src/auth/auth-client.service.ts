@@ -34,8 +34,8 @@ export class AuthGrpcService {
   private call<T>(observable: Observable<T>): Promise<T> {
     return firstValueFrom(
       observable.pipe(
-        catchError((err) => {
-          throw new RpcException(err);
+        catchError((err: unknown) => {
+          throw new RpcException(err as string | object);
         }),
       ),
     );
@@ -65,7 +65,6 @@ export class AuthGrpcService {
   }
 
   resetPassword(body: ResetPasswordRequest): Promise<ResetPasswordResponse> {
-    console.log('pass', body.newPassword);
     return this.call(this.client.resetPassword(body));
   }
 }

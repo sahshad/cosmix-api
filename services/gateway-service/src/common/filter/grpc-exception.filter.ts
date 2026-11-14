@@ -5,14 +5,21 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
+import type { Response } from 'express';
 import * as grpc from '@grpc/grpc-js';
+
+interface GrpcError {
+  code?: number;
+  details?: string;
+  message?: string;
+}
 
 @Catch(RpcException)
 export class GrpcExceptionFilter implements ExceptionFilter {
   catch(exception: RpcException, host: ArgumentsHost) {
-    const error = exception.getError() as any;
+    const error = exception.getError() as GrpcError;
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse();
+    const response = ctx.getResponse<Response>();
 
     const grpcToHttp: Record<number, HttpStatus> = {
       [grpc.status.NOT_FOUND]: HttpStatus.NOT_FOUND,
@@ -26,13 +33,17 @@ export class GrpcExceptionFilter implements ExceptionFilter {
     };
 
     const httpStatus =
-      grpcToHttp[error?.code] ?? HttpStatus.INTERNAL_SERVER_ERROR;
+      (error?.code !== undefined ? grpcToHttp[error.code] : undefined) ??
+      HttpStatus.INTERNAL_SERVER_ERROR;
     const statusText = HttpStatus[httpStatus];
+    const message = error?.details || error?.message || 'Internal server error';
+
+    response.locals.errorMessage = message;
 
     response.status(httpStatus).json({
       statusCode: httpStatus,
       status: statusText,
-      message: error?.details || error?.message || 'Internal server error',
+      message,
     });
   }
 }

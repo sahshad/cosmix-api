@@ -7,9 +7,12 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filter/http-exception.filter';
 import { GrpcExceptionFilter } from './common/filter/grpc-exception.filter';
+import { logger } from './common/logger/app-logger';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger,
+  });
   app.set('trust proxy', 1);
   app.use(
     helmet({
@@ -80,6 +83,22 @@ async function bootstrap() {
     },
   });
 
-  await app.listen(process.env.PORT ?? 5000);
+  const port = Number(process.env.PORT ?? 5000);
+
+  await app.listen(port);
+
+  logger.info('Gateway listening', {
+    port,
+    environment: process.env.NODE_ENV ?? 'development',
+    swagger: `http://localhost:${port}/api/docs`,
+  });
 }
-void bootstrap();
+
+bootstrap().catch((error: unknown) => {
+  logger.error('Gateway failed to start', {
+    error: error instanceof Error ? error.message : String(error),
+    stack: error instanceof Error ? error.stack : undefined,
+  });
+
+  process.exit(1);
+});

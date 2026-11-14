@@ -6,6 +6,7 @@ import (
 	"user-service/internal/dto"
 	"user-service/internal/services"
 
+	appErr "cosmix/shared/core/errors"
 	userpb "cosmix/shared/grpc/gen/go/user"
 
 	"github.com/google/uuid"
@@ -144,57 +145,49 @@ func (srv *UserServer) Unfollow(ctx context.Context, req *userpb.UnfollowRequest
 	}, nil
 }
 
-// func (s *UserServer) GetFollowers(
-// 	ctx context.Context,
-// 	req *userpb.GetFollowersRequest,
-// ) (*userpb.UserListResponse, error) {
+func (srv *UserServer) GetFollowers(
+	ctx context.Context,
+	req *userpb.GetFollowersRequest,
+) (*userpb.UserListResponse, error) {
+	return srv.listFollowUsers(ctx, req.UserId, srv.followService.GetFollowers)
+}
 
-// 	users, err := s.followService.GetFollowers(
-// 		ctx,
-// 		uint(req.UserId),
-// 	)
+func (srv *UserServer) GetFollowing(
+	ctx context.Context,
+	req *userpb.GetFollowingRequest,
+) (*userpb.UserListResponse, error) {
+	return srv.listFollowUsers(ctx, req.UserId, srv.followService.GetFollowing)
+}
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func (srv *UserServer) listFollowUsers(
+	ctx context.Context,
+	rawUserID string,
+	load func(context.Context, uuid.UUID) ([]uuid.UUID, error),
+) (*userpb.UserListResponse, error) {
+	userID, err := uuid.Parse(rawUserID)
+	if err != nil {
+		return nil, appErr.NewBadRequest("userId", "invalid user id")
+	}
 
-// 	response := &userpb.UserListResponse{}
+	userIDs, err := load(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
 
-// 	for _, user := range users {
-// 		response.Users = append(
-// 			response.Users,
-// 			mapUser(user),
-// 		)
-// 	}
+	usersByID, err := srv.userService.GetUserResponsesByIDs(ctx, userIDs)
+	if err != nil {
+		return nil, err
+	}
 
-// 	return response, nil
-// }
+	response := &userpb.UserListResponse{Users: make([]*userpb.User, 0, len(userIDs))}
+	for _, id := range userIDs {
+		if user, ok := usersByID[id]; ok {
+			response.Users = append(response.Users, mapUser(user))
+		}
+	}
 
-// func (s *UserServer) GetFollowing(
-// 	ctx context.Context,
-// 	req *userpb.GetFollowingRequest,
-// ) (*userpb.UserListResponse, error) {
-
-// 	users, err := s.followService.GetFollowing(
-// 		ctx,
-// 		uint(req.UserId),
-// 	)
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	response := &userpb.UserListResponse{}
-
-// 	for _, user := range users {
-// 		response.Users = append(
-// 			response.Users,
-// 			mapUser(user),
-// 		)
-// 	}
-
-// 	return response, nil
-// }
+	return response, nil
+}
 
 func mapUser(user dto.UserResponse) *userpb.User {
 	return &userpb.User{
