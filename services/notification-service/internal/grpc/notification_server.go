@@ -6,7 +6,7 @@ import (
 	"notification-service/internal/dto"
 	"notification-service/internal/services"
 
-	notificationpb "cosmix/shared/grpc/gen/go/notification"
+	notificationpb "notification-service/internal/grpc/generated"
 
 	"github.com/google/uuid"
 )

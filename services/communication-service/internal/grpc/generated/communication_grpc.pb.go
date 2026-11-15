@@ -4,7 +4,7 @@
 // - protoc             v7.34.1
 // source: communication/communication.proto
 
-package communication
+package generated
 
 import (
 	context "context"

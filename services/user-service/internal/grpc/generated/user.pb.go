@@ -4,7 +4,7 @@
 // 	protoc        v7.34.1
 // source: user/user.proto
 
-package user
+package generated
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -884,7 +884,7 @@ const file_user_user_proto_rawDesc = "" +
 	"\x06Follow\x12\x13.user.FollowRequest\x1a\x14.user.FollowResponse\x129\n" +
 	"\bUnfollow\x12\x15.user.UnfollowRequest\x1a\x16.user.UnfollowResponse\x12A\n" +
 	"\fGetFollowers\x12\x19.user.GetFollowersRequest\x1a\x16.user.UserListResponse\x12A\n" +
-	"\fGetFollowing\x12\x19.user.GetFollowingRequest\x1a\x16.user.UserListResponseB\x1bZ\x19cosmix/shared/gen/go/userb\x06proto3"
+	"\fGetFollowing\x12\x19.user.GetFollowingRequest\x1a\x16.user.UserListResponseB&Z$user-service/internal/grpc/generatedb\x06proto3"
 
 var (
 	file_user_user_proto_rawDescOnce sync.Once

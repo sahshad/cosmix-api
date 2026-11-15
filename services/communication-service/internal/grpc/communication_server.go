@@ -7,7 +7,7 @@ import (
 	"communication-service/internal/services"
 
 	apperrors "cosmix/shared/core/errors"
-	communicationpb "cosmix/shared/grpc/gen/go/communication"
+	communicationpb "communication-service/internal/grpc/generated"
 
 	"github.com/google/uuid"
 )

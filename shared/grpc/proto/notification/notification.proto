@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package notification;
 
-option go_package = "cosmix/shared/grpc/gen/go/notification";
+option go_package = "notification-service/internal/grpc/generated";
 
 service NotificationService {
   rpc GetUserNotifications(

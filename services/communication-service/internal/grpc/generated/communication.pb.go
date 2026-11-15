@@ -4,7 +4,7 @@
 // 	protoc        v7.34.1
 // source: communication/communication.proto
 
-package communication
+package generated
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -1867,7 +1867,7 @@ const file_communication_communication_proto_rawDesc = "" +
 	"\x14MarkConversationRead\x12*.communication.MarkConversationReadRequest\x1a+.communication.MarkConversationReadResponse\x12`\n" +
 	"\x0fMarkMessageRead\x12%.communication.MarkMessageReadRequest\x1a&.communication.MarkMessageReadResponse\x12u\n" +
 	"\x16GetMessageReadReceipts\x12,.communication.GetMessageReadReceiptsRequest\x1a-.communication.MessageReadReceiptListResponse\x12]\n" +
-	"\x0eGetUnreadCount\x12$.communication.GetUnreadCountRequest\x1a%.communication.GetUnreadCountResponseB)Z'cosmix/shared/grpc/gen/go/communicationb\x06proto3"
+	"\x0eGetUnreadCount\x12$.communication.GetUnreadCountRequest\x1a%.communication.GetUnreadCountResponseB/Z-communication-service/internal/grpc/generatedb\x06proto3"
 
 var (
 	file_communication_communication_proto_rawDescOnce sync.Once

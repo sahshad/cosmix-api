@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package post;
 
-option go_package = "cosmix/shared/grpc/gen/go/post";
+option go_package = "post-service/internal/grpc/generated";
 
 service PostService {
   rpc CreatePost(CreatePostRequest)

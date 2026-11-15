@@ -13,7 +13,7 @@ import (
 	"cosmix/shared/core/rabbitmq"
 	"cosmix/shared/grpc/interceptors"
 
-	userpb "cosmix/shared/grpc/gen/go/user"
+	userpb "user-service/internal/grpc/generated"
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"

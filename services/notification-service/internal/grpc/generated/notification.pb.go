@@ -4,7 +4,7 @@
 // 	protoc        v7.34.1
 // source: notification/notification.proto
 
-package notification
+package generated
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -803,7 +803,7 @@ const file_notification_notification_proto_rawDesc = "" +
 	"\n" +
 	"MarkAsRead\x12\x1f.notification.MarkAsReadRequest\x1a .notification.MarkAsReadResponse\x12X\n" +
 	"\rMarkAllAsRead\x12\".notification.MarkAllAsReadRequest\x1a#.notification.MarkAllAsReadResponse\x12R\n" +
-	"\vHealthCheck\x12 .notification.HealthCheckRequest\x1a!.notification.HealthCheckResponseB(Z&cosmix/shared/grpc/gen/go/notificationb\x06proto3"
+	"\vHealthCheck\x12 .notification.HealthCheckRequest\x1a!.notification.HealthCheckResponseB.Z,notification-service/internal/grpc/generatedb\x06proto3"
 
 var (
 	file_notification_notification_proto_rawDescOnce sync.Once

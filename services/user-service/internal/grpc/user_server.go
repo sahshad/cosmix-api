@@ -7,7 +7,7 @@ import (
 	"user-service/internal/services"
 
 	appErr "cosmix/shared/core/errors"
-	userpb "cosmix/shared/grpc/gen/go/user"
+	userpb "user-service/internal/grpc/generated"
 
 	"github.com/google/uuid"
 )

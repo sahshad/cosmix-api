@@ -4,7 +4,7 @@
 // 	protoc        v7.34.1
 // source: auth/auth.proto
 
-package auth
+package generated
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -860,7 +860,7 @@ const file_auth_auth_proto_rawDesc = "" +
 	"\aRefresh\x12\x14.auth.RefreshRequest\x1a\x15.auth.RefreshResponse\x12W\n" +
 	"\x12UpdateUserPassword\x12\x1f.auth.UpdateUserPasswordRequest\x1a .auth.UpdateUserPasswordResponse\x12K\n" +
 	"\x0eForgotPassword\x12\x1b.auth.ForgotPasswordRequest\x1a\x1c.auth.ForgotPasswordResponse\x12H\n" +
-	"\rResetPassword\x12\x1a.auth.ResetPasswordRequest\x1a\x1b.auth.ResetPasswordResponseB\x1bZ\x19cosmix/shared/gen/go/authb\x06proto3"
+	"\rResetPassword\x12\x1a.auth.ResetPasswordRequest\x1a\x1b.auth.ResetPasswordResponseB&Z$auth-service/internal/grpc/generatedb\x06proto3"
 
 var (
 	file_auth_auth_proto_rawDescOnce sync.Once

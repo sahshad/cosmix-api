@@ -6,7 +6,7 @@ import (
 	"auth-service/internal/dto"
 	"auth-service/internal/services"
 
-	authpb "cosmix/shared/grpc/gen/go/auth"
+	authpb "auth-service/internal/grpc/generated"
 
 	"github.com/google/uuid"
 )

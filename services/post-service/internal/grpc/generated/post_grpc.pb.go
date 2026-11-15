@@ -4,7 +4,7 @@
 // - protoc             v7.34.1
 // source: post/post.proto
 
-package post
+package generated
 
 import (
 	context "context"

@@ -4,7 +4,7 @@
 // 	protoc        v7.34.1
 // source: post/post.proto
 
-package post
+package generated
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -1892,7 +1892,7 @@ const file_post_post_proto_rawDesc = "" +
 	"\rUpdateComment\x12\x1a.post.UpdateCommentRequest\x1a\x15.post.CommentResponse\x12B\n" +
 	"\rDeleteComment\x12\x1a.post.DeleteCommentRequest\x1a\x15.post.MessageResponse\x12>\n" +
 	"\vLikeComment\x12\x18.post.LikeCommentRequest\x1a\x15.post.MessageResponse\x12B\n" +
-	"\rUnlikeComment\x12\x1a.post.UnlikeCommentRequest\x1a\x15.post.MessageResponseB Z\x1ecosmix/shared/grpc/gen/go/postb\x06proto3"
+	"\rUnlikeComment\x12\x1a.post.UnlikeCommentRequest\x1a\x15.post.MessageResponseB&Z$post-service/internal/grpc/generatedb\x06proto3"
 
 var (
 	file_post_post_proto_rawDescOnce sync.Once

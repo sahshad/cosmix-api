@@ -15,7 +15,7 @@ import (
 	"cosmix/shared/core/rabbitmq"
 	"cosmix/shared/grpc/interceptors"
 
-	notificationpb "cosmix/shared/grpc/gen/go/notification"
+	notificationpb "notification-service/internal/grpc/generated"
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"

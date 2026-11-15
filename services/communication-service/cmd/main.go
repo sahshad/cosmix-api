@@ -11,7 +11,7 @@ import (
 	"cosmix/shared/core/eventbus"
 	"cosmix/shared/core/logger"
 	"cosmix/shared/core/rabbitmq"
-	communicationpb "cosmix/shared/grpc/gen/go/communication"
+	communicationpb "communication-service/internal/grpc/generated"
 	"cosmix/shared/grpc/interceptors"
 
 	"github.com/joho/godotenv"

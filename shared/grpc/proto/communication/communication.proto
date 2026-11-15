@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package communication;
 
-option go_package = "cosmix/shared/grpc/gen/go/communication";
+option go_package = "communication-service/internal/grpc/generated";
 
 service CommunicationService {
   rpc CreateDirectConversation(CreateDirectConversationRequest)

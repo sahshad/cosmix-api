@@ -7,7 +7,7 @@ import (
 	"post-service/internal/dto"
 	"post-service/internal/services"
 
-	postpb "cosmix/shared/grpc/gen/go/post"
+	postpb "post-service/internal/grpc/generated"
 
 	"github.com/google/uuid"
 )

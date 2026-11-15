@@ -10,7 +10,7 @@ require (
 	gorm.io/gorm v1.31.1
 )
 
-require go.uber.org/zap v1.28.0
+require go.uber.org/zap v1.28.0 // indirect
 
 require cosmix/shared/events v0.0.0
 
@@ -18,6 +18,7 @@ require cosmix/shared/core v0.0.0
 
 require (
 	cosmix/shared/grpc v0.0.0
+	github.com/google/uuid v1.6.0
 	google.golang.org/grpc v1.81.1
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
@@ -30,7 +31,6 @@ replace cosmix/shared/core => ../../shared/core
 replace cosmix/shared/grpc => ../../shared/grpc
 
 require (
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.9.2 // indirect

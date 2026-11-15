@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package user;
 
-option go_package = "cosmix/shared/gen/go/user";
+option go_package = "user-service/internal/grpc/generated";
 
 service UserService {
   rpc GetProfile(GetProfileRequest)
