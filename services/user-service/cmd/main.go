@@ -1,22 +1,24 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"log"
-	"net"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"user-service/internal/app"
 	"user-service/internal/database"
+	"user-service/internal/grpc"
 
 	"cosmix/shared/core/eventbus"
 	"cosmix/shared/core/logger"
 	"cosmix/shared/core/rabbitmq"
-	"cosmix/shared/grpc/interceptors"
-
-	userpb "user-service/internal/grpc/generated"
 
 	"github.com/joho/godotenv"
-	"google.golang.org/grpc"
+	grpcpkg "google.golang.org/grpc"
 )
 
 func main() {
@@ -49,23 +51,9 @@ func main() {
 
 	container := app.NewContainer(db, rabbit)
 
-	lis, err := net.Listen("tcp", ":"+grpcPort)
-	if err != nil {
-		log.Fatalf("grpc listen failed: %v", err)
-	}
-
 	grpcServer := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(
-			interceptors.RequestIDInterceptor,
-			interceptors.LoggingInterceptor(zapLogger),
-			interceptors.RecoveryInterceptor(zapLogger),
-			interceptors.ErrorInterceptor,
-		),
-	)
-
-	userpb.RegisterUserServiceServer(
-		grpcServer,
 		container.UserGrpcServer,
+		zapLogger,
 	)
 
 	if err := app.RegisterSubscriptions(container); err != nil {
@@ -74,7 +62,42 @@ func main() {
 
 	log.Printf("User gRPC server running on :%s", grpcPort)
 
-	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("grpc serve failed: %v", err)
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
+	defer stop()
+
+	errCh := make(chan error, 1)
+
+	go func() {
+		errCh <- grpcServer.Start(grpcPort)
+	}()
+
+	select {
+	case err := <-errCh:
+		if err != nil && !errors.Is(err, grpcpkg.ErrServerStopped) {
+			log.Printf("gRPC server stopped: %v", err)
+		}
+
+	case <-ctx.Done():
+		log.Println("Shutting down gRPC server...")
+
+		done := make(chan struct{})
+
+		go func() {
+			grpcServer.GracefulStop()
+			close(done)
+		}()
+
+		select {
+		case <-done:
+			log.Println("gRPC server stopped gracefully")
+
+		case <-time.After(10 * time.Second):
+			log.Println("Graceful shutdown timed out. Forcing shutdown...")
+			grpcServer.Stop()
+		}
 	}
 }

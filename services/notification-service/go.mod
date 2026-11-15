@@ -10,7 +10,7 @@ require (
 	gorm.io/gorm v1.31.1
 )
 
-require go.uber.org/zap v1.28.0 // indirect
+require go.uber.org/zap v1.28.0
 
 require cosmix/shared/events v0.0.0
 
